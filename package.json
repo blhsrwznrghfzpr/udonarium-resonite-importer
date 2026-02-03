@@ -7,7 +7,7 @@
     "udonarium-resonite-importer": "./dist/index.js"
   },
   "scripts": {
-    "build": "run-p build:cli build:gui",
+    "build": "run-p build:*",
     "build:cli": "tsc -p tsconfig.cli.json",
     "build:gui": "tsc -p tsconfig.gui.json",
 
@@ -21,7 +21,7 @@
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
-    "typecheck": "run-p typecheck:cli typecheck:gui",
+    "typecheck": "run-p typecheck:*",
     "typecheck:cli": "tsc -p tsconfig.cli.json --noEmit",
     "typecheck:gui": "tsc -p tsconfig.gui.json --noEmit",
 
