@@ -7,26 +7,34 @@
     "udonarium-resonite-importer": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.cli.json",
+    "build": "run-p build:*",
+    "build:cli": "tsc -p tsconfig.cli.json",
     "build:gui": "tsc -p tsconfig.gui.json",
-    "build:all": "npm run build && npm run build:gui",
+
     "start": "node dist/index.js",
     "start:gui": "electron .",
+
     "dev": "ts-node src/index.ts",
-    "dev:gui": "npm run build:gui && electron .",
+    "dev:gui": "run-s build:gui start:gui",
+
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
     "format:check": "prettier --check 'src/**/*.ts'",
-    "typecheck": "tsc -p tsconfig.cli.json --noEmit && tsc -p tsconfig.gui.json --noEmit",
-    "package:win": "pkg . --targets node18-win-x64 --output dist/udonarium-resonite-importer.exe",
-    "package:mac": "pkg . --targets node18-macos-x64 --output dist/udonarium-resonite-importer-macos",
-    "package:linux": "pkg . --targets node18-linux-x64 --output dist/udonarium-resonite-importer-linux",
-    "package:all": "npm run package:win && npm run package:mac && npm run package:linux",
+    "typecheck": "run-p typecheck:*",
+    "typecheck:cli": "tsc -p tsconfig.cli.json --noEmit",
+    "typecheck:gui": "tsc -p tsconfig.gui.json --noEmit",
+
+    "package": "run-s package:cli package:gui",
+    "package:cli": "run-p package:cli:*",
+    "package:cli:win": "pkg . --targets node18-win-x64 --output dist/udonarium-resonite-importer.exe",
+    "package:cli:mac": "pkg . --targets node18-macos-x64 --output dist/udonarium-resonite-importer-macos",
+    "package:cli:linux": "pkg . --targets node18-linux-x64 --output dist/udonarium-resonite-importer-linux",
+    "package:gui": "electron-builder --win --mac --linux",
     "package:gui:win": "electron-builder --win",
     "package:gui:mac": "electron-builder --mac",
     "package:gui:linux": "electron-builder --linux",
-    "package:gui:all": "electron-builder --win --mac --linux",
+
     "prepare": "husky"
   },
   "keywords": [
@@ -59,6 +67,7 @@
     "eslint-config-prettier": "^9.1.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "npm-run-all2": "^8.0.4",
     "pkg": "^5.8.1",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.2",
