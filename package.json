@@ -7,9 +7,9 @@
     "udonarium-resonite-importer": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.cli.json",
+    "build": "npm run build:cli && npm run build:gui",
+    "build:cli": "tsc -p tsconfig.cli.json",
     "build:gui": "tsc -p tsconfig.gui.json",
-    "build:all": "npm run build && npm run build:gui",
     "start": "node dist/index.js",
     "start:gui": "electron .",
     "dev": "ts-node src/index.ts",
