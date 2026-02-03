@@ -47,6 +47,11 @@ export class ResoniteLinkClient {
       host: this.config.host,
       port: this.config.port,
     });
+
+    // Register disconnect listener once in constructor
+    this.client.on('disconnected', () => {
+      this._isConnected = false;
+    });
   }
 
   /**
@@ -81,26 +86,27 @@ export class ResoniteLinkClient {
   private tryConnect(): Promise<void> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
+        cleanup();
         reject(new Error('Connection timeout'));
       }, 5000);
 
       const onConnected = () => {
-        clearTimeout(timeout);
+        cleanup();
         this._isConnected = true;
         resolve();
       };
 
-      const onDisconnected = () => {
-        this._isConnected = false;
+      const cleanup = () => {
+        clearTimeout(timeout);
+        this.client.off('connected', onConnected);
       };
 
       this.client.on('connected', onConnected);
-      this.client.on('disconnected', onDisconnected);
 
       try {
         this.client.connect();
       } catch (error) {
-        clearTimeout(timeout);
+        cleanup();
         reject(error);
       }
     });
