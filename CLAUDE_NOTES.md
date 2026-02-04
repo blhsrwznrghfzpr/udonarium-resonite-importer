@@ -55,6 +55,10 @@ e18b6ff refactor: Reorganize npm scripts for clarity
    - `.github/workflows/lint.yml`にテスト実行ステップを追加
    - PR時にLint、型チェック、テストを全て実行
 
+4. **Vitest ESM互換性修正**
+   - `vitest.config.ts` を `vitest.config.mts` にリネーム
+   - CommonJSプロジェクトでVitest 4.xを動作させるための対応
+
 ### 過去のセッションで行った作業
 
 1. **npm scriptsの再編成**
