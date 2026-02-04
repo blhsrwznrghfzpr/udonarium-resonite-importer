@@ -49,6 +49,15 @@ e18b6ff refactor: Reorganize npm scripts for clarity
    - `"typecheck": "run-p typecheck:*"` - 型チェックを並列実行
    - `"package:cli": "run-p package:cli:*"` - CLIパッケージングを並列実行
 
+4. **ユニットテストの実装（103テスト）**
+   - Vitestをセットアップ（vitest.config.ts）
+   - 高優先度モジュールのテストを作成:
+     - `ObjectConverter.test.ts` (19テスト) - 座標変換、サイズ変換、オブジェクト変換
+     - `ParserUtils.test.ts` (36テスト) - findDataByName, getTextValue, getNumberValue, getBooleanValue
+     - `ZipExtractor.test.ts` (16テスト) - ZIP展開、ファイルフィルタリング
+     - `XmlParser.test.ts` (16テスト) - 各オブジェクト型のパース
+     - `ResoniteLinkClient.test.ts` (16テスト) - 接続状態、エラーハンドリング
+
 ## ファイル構成
 
 ```
@@ -96,6 +105,9 @@ npm run build:gui      # GUI版のみビルド
 npm run typecheck      # 型チェック（並列）
 npm run lint           # ESLintチェック
 npm run format         # Prettierフォーマット
+npm run test           # ユニットテスト実行
+npm run test:watch     # テストをウォッチモードで実行
+npm run test:coverage  # カバレッジ付きテスト実行
 npm run package        # CLI/GUIパッケージング（順次）
 ```
 
@@ -139,24 +151,14 @@ resonite.z = -udonarium.y * 0.02
 ### PRの作成
 
 PR作成に必要な情報:
-- **タイトル案**: `refactor: Reorganize npm scripts with npm-run-all2`
+- **タイトル案**: `feat: Add unit tests with Vitest`
 - **変更内容**:
   - npm scriptsの再編成（build, typecheck, package）
   - npm-run-all2の導入による並列/順次実行の明確化
-  - ワイルドカードパターンによる拡張性の向上
+  - Vitestによるユニットテスト（103テスト）
 
-### テストの追加（検討中）
+### 追加テスト（中優先度）
 
-#### 高優先度
-| モジュール | テスト種別 | 理由 |
-|-----------|----------|------|
-| ObjectConverter | Unit | 座標変換ロジックはバグが入りやすい |
-| ParserUtils | Unit | 全パーサーの基盤となる純粋関数 |
-| ZipExtractor | Unit + Integration | データ入力の起点 |
-| XmlParser | Unit | XMLパース失敗はデータ損失につながる |
-| ResoniteLinkClient | Unit (モック) | 接続リトライやタイムアウト処理 |
-
-#### 中優先度
 | モジュール | テスト種別 | 理由 |
 |-----------|----------|------|
 | CharacterParser | Unit | 最も複雑なオブジェクト型 |
@@ -164,18 +166,14 @@ PR作成に必要な情報:
 | SlotBuilder | Unit (モック) | 階層構造の再帰処理 |
 | AssetImporter | Unit (モック) | キャッシュ処理 |
 
-#### 低優先度
-- TerrainParser, TableParser, TextNoteParser（シンプルな構造）
-- GUI renderer.ts（UIテストは複雑）
-
 ### その他
 - エラーハンドリングの強化（接続リトライロジック等）
 - GUI版のUX改善（ドラッグ&ドロップ対応等）
 - ドキュメント改善
+- CI/CDにテスト実行を追加
 
 ## 次回作業の推奨事項
 
-1. テストフレームワーク（Vitest推奨）のセットアップ
-2. 高優先度モジュールのユニットテスト作成
-3. PRを作成（`gh pr create`コマンドまたはGitHub Web UI使用）
-4. CI（GitHub Actions）での動作確認
+1. PRを作成（`gh pr create`コマンドまたはGitHub Web UI使用）
+2. CI（GitHub Actions）でテストを実行するように設定
+3. 中優先度のテストを追加
