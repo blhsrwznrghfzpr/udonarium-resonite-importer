@@ -71,6 +71,10 @@ e18b6ff refactor: Reorganize npm scripts for clarity
    - `npm run test:coverage` でカバレッジレポート生成可能
    - 現在のカバレッジ: 全体53%、パーサー93-100%、Resonite関連0-20%
 
+7. **PRカバレッジレポート**
+   - `vitest-coverage-report-action` を導入
+   - PR時にカバレッジサマリーがコメントとして自動投稿される
+
 ### 過去のセッションで行った作業
 
 1. **npm scriptsの再編成**
