@@ -66,6 +66,11 @@ e18b6ff refactor: Reorganize npm scripts for clarity
    - `TextNoteParser.test.ts` (10テスト) - テキストノート解析
    - `TableParser.test.ts` (18テスト) - テーブル解析、game-table解析、マスク解析
 
+6. **テストカバレッジ設定**
+   - `@vitest/coverage-v8` パッケージを追加
+   - `npm run test:coverage` でカバレッジレポート生成可能
+   - 現在のカバレッジ: 全体53%、パーサー93-100%、Resonite関連0-20%
+
 ### 過去のセッションで行った作業
 
 1. **npm scriptsの再編成**
