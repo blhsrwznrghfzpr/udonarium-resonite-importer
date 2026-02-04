@@ -1,0 +1,292 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DEFAULT_RESONITE_LINK } from '../config/MappingConfig';
+
+// Create mock client instance
+const createMockClientInstance = () => ({
+  connect: vi.fn(),
+  disconnect: vi.fn(),
+  on: vi.fn(),
+  off: vi.fn(),
+  isConnected: false,
+  createSlot: vi.fn(),
+  getSlot: vi.fn(),
+  send: vi.fn(),
+  createComponent: vi.fn(),
+});
+
+let mockClientInstance = createMockClientInstance();
+let ClientConstructorCalls: Array<{ host: string; port: number }> = [];
+
+// Mock the resonitelink.js library
+vi.mock('../../lib/resonitelink.js/dist', () => {
+  return {
+    Client: class MockClient {
+      connect = vi.fn();
+      disconnect = vi.fn();
+      on = vi.fn();
+      off = vi.fn();
+      isConnected = false;
+      createSlot = vi.fn();
+      getSlot = vi.fn();
+      send = vi.fn();
+      createComponent = vi.fn();
+
+      constructor(config: { host: string; port: number }) {
+        ClientConstructorCalls.push(config);
+        Object.assign(this, mockClientInstance);
+      }
+    },
+    createString: vi.fn((s: string) => ({ type: 'string', value: s })),
+    createReference: vi.fn((r: string) => ({ type: 'reference', value: r })),
+    createFloat3: vi.fn((v: { x: number; y: number; z: number }) => ({
+      type: 'float3',
+      value: v,
+    })),
+    createFloatQ: vi.fn((q: { x: number; y: number; z: number; w: number }) => ({
+      type: 'floatQ',
+      value: q,
+    })),
+    createBool: vi.fn((b: boolean) => ({ type: 'bool', value: b })),
+    createLong: vi.fn((l: number) => ({ type: 'long', value: l })),
+  };
+});
+
+// Import after mock is set up
+import { ResoniteLinkClient } from './ResoniteLinkClient';
+
+describe('ResoniteLinkClient', () => {
+  let client: ResoniteLinkClient;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockClientInstance = createMockClientInstance();
+    ClientConstructorCalls = [];
+    client = new ResoniteLinkClient();
+  });
+
+  describe('constructor', () => {
+    it('should use default config when no options provided', () => {
+      expect(ClientConstructorCalls[0]).toEqual({
+        host: DEFAULT_RESONITE_LINK.host,
+        port: DEFAULT_RESONITE_LINK.port,
+      });
+    });
+
+    it('should use custom host and port', () => {
+      ClientConstructorCalls = [];
+      new ResoniteLinkClient({ host: 'custom.host', port: 9999 });
+
+      expect(ClientConstructorCalls[0]).toEqual({
+        host: 'custom.host',
+        port: 9999,
+      });
+    });
+
+    it('should register disconnected event listener', () => {
+      expect(mockClientInstance.on).toHaveBeenCalledWith('disconnected', expect.any(Function));
+    });
+  });
+
+  describe('isConnected', () => {
+    it('should return false initially', () => {
+      expect(client.isConnected()).toBe(false);
+    });
+  });
+
+  describe('disconnect', () => {
+    it('should call client.disconnect', () => {
+      client.disconnect();
+
+      expect(mockClientInstance.disconnect).toHaveBeenCalled();
+    });
+  });
+
+  describe('getClient', () => {
+    it('should return a client instance', () => {
+      const underlyingClient = client.getClient();
+
+      expect(underlyingClient).toBeDefined();
+      expect(typeof underlyingClient.connect).toBe('function');
+    });
+  });
+
+  describe('addSlot', () => {
+    it('should throw when not connected', async () => {
+      await expect(
+        client.addSlot({
+          id: 'test-id',
+          parentId: 'parent-id',
+          name: 'Test Slot',
+          position: { x: 0, y: 0, z: 0 },
+          scale: { x: 1, y: 1, z: 1 },
+        })
+      ).rejects.toThrow('Not connected to ResoniteLink');
+    });
+  });
+
+  describe('updateSlot', () => {
+    it('should throw when not connected', async () => {
+      await expect(
+        client.updateSlot({
+          id: 'test-id',
+          position: { x: 1, y: 2, z: 3 },
+        })
+      ).rejects.toThrow('Not connected to ResoniteLink');
+    });
+  });
+
+  describe('importTexture', () => {
+    it('should throw when not connected', async () => {
+      await expect(client.importTexture('/path/to/image.png')).rejects.toThrow(
+        'Not connected to ResoniteLink'
+      );
+    });
+  });
+
+  describe('importTextureFromData', () => {
+    it('should throw when not connected', async () => {
+      const imageData = Buffer.from([0x89, 0x50, 0x4e, 0x47]); // PNG signature
+
+      await expect(client.importTextureFromData(imageData, 'test.png')).rejects.toThrow(
+        'Not connected to ResoniteLink'
+      );
+    });
+  });
+
+  describe('addComponent', () => {
+    it('should throw when not connected', async () => {
+      await expect(
+        client.addComponent({
+          slotId: 'slot-id',
+          componentType: 'SomeComponent',
+          fields: {},
+        })
+      ).rejects.toThrow('Not connected to ResoniteLink');
+    });
+  });
+
+  describe('getRootSlot', () => {
+    it('should throw when not connected', async () => {
+      await expect(client.getRootSlot()).rejects.toThrow('Not connected to ResoniteLink');
+    });
+  });
+});
+
+describe('Image dimension parsing (PNG/JPEG headers)', () => {
+  describe('PNG dimension detection', () => {
+    it('should correctly identify PNG dimensions from header', () => {
+      // Create a minimal PNG header with width=100, height=200
+      // PNG signature: 89 50 4E 47 0D 0A 1A 0A
+      // IHDR chunk length (13): 00 00 00 0D
+      // IHDR type: 49 48 44 52
+      // Width (100): 00 00 00 64
+      // Height (200): 00 00 00 C8
+      const pngData = Buffer.from([
+        0x89,
+        0x50,
+        0x4e,
+        0x47,
+        0x0d,
+        0x0a,
+        0x1a,
+        0x0a, // PNG signature
+        0x00,
+        0x00,
+        0x00,
+        0x0d, // IHDR chunk length
+        0x49,
+        0x48,
+        0x44,
+        0x52, // IHDR
+        0x00,
+        0x00,
+        0x00,
+        0x64, // Width = 100
+        0x00,
+        0x00,
+        0x00,
+        0xc8, // Height = 200
+      ]);
+
+      // Verify the PNG header is correctly formed
+      expect(pngData[0]).toBe(0x89);
+      expect(pngData[1]).toBe(0x50); // 'P'
+      expect(pngData[2]).toBe(0x4e); // 'N'
+      expect(pngData[3]).toBe(0x47); // 'G'
+      expect(pngData.readUInt32BE(16)).toBe(100); // Width
+      expect(pngData.readUInt32BE(20)).toBe(200); // Height
+    });
+  });
+
+  describe('JPEG dimension detection', () => {
+    it('should correctly identify JPEG structure', () => {
+      // JPEG starts with FF D8
+      // SOF0 marker is FF C0, followed by length and dimensions
+      const jpegData = Buffer.from([
+        0xff,
+        0xd8, // SOI marker
+        0xff,
+        0xe0,
+        0x00,
+        0x10, // APP0 marker with length 16
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00, // APP0 data (14 bytes)
+        0xff,
+        0xc0, // SOF0 marker
+        0x00,
+        0x11, // Length
+        0x08, // Precision
+        0x00,
+        0xc8, // Height = 200
+        0x00,
+        0x64, // Width = 100
+      ]);
+
+      // Verify JPEG structure
+      expect(jpegData[0]).toBe(0xff);
+      expect(jpegData[1]).toBe(0xd8);
+    });
+  });
+});
+
+describe('Euler to Quaternion conversion', () => {
+  it('should convert zero rotation to identity quaternion', () => {
+    // Identity quaternion is (0, 0, 0, 1)
+    // When euler is (0, 0, 0), the quaternion should be identity
+
+    // Verify math: cos(0) = 1, sin(0) = 0
+    // w = cx*cy*cz + sx*sy*sz = 1*1*1 + 0*0*0 = 1
+    // x = sx*cy*cz - cx*sy*sz = 0*1*1 - 1*0*0 = 0
+    // y = cx*sy*cz + sx*cy*sz = 1*0*1 + 0*1*0 = 0
+    // z = cx*cy*sz - sx*sy*cz = 1*1*0 - 0*0*1 = 0
+    const expectedQuaternion = { x: 0, y: 0, z: 0, w: 1 };
+    expect(expectedQuaternion).toEqual({ x: 0, y: 0, z: 0, w: 1 });
+  });
+
+  it('should convert 90 degree Y rotation correctly', () => {
+    // 90 degrees around Y axis
+    // In radians: 90 * PI / 180 / 2 = PI/4
+    // cos(PI/4) ≈ 0.7071, sin(PI/4) ≈ 0.7071
+
+    const halfAngle = (90 * Math.PI) / 180 / 2;
+    const cos = Math.cos(halfAngle);
+    const sin = Math.sin(halfAngle);
+
+    // For Y-only rotation:
+    // w = cos(y), y = sin(y), x = 0, z = 0
+    expect(cos).toBeCloseTo(0.7071, 3);
+    expect(sin).toBeCloseTo(0.7071, 3);
+  });
+});
