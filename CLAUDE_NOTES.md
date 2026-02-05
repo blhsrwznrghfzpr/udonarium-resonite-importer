@@ -85,6 +85,17 @@ e18b6ff refactor: Reorganize npm scripts for clarity
    - `npm run collect:resonitelink` で実行可能
    - ResoniteLinkのAPI変更時にモックデータを再生成するために使用
 
+10. **ResoniteLink統合テスト（231テスト総計、うち15が統合テスト）**
+    - `src/resonite/integration.test.ts` (15テスト) - 実際のResoniteLinkに接続してテスト
+    - テスト内容:
+      - ResoniteLinkClientの接続・切断
+      - スロットの作成・更新
+      - テクスチャのインポート
+      - SlotBuilderの階層構造作成
+      - AssetImporterのキャッシュ機能
+    - 実行方法: `npm run test:integration`（Resoniteが起動している必要あり）
+    - 通常の `npm run test` ではスキップされる（CI環境で安全）
+
 ### 過去のセッションで行った作業
 
 1. **npm scriptsの再編成**
@@ -157,9 +168,10 @@ npm run build:gui      # GUI版のみビルド
 npm run typecheck      # 型チェック（並列）
 npm run lint           # ESLintチェック
 npm run format         # Prettierフォーマット
-npm run test           # ユニットテスト実行
+npm run test           # ユニットテスト実行（統合テストはスキップ）
 npm run test:watch     # テストをウォッチモードで実行
 npm run test:coverage  # カバレッジ付きテスト実行
+npm run test:integration  # 統合テスト実行（Resonite起動必須）
 npm run collect:resonitelink  # ResoniteLinkからモック用データを収集
 npm run package        # CLI/GUIパッケージング（順次）
 ```
