@@ -111,12 +111,6 @@
       "target": "AppImage"
     }
   },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "eslint --fix",
-      "prettier --write"
-    ]
-  },
   "volta": {
     "node": "20.18.2"
   }
