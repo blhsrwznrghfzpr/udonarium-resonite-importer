@@ -75,6 +75,10 @@ e18b6ff refactor: Reorganize npm scripts for clarity
    - `vitest-coverage-report-action` を導入
    - PR時にカバレッジサマリーがコメントとして自動投稿される
 
+8. **SlotBuilder・AssetImporterのモック付きユニットテスト（216テスト総計）**
+   - `SlotBuilder.test.ts` (20テスト) - スロット構築、子スロット再帰処理、インポートグループ作成
+   - `AssetImporter.test.ts` (19テスト) - 画像インポート、キャッシュ処理、複数ファイルインポート
+
 ### 過去のセッションで行った作業
 
 1. **npm scriptsの再編成**
@@ -208,8 +212,8 @@ PR作成に必要な情報:
 | TerrainParser | Unit | ✅ 完了 (9テスト) |
 | TextNoteParser | Unit | ✅ 完了 (10テスト) |
 | TableParser | Unit | ✅ 完了 (18テスト) |
-| SlotBuilder | Unit (モック) | 未着手 - 階層構造の再帰処理 |
-| AssetImporter | Unit (モック) | 未着手 - キャッシュ処理 |
+| SlotBuilder | Unit (モック) | ✅ 完了 (20テスト) - 階層構造の再帰処理 |
+| AssetImporter | Unit (モック) | ✅ 完了 (19テスト) - キャッシュ処理 |
 
 ### その他
 - エラーハンドリングの強化（接続リトライロジック等）
@@ -219,5 +223,6 @@ PR作成に必要な情報:
 ## 次回作業の推奨事項
 
 1. PRを作成（`gh pr create`コマンドまたはGitHub Web UI使用）
-2. 中優先度のテストを追加（CharacterParser, CardParser等）
-3. エラーハンドリングの強化
+2. エラーハンドリングの強化
+3. GUI版のUX改善（ドラッグ&ドロップ対応等）
+4. カバレッジ向上（現在53%）
