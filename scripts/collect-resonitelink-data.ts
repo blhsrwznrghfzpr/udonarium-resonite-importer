@@ -6,15 +6,19 @@
  *
  * Prerequisites:
  * 1. Resonite is running with ResoniteLink enabled
- * 2. Default port 7869 is used (or modify the script)
+ * 2. Set RESONITELINK_PORT environment variable or create .env file
  *
  * Usage:
  *   npm run collect:resonitelink
  */
 
+import * as dotenv from 'dotenv';
+dotenv.config();
+
 import * as fs from 'fs';
 import * as path from 'path';
 import { ResoniteLinkClient } from '../src/resonite/ResoniteLinkClient';
+import { getResoniteLinkPort, getResoniteLinkHost } from '../src/config/MappingConfig';
 
 const FIXTURES_DIR = path.join(__dirname, '../src/__fixtures__/resonitelink');
 const DEFAULT_TIMEOUT = 10000;
@@ -364,16 +368,31 @@ async function main(): Promise<void> {
   console.log('🚀 ResoniteLink Data Collection Script');
   console.log('=====================================');
   console.log('');
+
+  const port = getResoniteLinkPort();
+  const host = getResoniteLinkHost();
+
+  if (!port) {
+    console.error('❌ RESONITELINK_PORT is required');
+    console.error('');
+    console.error('Set via environment variable:');
+    console.error('  RESONITELINK_PORT=<port> npm run collect:resonitelink');
+    console.error('');
+    console.error('Or create a .env file with:');
+    console.error('  RESONITELINK_PORT=<port>');
+    process.exit(1);
+  }
+
   console.log('Prerequisites:');
   console.log('  - Resonite is running');
-  console.log('  - ResoniteLink is enabled (default port 7869)');
+  console.log(`  - ResoniteLink is enabled (port ${port})`);
   console.log('');
 
   await ensureFixturesDir();
 
-  const client = new ResoniteLinkClient({ host: 'localhost', port: 7869 });
+  const client = new ResoniteLinkClient({ host, port });
 
-  console.log('🔌 Connecting to ResoniteLink...');
+  console.log(`🔌 Connecting to ResoniteLink at ${host}:${port}...`);
 
   try {
     await withTimeout(client.connect(), DEFAULT_TIMEOUT, 'Connection');
@@ -385,7 +404,7 @@ async function main(): Promise<void> {
     console.error('Please ensure:');
     console.error('  1. Resonite is running');
     console.error('  2. ResoniteLink is enabled in Resonite settings');
-    console.error('  3. Port 7869 is not blocked');
+    console.error(`  3. Port ${port} is correct (check ResoniteLink component)`);
     console.error('');
     console.error('Error:', error instanceof Error ? error.message : error);
     process.exit(1);

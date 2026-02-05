@@ -1,0 +1,63 @@
+{
+  "$type": "slotData",
+  "depth": 0,
+  "data": {
+    "parent": {
+      "targetId": "Root",
+      "targetType": "[FrooxEngine]FrooxEngine.Slot",
+      "id": "Reso_0"
+    },
+    "position": {
+      "value": {
+        "x": 0,
+        "y": 1,
+        "z": 0
+      },
+      "id": "Reso_1"
+    },
+    "rotation": {
+      "value": {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "w": 1
+      },
+      "id": "Reso_2"
+    },
+    "scale": {
+      "value": {
+        "x": 0.1,
+        "y": 0.1,
+        "z": 0.1
+      },
+      "id": "Reso_3"
+    },
+    "isActive": {
+      "value": true,
+      "id": "Reso_4"
+    },
+    "isPersistent": {
+      "value": false,
+      "id": "Reso_5"
+    },
+    "name": {
+      "value": "DataCollectionTest",
+      "id": "Reso_6"
+    },
+    "tag": {
+      "value": "",
+      "id": "Reso_7"
+    },
+    "orderOffset": {
+      "value": 0,
+      "id": "Reso_8"
+    },
+    "components": [],
+    "children": null,
+    "id": "test_collect_1770289444251",
+    "isReferenceOnly": false
+  },
+  "sourceMessageId": "40a03138-6105-4f9f-b0e3-f96d1615b9f2",
+  "success": true,
+  "errorInfo": null
+}
