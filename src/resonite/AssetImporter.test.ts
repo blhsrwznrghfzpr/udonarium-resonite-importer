@@ -19,6 +19,7 @@ describe('AssetImporter', () => {
   let assetImporter: AssetImporter;
 
   const createExtractedFile = (overrides: Partial<ExtractedFile> = {}): ExtractedFile => ({
+    path: 'images/test-image.png',
     name: 'test-image.png',
     data: Buffer.from([0x89, 0x50, 0x4e, 0x47]), // PNG signature
     ...overrides,

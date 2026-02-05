@@ -37,8 +37,10 @@ const createTestResoniteObject = (id: string, name: string): ResoniteObject => (
 const createTestImage = (): ExtractedFile => {
   // Create a minimal 2x2 red PNG
   const pngData = createMinimalPNG(2, 2, [255, 0, 0, 255]);
+  const name = `test-image-${Date.now()}.png`;
   return {
-    name: `test-image-${Date.now()}.png`,
+    path: `images/${name}`,
+    name,
     data: Buffer.from(pngData),
   };
 };
