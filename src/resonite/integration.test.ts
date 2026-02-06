@@ -267,13 +267,26 @@ describe.skipIf(SKIP_INTEGRATION)('ResoniteLink Integration Tests', () => {
     );
 
     it(
-      'should import texture from data',
+      'should import texture from file',
       async () => {
         const testImage = createTestImage();
-        const textureId = await client.importTextureFromData(testImage.data, testImage.name);
 
-        expect(textureId).toBeDefined();
-        expect(typeof textureId).toBe('string');
+        // Write to temp file like AssetImporter does
+        const fs = await import('fs');
+        const os = await import('os');
+        const path = await import('path');
+        const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'resonite-test-'));
+        const tempFile = path.join(tempDir, testImage.name);
+        fs.writeFileSync(tempFile, testImage.data);
+
+        try {
+          const textureId = await client.importTexture(tempFile);
+
+          expect(textureId).toBeDefined();
+          expect(typeof textureId).toBe('string');
+        } finally {
+          fs.rmSync(tempDir, { recursive: true, force: true });
+        }
       },
       TEST_TIMEOUT
     );

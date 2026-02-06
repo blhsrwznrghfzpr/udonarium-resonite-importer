@@ -3,9 +3,6 @@
  * Uses resonitelink.js library (local submodule)
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
 import {
   Client,
   ClientSlot,
@@ -202,61 +199,22 @@ export class ResoniteLinkClient {
   /**
    * Import a texture from file path
    */
-  async importTexture(path: string): Promise<string> {
+  async importTexture(filePath: string): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
     }
 
     const response = await this.client.send({
       $type: 'importTexture2DFile',
-      filePath: path,
+      filePath,
     });
 
-    return (response as { assetId?: string }).assetId || path;
-  }
-
-  /**
-   * Import a texture from image data (PNG/JPEG encoded)
-   * Uses importTexture2DFile by writing to a temp file since importTexture2DRawData
-   * expects decoded raw RGBA pixel data, not encoded image files.
-   */
-  async importTextureFromData(data: Buffer, name: string): Promise<string> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
+    const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
+    if (!result.success) {
+      throw new Error(result.errorInfo || 'Failed to import texture');
     }
 
-    // Determine file extension based on image format
-    const ext = this.getImageExtension(data);
-
-    // Write to temp file
-    const tempDir = os.tmpdir();
-    const tempFile = path.join(tempDir, `resonite_import_${Date.now()}_${name}${ext}`);
-
-    try {
-      fs.writeFileSync(tempFile, data);
-
-      // Use importTexture2DFile which handles encoded image files
-      const response = await this.client.send({
-        $type: 'importTexture2DFile',
-        filePath: tempFile,
-      });
-
-      const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
-      if (!result.success) {
-        throw new Error(result.errorInfo || 'Failed to import texture');
-      }
-
-      return result.assetURL || name;
-    } finally {
-      // Clean up temp file
-      try {
-        if (fs.existsSync(tempFile)) {
-          fs.unlinkSync(tempFile);
-        }
-      } catch {
-        // Ignore cleanup errors
-      }
-    }
+    return result.assetURL || filePath;
   }
 
   /**
@@ -345,33 +303,4 @@ export class ResoniteLinkClient {
     };
   }
 
-  private getImageExtension(data: Buffer): string {
-    // PNG signature check
-    if (data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47) {
-      return '.png';
-    }
-    // JPEG signature check
-    if (data[0] === 0xff && data[1] === 0xd8) {
-      return '.jpg';
-    }
-    // GIF signature check
-    if (data[0] === 0x47 && data[1] === 0x49 && data[2] === 0x46) {
-      return '.gif';
-    }
-    // WebP signature check (RIFF....WEBP)
-    if (
-      data[0] === 0x52 &&
-      data[1] === 0x49 &&
-      data[2] === 0x46 &&
-      data[3] === 0x46 &&
-      data[8] === 0x57 &&
-      data[9] === 0x45 &&
-      data[10] === 0x42 &&
-      data[11] === 0x50
-    ) {
-      return '.webp';
-    }
-    // Default to PNG
-    return '.png';
-  }
 }

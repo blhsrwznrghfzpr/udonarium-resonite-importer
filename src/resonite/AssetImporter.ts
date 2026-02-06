@@ -2,6 +2,9 @@
  * Asset importer for sending images to Resonite
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ExtractedFile } from '../parser/ZipExtractor';
 
@@ -15,6 +18,7 @@ export interface AssetImportResult {
 export class AssetImporter {
   private client: ResoniteLinkClient;
   private importedTextures: Map<string, string> = new Map();
+  private tempDir: string | null = null;
 
   constructor(client: ResoniteLinkClient) {
     this.client = client;
@@ -22,6 +26,7 @@ export class AssetImporter {
 
   /**
    * Import a single image asset
+   * Writes image data to a temp file and imports via importTexture2DFile
    */
   async importImage(file: ExtractedFile): Promise<AssetImportResult> {
     // Check if already imported
@@ -34,7 +39,8 @@ export class AssetImporter {
     }
 
     try {
-      const textureId = await this.client.importTextureFromData(file.data, file.name);
+      const tempFile = this.writeTempFile(file);
+      const textureId = await this.client.importTexture(tempFile);
 
       this.importedTextures.set(file.name, textureId);
 
@@ -87,5 +93,30 @@ export class AssetImporter {
    */
   getImportedTextures(): Map<string, string> {
     return new Map(this.importedTextures);
+  }
+
+  /**
+   * Clean up temporary files
+   */
+  cleanup(): void {
+    if (this.tempDir && fs.existsSync(this.tempDir)) {
+      fs.rmSync(this.tempDir, { recursive: true, force: true });
+      this.tempDir = null;
+    }
+  }
+
+  private getTempDir(): string {
+    if (!this.tempDir) {
+      this.tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'resonite-import-'));
+    }
+    return this.tempDir;
+  }
+
+  private writeTempFile(file: ExtractedFile): string {
+    const dir = this.getTempDir();
+    // Use path from ZIP to preserve the original filename with extension
+    const filePath = path.join(dir, file.path.replace(/\//g, '_'));
+    fs.writeFileSync(filePath, file.data);
+    return filePath;
   }
 }
