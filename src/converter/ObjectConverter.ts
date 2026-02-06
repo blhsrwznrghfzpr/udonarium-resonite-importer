@@ -84,7 +84,22 @@ export function convertObject(udonObj: UdonariumObject): ResoniteObject {
 
 /**
  * Convert multiple Udonarium objects to Resonite objects
+ * Ensures all generated IDs are unique by appending an index suffix for duplicates
  */
 export function convertObjects(udonObjects: UdonariumObject[]): ResoniteObject[] {
-  return udonObjects.map(convertObject);
+  const objects = udonObjects.map(convertObject);
+  ensureUniqueIds(objects);
+  return objects;
+}
+
+function ensureUniqueIds(objects: ResoniteObject[]): void {
+  const idCounts = new Map<string, number>();
+  for (const obj of objects) {
+    const baseId = obj.id;
+    const count = idCounts.get(baseId) || 0;
+    idCounts.set(baseId, count + 1);
+    if (count > 0) {
+      obj.id = `${baseId}_${count}`;
+    }
+  }
 }

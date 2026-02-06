@@ -195,9 +195,11 @@ async function run(options: CLIOptions): Promise<void> {
 
     // Create import group
     const groupName = `Udonarium Import - ${path.basename(inputPath, '.zip')}`;
-    await slotBuilder.createImportGroup(groupName);
+    const groupId = await slotBuilder.createImportGroup(groupName);
 
-    // Import images
+    // Import images and move texture slots into the import group
+    const rootChildIdsBefore = await client.getSlotChildIds('Root');
+
     let importedImages = 0;
     const imageResults = await assetImporter.importImages(
       extractedData.imageFiles,
@@ -211,6 +213,18 @@ async function run(options: CLIOptions): Promise<void> {
     if (failedImages.length > 0 && options.verbose) {
       for (const img of failedImages) {
         console.warn(chalk.yellow(`  Warning: Failed to import ${img.identifier}: ${img.error}`));
+      }
+    }
+
+    // Move newly created texture slots into the import group
+    const rootChildIdsAfter = await client.getSlotChildIds('Root');
+    const beforeSet = new Set(rootChildIdsBefore);
+    const newSlotIds = rootChildIdsAfter.filter((id) => !beforeSet.has(id));
+    for (const slotId of newSlotIds) {
+      try {
+        await client.reparentSlot(slotId, groupId);
+      } catch {
+        // Non-critical: texture slot stays at root
       }
     }
 

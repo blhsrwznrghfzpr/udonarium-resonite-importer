@@ -278,6 +278,38 @@ export class ResoniteLinkClient {
     return this.client.getSlot('Root');
   }
 
+  /**
+   * Get child slot IDs of a given slot
+   */
+  async getSlotChildIds(slotId: string): Promise<string[]> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const slot = await this.client.getSlot(slotId, 1);
+    if (!slot) {
+      return [];
+    }
+
+    return slot.childrens.map((child) => child.id);
+  }
+
+  /**
+   * Move a slot to a new parent
+   */
+  async reparentSlot(slotId: string, newParentId: string): Promise<void> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const slot = await this.client.getSlot(slotId);
+    if (!slot) {
+      throw new Error(`Slot not found: ${slotId}`);
+    }
+
+    await slot.setParent(newParentId);
+  }
+
   private sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }

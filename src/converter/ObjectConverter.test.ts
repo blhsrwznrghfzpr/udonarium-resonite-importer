@@ -274,5 +274,77 @@ describe('ObjectConverter', () => {
       expect(result[0].id).toBe('udonarium_character_char1');
       expect(result[1].id).toBe('udonarium_character_char2');
     });
+
+    it('should ensure unique IDs by appending suffix for duplicates', () => {
+      const objects: GameCharacter[] = [
+        {
+          id: 'data',
+          type: 'character',
+          name: 'Monster A',
+          position: { x: 0, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+        {
+          id: 'data',
+          type: 'character',
+          name: 'Monster B',
+          position: { x: 100, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+        {
+          id: 'data',
+          type: 'character',
+          name: 'Monster C',
+          position: { x: 200, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+      ];
+
+      const result = convertObjects(objects);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe('udonarium_character_data');
+      expect(result[1].id).toBe('udonarium_character_data_1');
+      expect(result[2].id).toBe('udonarium_character_data_2');
+    });
+
+    it('should not modify IDs when all are already unique', () => {
+      const objects: GameCharacter[] = [
+        {
+          id: 'uuid-1',
+          type: 'character',
+          name: 'Character 1',
+          position: { x: 0, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+        {
+          id: 'uuid-2',
+          type: 'character',
+          name: 'Character 2',
+          position: { x: 100, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+      ];
+
+      const result = convertObjects(objects);
+
+      expect(result[0].id).toBe('udonarium_character_uuid-1');
+      expect(result[1].id).toBe('udonarium_character_uuid-2');
+    });
   });
 });
