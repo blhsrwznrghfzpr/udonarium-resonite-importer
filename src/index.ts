@@ -20,11 +20,7 @@ import { convertObjects } from './converter/ObjectConverter';
 import { ResoniteLinkClient } from './resonite/ResoniteLinkClient';
 import { SlotBuilder } from './resonite/SlotBuilder';
 import { AssetImporter } from './resonite/AssetImporter';
-import {
-  SCALE_FACTOR,
-  getResoniteLinkPort,
-  getResoniteLinkHost,
-} from './config/MappingConfig';
+import { SCALE_FACTOR, getResoniteLinkPort, getResoniteLinkHost } from './config/MappingConfig';
 import { t, setLocale, Locale } from './i18n';
 
 const VERSION = '1.0.0';
@@ -46,10 +42,7 @@ program
   .description(t('cli.description'))
   .version(VERSION)
   .requiredOption('-i, --input <path>', 'Input ZIP file path')
-  .option(
-    '-p, --port <number>',
-    'ResoniteLink port (required, or set RESONITELINK_PORT env var)'
-  )
+  .option('-p, --port <number>', 'ResoniteLink port (required, or set RESONITELINK_PORT env var)')
   .option(
     '-H, --host <string>',
     'ResoniteLink host (default: localhost, or set RESONITELINK_HOST env var)'
@@ -171,9 +164,7 @@ async function run(options: CLIOptions): Promise<void> {
   // Step 3: Connect to ResoniteLink
   // At this point, port is guaranteed to be defined (validated above, not dry-run)
   const resolvedPort = port as number;
-  const connectSpinner = ora(
-    `[3/4] ${t('cli.connecting', { host, port: resolvedPort })}`
-  ).start();
+  const connectSpinner = ora(`[3/4] ${t('cli.connecting', { host, port: resolvedPort })}`).start();
 
   const client = new ResoniteLinkClient({
     host,
