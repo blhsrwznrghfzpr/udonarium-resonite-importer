@@ -146,7 +146,12 @@ Udonarium（Webベースのバーチャルテーブルトップ）のセーブ�
     - `.mise.toml`を作成（`node = "20.18.2"`）
     - CIの`volta-cli/action@v4`を`jdx/mise-action@v2`に変更
 
-19. **npm scriptsの`validate`/`fix`名前空間への集約**
+19. **READMEの開発ドキュメント分離**
+    - READMEからDevelopmentセクション以降を`docs/`に分離
+    - `docs/development.md`（EN）、`docs/development.ja.md`（JA）を新規作成
+    - READMEはユーザー向け内容（使い方・CLIオプション）のみに簡潔化
+
+20. **npm scriptsの`validate`/`fix`名前空間への集約**
     - コーディングルール関連のスクリプトを統一的な名前空間に再編成
     - `validate:*` - チェック系: `validate:lint`, `validate:format`, `validate:types`, `validate:test`
     - `fix:*` - 自動修正系: `fix:lint`, `fix:format`
