@@ -3,6 +3,9 @@
  * Uses resonitelink.js library (local submodule)
  */
 
+import * as fs from 'fs';
+import * as path from 'path';
+import * as os from 'os';
 import {
   Client,
   ClientSlot,
@@ -213,33 +216,79 @@ export class ResoniteLinkClient {
   }
 
   /**
-   * Import a texture from base64 data
+   * Import a texture from image data (PNG/JPEG encoded)
+   * Uses importTexture2DFile by writing to a temp file since importTexture2DRawData
+   * expects decoded raw RGBA pixel data, not encoded image files.
    */
   async importTextureFromData(data: Buffer, name: string): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
     }
 
-    // Convert Buffer to ArrayBuffer (ensure it's a proper ArrayBuffer, not SharedArrayBuffer)
-    const arrayBuffer = new ArrayBuffer(data.byteLength);
-    const view = new Uint8Array(arrayBuffer);
-    view.set(data);
+    // Determine file extension based on image format
+    const ext = this.getImageExtension(data);
 
-    // Detect image dimensions (simplified - assumes PNG or JPEG)
-    const { width, height } = this.getImageDimensions(data);
+    // Write to temp file
+    const tempDir = os.tmpdir();
+    const tempFile = path.join(tempDir, `resonite_import_${Date.now()}_${name}${ext}`);
 
-    // Note: messageId is added by client.send internally
-    const message = {
-      $type: 'importTexture2DRawData' as const,
-      width,
-      height,
-      colorProfile: 'sRGB',
-      messageId: '', // Will be overwritten by client.send
-    };
+    try {
+      fs.writeFileSync(tempFile, data);
 
-    const response = await this.client.send(message, arrayBuffer);
+      // Use importTexture2DFile which handles encoded image files
+      const response = await this.client.send({
+        $type: 'importTexture2DFile',
+        filePath: tempFile,
+      });
 
-    return (response as { assetId?: string }).assetId || name;
+      const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
+      if (!result.success) {
+        throw new Error(result.errorInfo || 'Failed to import texture');
+      }
+
+      return result.assetURL || name;
+    } finally {
+      // Clean up temp file
+      try {
+        if (fs.existsSync(tempFile)) {
+          fs.unlinkSync(tempFile);
+        }
+      } catch {
+        // Ignore cleanup errors
+      }
+    }
+  }
+
+  /**
+   * Import raw RGBA pixel data as a texture
+   */
+  async importTextureFromRawData(
+    data: ArrayBuffer,
+    width: number,
+    height: number,
+    colorProfile: string = 'sRGB'
+  ): Promise<string> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const response = await this.client.send(
+      {
+        $type: 'importTexture2DRawData' as const,
+        width,
+        height,
+        colorProfile,
+        messageId: '',
+      },
+      data
+    );
+
+    const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
+    if (!result.success) {
+      throw new Error(result.errorInfo || 'Failed to import raw texture data');
+    }
+
+    return result.assetURL || `texture_${width}x${height}`;
   }
 
   /**
@@ -296,37 +345,33 @@ export class ResoniteLinkClient {
     };
   }
 
-  private getImageDimensions(data: Buffer): { width: number; height: number } {
+  private getImageExtension(data: Buffer): string {
     // PNG signature check
     if (data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47) {
-      // PNG: width and height are at offset 16 and 20 (IHDR chunk)
-      const width = data.readUInt32BE(16);
-      const height = data.readUInt32BE(20);
-      return { width, height };
+      return '.png';
     }
-
     // JPEG signature check
     if (data[0] === 0xff && data[1] === 0xd8) {
-      // JPEG: need to find SOF marker
-      let offset = 2;
-      while (offset < data.length) {
-        if (data[offset] !== 0xff) {
-          offset++;
-          continue;
-        }
-        const marker = data[offset + 1];
-        // SOF0, SOF1, SOF2 markers
-        if (marker >= 0xc0 && marker <= 0xc2) {
-          const height = data.readUInt16BE(offset + 5);
-          const width = data.readUInt16BE(offset + 7);
-          return { width, height };
-        }
-        const length = data.readUInt16BE(offset + 2);
-        offset += 2 + length;
-      }
+      return '.jpg';
     }
-
-    // Default fallback
-    return { width: 256, height: 256 };
+    // GIF signature check
+    if (data[0] === 0x47 && data[1] === 0x49 && data[2] === 0x46) {
+      return '.gif';
+    }
+    // WebP signature check (RIFF....WEBP)
+    if (
+      data[0] === 0x52 &&
+      data[1] === 0x49 &&
+      data[2] === 0x46 &&
+      data[3] === 0x46 &&
+      data[8] === 0x57 &&
+      data[9] === 0x45 &&
+      data[10] === 0x42 &&
+      data[11] === 0x50
+    ) {
+      return '.webp';
+    }
+    // Default to PNG
+    return '.png';
   }
 }
