@@ -91,9 +91,9 @@ Udonarium（Webベースのバーチャルテーブルトップ）のセーブ�
     - ビルドコマンド、テストコマンド、データ収集スクリプトの説明を追加
     - プロジェクト構成セクションを追加
 
-12. **pre-commitフックの強化**
-    - lint-staged + typecheck + test を実行するように更新
-    - コミット時にlint、型チェック、テストが全て通ることを保証
+12. **pre-commitフック**
+    - lint-stagedのみ実行（lint + format）
+    - 型チェックやテストはCIに委ねる
 
 13. **GitHub Actions CI/CDの改善**
     - PR時にlint/format問題を自動修正してコミット
@@ -136,9 +136,17 @@ Udonarium（Webベースのバーチャルテーブルトップ）のセーブ�
 17. **テクスチャインポート処理の修正**
     - `importTexture2DRawData`は生のRGBAピクセルデータを期待するが、PNG/JPEGエンコードデータを送信していた問題を修正
     - `scripts/collect-resonitelink-data.ts`: 生のRGBAデータを送信するように変更
-    - `ResoniteLinkClient.importTextureFromData`: PNG/JPEG画像を一時ファイルに書き出し`importTexture2DFile`を使用
-    - 新メソッド`importTextureFromRawData`: 生RGBAデータを直接インポート
-    - 画像形式検出ヘルパー`getImageExtension`を追加
+    - `AssetImporter`: ZIPから画像を一時ファイルに展開し`importTexture(filePath)`で直接インポート
+    - `ResoniteLinkClient`から`importTextureFromData`を削除（一時ファイル管理はAssetImporterに移動）
+    - `importTexture`のレスポンスを`assetURL`ベースに修正
+
+18. **npm scriptsの`validate`/`fix`名前空間への集約**
+    - コーディングルール関連のスクリプトを統一的な名前空間に再編成
+    - `validate:*` - チェック系: `validate:lint`, `validate:format`, `validate:types`, `validate:test`
+    - `fix:*` - 自動修正系: `fix:lint`, `fix:format`
+    - `npm run validate` で全チェックを並列実行
+    - 旧スクリプト（`lint`, `lint:fix`, `format`, `format:check`, `typecheck`）を削除
+    - `.github/workflows/lint.yml` と `.husky/pre-commit` も新スクリプト名に更新
 
 ### 過去のセッションで行った作業
 
@@ -153,7 +161,7 @@ Udonarium（Webベースのバーチャルテーブルトップ）のセーブ�
 
 3. **ワイルドカードパターンの適用**
    - `"build": "run-p build:*"` - CLI/GUIビルドを並列実行
-   - `"typecheck": "run-p typecheck:*"` - 型チェックを並列実行
+   - `"validate:types": "run-p validate:types:*"` - 型チェックを並列実行
    - `"package:cli": "run-p package:cli:*"` - CLIパッケージングを並列実行
 
 4. **ユニットテストの実装**
@@ -209,15 +217,30 @@ udonarium-resonite-importer/
 npm run build          # CLI/GUI両方ビルド（並列）
 npm run build:cli      # CLI版のみビルド
 npm run build:gui      # GUI版のみビルド
-npm run typecheck      # 型チェック（並列）
-npm run lint           # ESLintチェック
-npm run format         # Prettierフォーマット
-npm run test           # ユニットテスト実行（統合テストはスキップ）
+npm run package        # CLI/GUIパッケージング（順次）
+```
+
+## 検証コマンド
+
+```bash
+npm run validate             # 全チェック並列実行（lint, format, types, test）
+npm run validate:lint        # ESLintチェック
+npm run validate:format      # Prettierフォーマットチェック
+npm run validate:types       # 型チェック（CLI/GUI並列）
+npm run validate:test        # ユニットテスト実行（統合テストはスキップ）
+npm run fix                  # 自動修正（lint → format 順次実行）
+npm run fix:lint             # ESLint自動修正
+npm run fix:format           # Prettier自動フォーマット
+```
+
+## テストコマンド
+
+```bash
+npm run test           # ユニットテスト実行（validate:testと同じ）
 npm run test:watch     # テストをウォッチモードで実行
 npm run test:coverage  # カバレッジ付きテスト実行
 npm run test:integration  # 統合テスト実行（Resonite起動必須）
 npm run collect:resonitelink  # ResoniteLinkからモック用データを収集
-npm run package        # CLI/GUIパッケージング（順次）
 ```
 
 ## 環境設定
