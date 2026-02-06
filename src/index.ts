@@ -184,8 +184,9 @@ async function run(options: CLIOptions): Promise<void> {
   // Step 4: Import
   const importSpinner = ora(`[4/4] ${t('cli.importing')}`).start();
 
+  const assetImporter = new AssetImporter(client);
+
   try {
-    const assetImporter = new AssetImporter(client);
     const slotBuilder = new SlotBuilder(client);
 
     // Create import group
@@ -235,6 +236,8 @@ async function run(options: CLIOptions): Promise<void> {
     console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'));
     client.disconnect();
     process.exit(1);
+  } finally {
+    assetImporter.cleanup();
   }
 
   console.log();

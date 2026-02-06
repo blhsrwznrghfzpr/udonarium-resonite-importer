@@ -145,16 +145,6 @@ describe('ResoniteLinkClient', () => {
     });
   });
 
-  describe('importTextureFromData', () => {
-    it('should throw when not connected', async () => {
-      const imageData = Buffer.from([0x89, 0x50, 0x4e, 0x47]); // PNG signature
-
-      await expect(client.importTextureFromData(imageData, 'test.png')).rejects.toThrow(
-        'Not connected to ResoniteLink'
-      );
-    });
-  });
-
   describe('addComponent', () => {
     it('should throw when not connected', async () => {
       await expect(
@@ -170,95 +160,6 @@ describe('ResoniteLinkClient', () => {
   describe('getRootSlot', () => {
     it('should throw when not connected', async () => {
       await expect(client.getRootSlot()).rejects.toThrow('Not connected to ResoniteLink');
-    });
-  });
-});
-
-describe('Image dimension parsing (PNG/JPEG headers)', () => {
-  describe('PNG dimension detection', () => {
-    it('should correctly identify PNG dimensions from header', () => {
-      // Create a minimal PNG header with width=100, height=200
-      // PNG signature: 89 50 4E 47 0D 0A 1A 0A
-      // IHDR chunk length (13): 00 00 00 0D
-      // IHDR type: 49 48 44 52
-      // Width (100): 00 00 00 64
-      // Height (200): 00 00 00 C8
-      const pngData = Buffer.from([
-        0x89,
-        0x50,
-        0x4e,
-        0x47,
-        0x0d,
-        0x0a,
-        0x1a,
-        0x0a, // PNG signature
-        0x00,
-        0x00,
-        0x00,
-        0x0d, // IHDR chunk length
-        0x49,
-        0x48,
-        0x44,
-        0x52, // IHDR
-        0x00,
-        0x00,
-        0x00,
-        0x64, // Width = 100
-        0x00,
-        0x00,
-        0x00,
-        0xc8, // Height = 200
-      ]);
-
-      // Verify the PNG header is correctly formed
-      expect(pngData[0]).toBe(0x89);
-      expect(pngData[1]).toBe(0x50); // 'P'
-      expect(pngData[2]).toBe(0x4e); // 'N'
-      expect(pngData[3]).toBe(0x47); // 'G'
-      expect(pngData.readUInt32BE(16)).toBe(100); // Width
-      expect(pngData.readUInt32BE(20)).toBe(200); // Height
-    });
-  });
-
-  describe('JPEG dimension detection', () => {
-    it('should correctly identify JPEG structure', () => {
-      // JPEG starts with FF D8
-      // SOF0 marker is FF C0, followed by length and dimensions
-      const jpegData = Buffer.from([
-        0xff,
-        0xd8, // SOI marker
-        0xff,
-        0xe0,
-        0x00,
-        0x10, // APP0 marker with length 16
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00,
-        0x00, // APP0 data (14 bytes)
-        0xff,
-        0xc0, // SOF0 marker
-        0x00,
-        0x11, // Length
-        0x08, // Precision
-        0x00,
-        0xc8, // Height = 200
-        0x00,
-        0x64, // Width = 100
-      ]);
-
-      // Verify JPEG structure
-      expect(jpegData[0]).toBe(0xff);
-      expect(jpegData[1]).toBe(0xd8);
     });
   });
 });

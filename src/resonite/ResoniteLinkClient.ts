@@ -199,47 +199,54 @@ export class ResoniteLinkClient {
   /**
    * Import a texture from file path
    */
-  async importTexture(path: string): Promise<string> {
+  async importTexture(filePath: string): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
     }
 
     const response = await this.client.send({
       $type: 'importTexture2DFile',
-      filePath: path,
+      filePath,
     });
 
-    return (response as { assetId?: string }).assetId || path;
+    const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
+    if (!result.success) {
+      throw new Error(result.errorInfo || 'Failed to import texture');
+    }
+
+    return result.assetURL || filePath;
   }
 
   /**
-   * Import a texture from base64 data
+   * Import raw RGBA pixel data as a texture
    */
-  async importTextureFromData(data: Buffer, name: string): Promise<string> {
+  async importTextureFromRawData(
+    data: ArrayBuffer,
+    width: number,
+    height: number,
+    colorProfile: string = 'sRGB'
+  ): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
     }
 
-    // Convert Buffer to ArrayBuffer (ensure it's a proper ArrayBuffer, not SharedArrayBuffer)
-    const arrayBuffer = new ArrayBuffer(data.byteLength);
-    const view = new Uint8Array(arrayBuffer);
-    view.set(data);
+    const response = await this.client.send(
+      {
+        $type: 'importTexture2DRawData' as const,
+        width,
+        height,
+        colorProfile,
+        messageId: '',
+      },
+      data
+    );
 
-    // Detect image dimensions (simplified - assumes PNG or JPEG)
-    const { width, height } = this.getImageDimensions(data);
+    const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
+    if (!result.success) {
+      throw new Error(result.errorInfo || 'Failed to import raw texture data');
+    }
 
-    // Note: messageId is added by client.send internally
-    const message = {
-      $type: 'importTexture2DRawData' as const,
-      width,
-      height,
-      colorProfile: 'sRGB',
-      messageId: '', // Will be overwritten by client.send
-    };
-
-    const response = await this.client.send(message, arrayBuffer);
-
-    return (response as { assetId?: string }).assetId || name;
+    return result.assetURL || `texture_${width}x${height}`;
   }
 
   /**
@@ -294,39 +301,5 @@ export class ResoniteLinkClient {
       z: cx * cy * sz - sx * sy * cz,
       w: cx * cy * cz + sx * sy * sz,
     };
-  }
-
-  private getImageDimensions(data: Buffer): { width: number; height: number } {
-    // PNG signature check
-    if (data[0] === 0x89 && data[1] === 0x50 && data[2] === 0x4e && data[3] === 0x47) {
-      // PNG: width and height are at offset 16 and 20 (IHDR chunk)
-      const width = data.readUInt32BE(16);
-      const height = data.readUInt32BE(20);
-      return { width, height };
-    }
-
-    // JPEG signature check
-    if (data[0] === 0xff && data[1] === 0xd8) {
-      // JPEG: need to find SOF marker
-      let offset = 2;
-      while (offset < data.length) {
-        if (data[offset] !== 0xff) {
-          offset++;
-          continue;
-        }
-        const marker = data[offset + 1];
-        // SOF0, SOF1, SOF2 markers
-        if (marker >= 0xc0 && marker <= 0xc2) {
-          const height = data.readUInt16BE(offset + 5);
-          const width = data.readUInt16BE(offset + 7);
-          return { width, height };
-        }
-        const length = data.readUInt16BE(offset + 2);
-        offset += 2 + length;
-      }
-    }
-
-    // Default fallback
-    return { width: 256, height: 256 };
   }
 }

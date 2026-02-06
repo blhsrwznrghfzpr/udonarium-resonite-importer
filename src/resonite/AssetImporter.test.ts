@@ -1,4 +1,6 @@
-import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, Mock } from 'vitest';
+import * as fs from 'fs';
+import * as path from 'path';
 import { AssetImporter } from './AssetImporter';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ExtractedFile } from '../parser/ZipExtractor';
@@ -7,14 +9,14 @@ import { ExtractedFile } from '../parser/ZipExtractor';
 vi.mock('./ResoniteLinkClient', () => {
   return {
     ResoniteLinkClient: vi.fn().mockImplementation(() => ({
-      importTextureFromData: vi.fn(),
+      importTexture: vi.fn(),
     })),
   };
 });
 
 describe('AssetImporter', () => {
   let mockClient: {
-    importTextureFromData: Mock;
+    importTexture: Mock;
   };
   let assetImporter: AssetImporter;
 
@@ -28,24 +30,47 @@ describe('AssetImporter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockClient = {
-      importTextureFromData: vi.fn().mockResolvedValue('texture-id-001'),
+      importTexture: vi.fn().mockResolvedValue('texture-id-001'),
     };
     assetImporter = new AssetImporter(mockClient as unknown as ResoniteLinkClient);
+  });
+
+  afterEach(() => {
+    assetImporter.cleanup();
   });
 
   describe('importImage', () => {
     it('should import a new image successfully', async () => {
       const file = createExtractedFile({
+        path: 'images/character.png',
         name: 'character.png',
         data: Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
       });
 
       const result = await assetImporter.importImage(file);
 
-      expect(mockClient.importTextureFromData).toHaveBeenCalledWith(file.data, 'character.png');
+      expect(mockClient.importTexture).toHaveBeenCalledWith(
+        expect.stringContaining('character.png')
+      );
       expect(result.success).toBe(true);
       expect(result.identifier).toBe('character.png');
       expect(result.textureId).toBe('texture-id-001');
+    });
+
+    it('should write image data to a temp file', async () => {
+      const imageData = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+      const file = createExtractedFile({
+        path: 'images/written.png',
+        name: 'written.png',
+        data: imageData,
+      });
+
+      await assetImporter.importImage(file);
+
+      // Verify the temp file path was passed to importTexture
+      const calledPath = mockClient.importTexture.mock.calls[0][0] as string;
+      expect(fs.existsSync(calledPath)).toBe(true);
+      expect(fs.readFileSync(calledPath)).toEqual(imageData);
     });
 
     it('should return cached texture if already imported', async () => {
@@ -53,19 +78,19 @@ describe('AssetImporter', () => {
 
       // First import
       await assetImporter.importImage(file);
-      mockClient.importTextureFromData.mockClear();
+      mockClient.importTexture.mockClear();
 
       // Second import of same file
       const result = await assetImporter.importImage(file);
 
-      expect(mockClient.importTextureFromData).not.toHaveBeenCalled();
+      expect(mockClient.importTexture).not.toHaveBeenCalled();
       expect(result.success).toBe(true);
       expect(result.identifier).toBe('cached-image.png');
       expect(result.textureId).toBe('texture-id-001');
     });
 
     it('should return error result when import fails', async () => {
-      mockClient.importTextureFromData.mockRejectedValue(new Error('Upload failed'));
+      mockClient.importTexture.mockRejectedValue(new Error('Upload failed'));
       const file = createExtractedFile({ name: 'failing-image.png' });
 
       const result = await assetImporter.importImage(file);
@@ -77,7 +102,7 @@ describe('AssetImporter', () => {
     });
 
     it('should handle non-Error exceptions', async () => {
-      mockClient.importTextureFromData.mockRejectedValue('String error');
+      mockClient.importTexture.mockRejectedValue('String error');
       const file = createExtractedFile({ name: 'error-image.png' });
 
       const result = await assetImporter.importImage(file);
@@ -87,7 +112,7 @@ describe('AssetImporter', () => {
     });
 
     it('should not cache failed imports', async () => {
-      mockClient.importTextureFromData
+      mockClient.importTexture
         .mockRejectedValueOnce(new Error('First attempt failed'))
         .mockResolvedValueOnce('texture-success');
 
@@ -101,35 +126,33 @@ describe('AssetImporter', () => {
       const result2 = await assetImporter.importImage(file);
       expect(result2.success).toBe(true);
       expect(result2.textureId).toBe('texture-success');
-      expect(mockClient.importTextureFromData).toHaveBeenCalledTimes(2);
+      expect(mockClient.importTexture).toHaveBeenCalledTimes(2);
     });
 
     it('should handle different file types', async () => {
       const jpegFile = createExtractedFile({
+        path: 'images/photo.jpg',
         name: 'photo.jpg',
         data: Buffer.from([0xff, 0xd8, 0xff, 0xe0]),
       });
 
       await assetImporter.importImage(jpegFile);
 
-      expect(mockClient.importTextureFromData).toHaveBeenCalledWith(
-        expect.any(Buffer),
-        'photo.jpg'
-      );
+      expect(mockClient.importTexture).toHaveBeenCalledWith(expect.stringContaining('photo.jpg'));
     });
   });
 
   describe('importImages', () => {
     it('should import multiple images', async () => {
-      mockClient.importTextureFromData
+      mockClient.importTexture
         .mockResolvedValueOnce('texture-1')
         .mockResolvedValueOnce('texture-2')
         .mockResolvedValueOnce('texture-3');
 
       const files = [
-        createExtractedFile({ name: 'image1.png' }),
-        createExtractedFile({ name: 'image2.png' }),
-        createExtractedFile({ name: 'image3.png' }),
+        createExtractedFile({ path: 'images/image1.png', name: 'image1.png' }),
+        createExtractedFile({ path: 'images/image2.png', name: 'image2.png' }),
+        createExtractedFile({ path: 'images/image3.png', name: 'image3.png' }),
       ];
 
       const results = await assetImporter.importImages(files);
@@ -143,9 +166,9 @@ describe('AssetImporter', () => {
 
     it('should call progress callback for each file', async () => {
       const files = [
-        createExtractedFile({ name: 'a.png' }),
-        createExtractedFile({ name: 'b.png' }),
-        createExtractedFile({ name: 'c.png' }),
+        createExtractedFile({ path: 'images/a.png', name: 'a.png' }),
+        createExtractedFile({ path: 'images/b.png', name: 'b.png' }),
+        createExtractedFile({ path: 'images/c.png', name: 'c.png' }),
       ];
       const progressCallback = vi.fn();
 
@@ -158,15 +181,15 @@ describe('AssetImporter', () => {
     });
 
     it('should continue importing even if one fails', async () => {
-      mockClient.importTextureFromData
+      mockClient.importTexture
         .mockResolvedValueOnce('texture-1')
         .mockRejectedValueOnce(new Error('Failed'))
         .mockResolvedValueOnce('texture-3');
 
       const files = [
-        createExtractedFile({ name: 'good1.png' }),
-        createExtractedFile({ name: 'bad.png' }),
-        createExtractedFile({ name: 'good2.png' }),
+        createExtractedFile({ path: 'images/good1.png', name: 'good1.png' }),
+        createExtractedFile({ path: 'images/bad.png', name: 'bad.png' }),
+        createExtractedFile({ path: 'images/good2.png', name: 'good2.png' }),
       ];
 
       const results = await assetImporter.importImages(files);
@@ -181,11 +204,11 @@ describe('AssetImporter', () => {
       const results = await assetImporter.importImages([]);
 
       expect(results).toHaveLength(0);
-      expect(mockClient.importTextureFromData).not.toHaveBeenCalled();
+      expect(mockClient.importTexture).not.toHaveBeenCalled();
     });
 
     it('should work without progress callback', async () => {
-      const files = [createExtractedFile({ name: 'single.png' })];
+      const files = [createExtractedFile({ path: 'images/single.png', name: 'single.png' })];
 
       const results = await assetImporter.importImages(files);
 
@@ -195,15 +218,15 @@ describe('AssetImporter', () => {
 
     it('should use cache for duplicate files', async () => {
       const files = [
-        createExtractedFile({ name: 'duplicate.png' }),
-        createExtractedFile({ name: 'duplicate.png' }),
-        createExtractedFile({ name: 'unique.png' }),
+        createExtractedFile({ path: 'images/duplicate.png', name: 'duplicate.png' }),
+        createExtractedFile({ path: 'images/duplicate.png', name: 'duplicate.png' }),
+        createExtractedFile({ path: 'images/unique.png', name: 'unique.png' }),
       ];
 
       const results = await assetImporter.importImages(files);
 
       // Only 2 actual imports (first duplicate + unique)
-      expect(mockClient.importTextureFromData).toHaveBeenCalledTimes(2);
+      expect(mockClient.importTexture).toHaveBeenCalledTimes(2);
       expect(results).toHaveLength(3);
       expect(results.every((r) => r.success)).toBe(true);
     });
@@ -225,7 +248,7 @@ describe('AssetImporter', () => {
     });
 
     it('should return undefined for failed import', async () => {
-      mockClient.importTextureFromData.mockRejectedValue(new Error('Failed'));
+      mockClient.importTexture.mockRejectedValue(new Error('Failed'));
       await assetImporter.importImage(createExtractedFile({ name: 'failed.png' }));
 
       const textureId = assetImporter.getTextureId('failed.png');
@@ -242,12 +265,14 @@ describe('AssetImporter', () => {
     });
 
     it('should return all imported textures', async () => {
-      mockClient.importTextureFromData
-        .mockResolvedValueOnce('tex-1')
-        .mockResolvedValueOnce('tex-2');
+      mockClient.importTexture.mockResolvedValueOnce('tex-1').mockResolvedValueOnce('tex-2');
 
-      await assetImporter.importImage(createExtractedFile({ name: 'img1.png' }));
-      await assetImporter.importImage(createExtractedFile({ name: 'img2.png' }));
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/img1.png', name: 'img1.png' })
+      );
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/img2.png', name: 'img2.png' })
+      );
 
       const textures = assetImporter.getImportedTextures();
 
@@ -267,18 +292,50 @@ describe('AssetImporter', () => {
     });
 
     it('should not include failed imports', async () => {
-      mockClient.importTextureFromData
+      mockClient.importTexture
         .mockResolvedValueOnce('success-tex')
         .mockRejectedValueOnce(new Error('Failed'));
 
-      await assetImporter.importImage(createExtractedFile({ name: 'success.png' }));
-      await assetImporter.importImage(createExtractedFile({ name: 'fail.png' }));
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/success.png', name: 'success.png' })
+      );
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/fail.png', name: 'fail.png' })
+      );
 
       const textures = assetImporter.getImportedTextures();
 
       expect(textures.size).toBe(1);
       expect(textures.has('success.png')).toBe(true);
       expect(textures.has('fail.png')).toBe(false);
+    });
+  });
+
+  describe('cleanup', () => {
+    it('should remove temp directory after cleanup', async () => {
+      await assetImporter.importImage(createExtractedFile());
+
+      // Temp file should exist before cleanup
+      const calledPath = mockClient.importTexture.mock.calls[0][0] as string;
+      const tempDir = path.dirname(calledPath);
+      expect(fs.existsSync(tempDir)).toBe(true);
+
+      assetImporter.cleanup();
+
+      expect(fs.existsSync(tempDir)).toBe(false);
+    });
+
+    it('should be safe to call cleanup multiple times', () => {
+      expect(() => {
+        assetImporter.cleanup();
+        assetImporter.cleanup();
+      }).not.toThrow();
+    });
+
+    it('should be safe to call cleanup without any imports', () => {
+      expect(() => {
+        assetImporter.cleanup();
+      }).not.toThrow();
     });
   });
 });

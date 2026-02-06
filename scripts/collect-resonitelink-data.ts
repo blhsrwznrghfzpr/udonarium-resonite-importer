@@ -311,19 +311,28 @@ async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
 
   const underlyingClient = client.getClient();
 
-  // Create a simple 2x2 red PNG for testing
-  // PNG header + IHDR + IDAT (minimal red image) + IEND
-  const pngData = createMinimalPNG(2, 2, [255, 0, 0, 255]);
+  // Create raw RGBA pixel data (not PNG-encoded)
+  // importTexture2DRawData expects raw 8-bit RGBA bytes, not encoded image files
+  const width = 2;
+  const height = 2;
+  const rgba = [255, 0, 0, 255]; // Red color
 
-  const arrayBuffer = new ArrayBuffer(pngData.length);
-  const view = new Uint8Array(arrayBuffer);
-  view.set(pngData);
+  // Create raw RGBA data: width * height * 4 bytes
+  const rawData = new Uint8Array(width * height * 4);
+  for (let i = 0; i < width * height; i++) {
+    rawData[i * 4 + 0] = rgba[0]; // R
+    rawData[i * 4 + 1] = rgba[1]; // G
+    rawData[i * 4 + 2] = rgba[2]; // B
+    rawData[i * 4 + 3] = rgba[3]; // A
+  }
+
+  const arrayBuffer = rawData.buffer;
 
   const importResponse = await underlyingClient.send(
     {
       $type: 'importTexture2DRawData',
-      width: 2,
-      height: 2,
+      width,
+      height,
       colorProfile: 'sRGB',
       messageId: '',
     },
