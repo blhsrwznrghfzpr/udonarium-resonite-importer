@@ -111,7 +111,7 @@ Udonarium（Webベースのバーチャルテーブルトップ）のセーブ�
       - `src/resonite/ResoniteLinkClient.ts` - コンストラクタでポート必須化
       - `src/resonite/integration.test.ts` - 環境変数からポート読み取り
       - `scripts/collect-resonitelink-data.ts` - 環境変数からポート読み取り
-      - `DESIGN.md` - CLI仕様更新
+      - `docs/design.md` - CLI仕様更新
       - `.env.example` - 新規作成
 
 15. **GUI配布をZIP形式に統一**
