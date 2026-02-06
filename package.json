@@ -103,10 +103,10 @@
       "src/gui/**/*.css"
     ],
     "win": {
-      "target": "nsis"
+      "target": "zip"
     },
     "mac": {
-      "target": "dmg"
+      "target": "zip"
     },
     "linux": {
       "target": "AppImage"
