@@ -6,8 +6,9 @@
 Udonarium（Webベースのバーチャルテーブルトップ）のセーブデータを、ResoniteLink経由でResonite（VRプラットフォーム）にインポートし、テーブルトップ環境を再現するツール。
 
 ### 1.2 ターゲットユーザー
-- プログラミング知識のない一般ユーザー
+- **Windows/macOSの一般ユーザー（プログラミング知識なし）**
 - TRPGセッションをVR環境で再現したいユーザー
+- Linuxユーザーは「ある程度プログラミングに詳しい」前提で、CLIや追加ライブラリ導入を許容
 
 ### 1.3 基本フロー
 ```
@@ -287,7 +288,7 @@ Udonarium size = 2 → Resonite scale = (0.2, 0.2, 0.2)
 
 ---
 
-## 6. CLI仕様
+## 6. CLI仕様（Linux/上級者向け）
 
 ### 6.1 基本コマンド
 
@@ -395,19 +396,28 @@ const RETRY_CONFIG = {
 
 ---
 
-## 8. 配布形式
+## 8. 配布形式（ユーザー層別）
 
 ### 8.1 実行形式
 
-プログラムに詳しくないユーザー向けに、以下の配布形式を提供:
+**Windows/macOSの非エンジニア向け**に、アプリ単体で利用できるGUI配布を優先する。  
+**Linuxユーザー**にはCLI版またはAppImageを「ベストエフォート」で提供する。
 
-1. **スタンドアロン実行ファイル**
-   - pkg を使用してNode.jsランタイム込みの単一実行ファイルを生成
+1. **GUIアプリ（Electron）**
+   - Windows/macOSを第一優先のサポート対象とする
+   - Node.jsランタイム同梱で追加インストール不要
+   - **インストーラーは使わずZIP配布を基本とする**
+     - Windows: ZIP内の `Udonarium Resonite Importer.exe`
+     - macOS: ZIP内の `Udonarium Resonite Importer.app`
+   - Linux: AppImage（依存ライブラリ不足時はCLI利用を案内）
+
+2. **スタンドアロンCLI実行ファイル**
+   - `pkg` を使用してNode.jsランタイム込みの単一実行ファイルを生成
    - Windows: `udonarium-resonite-importer.exe`
    - macOS: `udonarium-resonite-importer-macos`
    - Linux: `udonarium-resonite-importer-linux`
 
-2. **npmパッケージ**（開発者向け）
+3. **npmパッケージ**（開発者向け）
    ```bash
    npm install -g udonarium-resonite-importer
    ```
@@ -417,11 +427,11 @@ const RETRY_CONFIG = {
 ```json
 {
   "scripts": {
-    "build": "tsc",
-    "package:win": "pkg . --targets node18-win-x64 --output dist/udonarium-resonite-importer.exe",
-    "package:mac": "pkg . --targets node18-macos-x64 --output dist/udonarium-resonite-importer-macos",
-    "package:linux": "pkg . --targets node18-linux-x64 --output dist/udonarium-resonite-importer-linux",
-    "package:all": "npm run package:win && npm run package:mac && npm run package:linux"
+    "build": "run-p build:*",
+    "package:cli:win": "pkg . --targets node18-win-x64 --output dist/udonarium-resonite-importer.exe",
+    "package:cli:mac": "pkg . --targets node18-macos-x64 --output dist/udonarium-resonite-importer-macos",
+    "package:cli:linux": "pkg . --targets node18-linux-x64 --output dist/udonarium-resonite-importer-linux",
+    "package:gui": "electron-builder --win --mac --linux"
   }
 }
 ```
@@ -431,7 +441,7 @@ const RETRY_CONFIG = {
 ## 9. 将来の拡張性
 
 ### 9.1 Phase 2 機能案
-- [ ] GUI版（Electron）
+- [ ] GUI版の初回セットアップ・ガイド（ResoniteLinkのポート入力支援）
 - [ ] プレビュー機能（インポート前に3Dビューで確認）
 - [ ] 双方向同期（Resonite → Udonarium）
 - [ ] カスタムマッピング設定ファイル

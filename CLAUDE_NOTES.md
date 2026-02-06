@@ -114,6 +114,11 @@ Udonarium（Webベースのバーチャルテーブルトップ）のセーブ�
       - `DESIGN.md` - CLI仕様更新
       - `.env.example` - 新規作成
 
+15. **GUI配布をZIP形式に統一**
+    - Windows/macOSのElectron配布をインストーラー（NSIS/DMG）ではなくZIPに変更
+    - `electron-builder` のターゲットを `zip` に更新（LinuxはAppImageのまま）
+    - 非技術者向けのZIP配布方針に実装を合わせるための調整
+
 ### 過去のセッションで行った作業
 
 1. **npm scriptsの再編成**
