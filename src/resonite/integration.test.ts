@@ -365,7 +365,7 @@ describe.skipIf(SKIP_INTEGRATION)('ResoniteLink Integration Tests', () => {
         const groupId = await slotBuilder.createImportGroup('Test Import Group');
         createdSlotIds.push(groupId);
 
-        expect(groupId).toMatch(/^udonarium_import_\d+$/);
+        expect(groupId).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       },
       TEST_TIMEOUT
     );
