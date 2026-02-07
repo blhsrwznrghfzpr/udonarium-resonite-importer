@@ -4,8 +4,15 @@
 
 import { randomUUID } from 'crypto';
 import { UdonariumObject } from './UdonariumObject';
-import { ResoniteComponent, ResoniteObject, Vector3 } from './ResoniteObject';
+import { ResoniteObject, Vector3 } from './ResoniteObject';
 import { SCALE_FACTOR, SIZE_MULTIPLIER } from '../config/MappingConfig';
+import { applyCharacterConversion } from './objectConverters/characterConverter';
+import { applyCardConversion } from './objectConverters/cardConverter';
+import { applyCardStackConversion } from './objectConverters/cardStackConverter';
+import { applyTerrainConversion } from './objectConverters/terrainConverter';
+import { applyTableConversion } from './objectConverters/tableConverter';
+import { applyTextNoteConversion } from './objectConverters/textNoteConverter';
+import { replaceTexturesInValue } from './objectConverters/componentBuilders';
 
 const SLOT_ID_PREFIX = 'udon-imp';
 
@@ -48,45 +55,29 @@ export function convertObject(udonObj: UdonariumObject): ResoniteObject {
     rotation: { x: 0, y: 0, z: 0 },
     scale: { x: 1, y: 1, z: 1 },
     textures: udonObj.images.map((img) => img.identifier),
-    components: buildComponents(udonObj, slotId),
+    components: [],
     children: [],
   };
 
   // Apply type-specific conversions
   switch (udonObj.type) {
     case 'character':
-      resoniteObj.scale = convertSize(udonObj.size);
+      applyCharacterConversion(udonObj, resoniteObj, convertSize);
       break;
     case 'terrain':
-      resoniteObj.scale = {
-        x: udonObj.width * SIZE_MULTIPLIER,
-        y: udonObj.height * SIZE_MULTIPLIER,
-        z: udonObj.depth * SIZE_MULTIPLIER,
-      };
+      applyTerrainConversion(udonObj, resoniteObj);
       break;
     case 'table':
-      resoniteObj.scale = {
-        x: udonObj.width * SCALE_FACTOR,
-        y: 0.01, // Thin table
-        z: udonObj.height * SCALE_FACTOR,
-      };
-      resoniteObj.position.y = -0.01; // Slightly below origin
+      applyTableConversion(udonObj, resoniteObj);
       break;
     case 'card':
-      resoniteObj.scale = { x: 0.06, y: 0.001, z: 0.09 }; // Standard card size
+      applyCardConversion(udonObj, resoniteObj);
       break;
     case 'card-stack':
-      resoniteObj.scale = { x: 0.06, y: 0.001, z: 0.09 }; // Standard card size
-      resoniteObj.children = udonObj.cards.map((card, i) => {
-        const child = convertObject(card);
-        // Stack cards locally under the parent slot.
-        child.position = { x: 0, y: i * 0.0005, z: 0 };
-        return child;
-      });
-      resoniteObj.components = [];
+      applyCardStackConversion(udonObj, resoniteObj, convertObject);
       break;
     case 'text-note':
-      resoniteObj.scale = { x: 0.1, y: 0.1, z: 0.1 };
+      applyTextNoteConversion(udonObj, resoniteObj);
       break;
     default:
       break;
@@ -121,157 +112,4 @@ export function resolveTexturePlaceholders(
       resolveTexturePlaceholders(obj.children, textureMap);
     }
   }
-}
-
-function buildComponents(udonObj: UdonariumObject, slotId: string): ResoniteComponent[] {
-  switch (udonObj.type) {
-    case 'character':
-    case 'card':
-      return buildQuadMeshComponents(slotId, udonObj.images[0]?.identifier, true);
-    case 'table':
-      return buildQuadMeshComponents(slotId, udonObj.images[0]?.identifier, false);
-    case 'terrain':
-      return buildBoxMeshComponents(
-        slotId,
-        udonObj.floorImage?.identifier ?? udonObj.images[0]?.identifier
-      );
-    case 'text-note':
-      return [
-        {
-          id: `${slotId}-text`,
-          type: '[FrooxEngine]FrooxEngine.UIX.Text',
-          fields: {
-            Content: { $type: 'string', value: udonObj.text },
-            Size: { $type: 'float', value: Math.max(8, udonObj.fontSize) },
-          },
-        },
-      ];
-    case 'card-stack':
-    case 'table-mask':
-    default:
-      return [];
-  }
-}
-
-function buildQuadMeshComponents(
-  slotId: string,
-  textureIdentifier?: string,
-  dualSided: boolean = false
-): ResoniteComponent[] {
-  const meshId = `${slotId}-mesh`;
-  const materialId = `${slotId}-mat`;
-  const textureId = `${slotId}-tex`;
-  const components: ResoniteComponent[] = [
-    {
-      id: meshId,
-      type: '[FrooxEngine]FrooxEngine.QuadMesh',
-      fields: dualSided ? { DualSided: { $type: 'bool', value: true } } : {},
-    },
-    {
-      id: materialId,
-      type: '[FrooxEngine]FrooxEngine.UnlitMaterial',
-      fields: textureIdentifier
-        ? {
-            Texture: { $type: 'reference', targetId: textureId },
-          }
-        : {},
-    },
-    {
-      id: `${slotId}-renderer`,
-      type: '[FrooxEngine]FrooxEngine.MeshRenderer',
-      fields: {
-        Mesh: { $type: 'reference', targetId: meshId },
-        Materials: {
-          $type: 'list',
-          elements: [{ $type: 'reference', targetId: materialId }],
-        },
-      },
-    },
-  ];
-
-  if (textureIdentifier) {
-    components.push({
-      id: textureId,
-      type: '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      fields: {
-        URL: { $type: 'Uri', value: toTexturePlaceholder(textureIdentifier) },
-      },
-    });
-  }
-
-  return components;
-}
-
-function buildBoxMeshComponents(slotId: string, textureIdentifier?: string): ResoniteComponent[] {
-  const meshId = `${slotId}-mesh`;
-  const materialId = `${slotId}-mat`;
-  const textureId = `${slotId}-tex`;
-  const components: ResoniteComponent[] = [
-    {
-      id: meshId,
-      type: '[FrooxEngine]FrooxEngine.BoxMesh',
-      fields: {},
-    },
-    {
-      id: materialId,
-      type: '[FrooxEngine]FrooxEngine.PBS_Metallic',
-      fields: textureIdentifier
-        ? {
-            AlbedoTexture: { $type: 'reference', targetId: textureId },
-          }
-        : {},
-    },
-    {
-      id: `${slotId}-renderer`,
-      type: '[FrooxEngine]FrooxEngine.MeshRenderer',
-      fields: {
-        Mesh: { $type: 'reference', targetId: meshId },
-        Materials: {
-          $type: 'list',
-          elements: [{ $type: 'reference', targetId: materialId }],
-        },
-      },
-    },
-  ];
-
-  if (textureIdentifier) {
-    components.push({
-      id: textureId,
-      type: '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      fields: {
-        URL: { $type: 'Uri', value: toTexturePlaceholder(textureIdentifier) },
-      },
-    });
-  }
-
-  return components;
-}
-
-function toTexturePlaceholder(identifier: string): string {
-  return `texture://${identifier}`;
-}
-
-function replaceTexturesInValue(value: unknown, textureMap: Map<string, string>): unknown {
-  if (typeof value === 'string') {
-    if (!value.startsWith('texture://')) {
-      return value;
-    }
-    const identifier = value.slice('texture://'.length);
-    return textureMap.get(identifier) ?? identifier;
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((item) => replaceTexturesInValue(item, textureMap));
-  }
-
-  if (!value || typeof value !== 'object') {
-    return value;
-  }
-
-  const recordValue = value as Record<string, unknown>;
-  const replaced: Record<string, unknown> = {};
-  for (const [key, item] of Object.entries(recordValue)) {
-    replaced[key] = replaceTexturesInValue(item, textureMap);
-  }
-  return replaced;
 }
