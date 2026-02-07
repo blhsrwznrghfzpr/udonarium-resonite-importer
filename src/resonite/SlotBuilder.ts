@@ -44,6 +44,16 @@ export class SlotBuilder {
         });
       }
 
+      // Attach components in the order they are defined.
+      for (const component of obj.components) {
+        await this.client.addComponent({
+          id: component.id,
+          slotId,
+          componentType: component.type,
+          fields: component.fields,
+        });
+      }
+
       // Build children recursively
       for (const child of obj.children) {
         await this.buildSlot(child, slotId);

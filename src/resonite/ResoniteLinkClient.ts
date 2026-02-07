@@ -253,18 +253,49 @@ export class ResoniteLinkClient {
    * Add a component to a slot
    */
   async addComponent(options: {
+    id?: string;
     slotId: string;
     componentType: string;
     fields: Record<string, unknown>;
-  }): Promise<void> {
+  }): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
     }
 
-    await this.client.createComponent(options.slotId, {
-      componentType: options.componentType,
-      members: options.fields as Record<string, never>,
-    });
+    const component = await this.client.createComponent(
+      options.slotId,
+      {
+        componentType: options.componentType,
+        members: options.fields as Record<string, never>,
+      },
+      options.id
+    );
+
+    if (!component) {
+      throw new Error(`Failed to add component: ${options.componentType}`);
+    }
+
+    return component.id;
+  }
+
+  /**
+   * Add multiple components to a slot
+   */
+  async addComponents(
+    slotId: string,
+    components: Array<{ id?: string; type: string; fields: Record<string, unknown> }>
+  ): Promise<string[]> {
+    const componentIds: string[] = [];
+    for (const component of components) {
+      const id = await this.addComponent({
+        id: component.id,
+        slotId,
+        componentType: component.type,
+        fields: component.fields,
+      });
+      componentIds.push(id);
+    }
+    return componentIds;
   }
 
   /**

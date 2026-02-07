@@ -16,7 +16,7 @@ import * as path from 'path';
 
 import { extractZip } from './parser/ZipExtractor';
 import { parseXmlFiles } from './parser/XmlParser';
-import { convertObjects } from './converter/ObjectConverter';
+import { convertObjects, resolveTexturePlaceholders } from './converter/ObjectConverter';
 import { ResoniteLinkClient } from './resonite/ResoniteLinkClient';
 import { SlotBuilder } from './resonite/SlotBuilder';
 import { AssetImporter } from './resonite/AssetImporter';
@@ -227,6 +227,9 @@ async function run(options: CLIOptions): Promise<void> {
         // Non-critical: texture slot stays at root
       }
     }
+
+    // Resolve texture placeholders in object components using imported texture URLs.
+    resolveTexturePlaceholders(resoniteObjects, assetImporter.getImportedTextures());
 
     // Build slots
     let builtSlots = 0;

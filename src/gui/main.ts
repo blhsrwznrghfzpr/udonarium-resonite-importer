@@ -6,7 +6,7 @@ import { app, BrowserWindow, ipcMain, dialog, IpcMainInvokeEvent } from 'electro
 import * as path from 'path';
 import { extractZip } from '../parser/ZipExtractor';
 import { parseXmlFiles } from '../parser/XmlParser';
-import { convertObjects } from '../converter/ObjectConverter';
+import { convertObjects, resolveTexturePlaceholders } from '../converter/ObjectConverter';
 import { ResoniteLinkClient } from '../resonite/ResoniteLinkClient';
 import { SlotBuilder } from '../resonite/SlotBuilder';
 import { AssetImporter } from '../resonite/AssetImporter';
@@ -160,6 +160,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
         );
       }
     );
+
+    resolveTexturePlaceholders(resoniteObjects, assetImporter.getImportedTextures());
 
     // Build slots
     const slotResults = await slotBuilder.buildSlots(resoniteObjects, (current, total) => {
