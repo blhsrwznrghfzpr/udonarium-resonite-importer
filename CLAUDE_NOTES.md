@@ -1,4 +1,4 @@
-# Claude Code 引き継ぎメモ
+﻿# Claude Code 引き継ぎメモ
 
 ## プロジェクト概要
 
@@ -55,3 +55,65 @@ resonite.z = -udonarium.y * 0.02
 - エラーハンドリングの強化（接続リトライロジック等）
 - GUI版のUX改善（ドラッグ&ドロップ対応等）
 - テストカバレッジ向上
+
+## 最近の更新 (2026-02-07)
+- `UdonariumObject` から `ResoniteObject` へのコンポーネント/スロット変換パイプラインを実装。
+- `src/converter/ObjectConverter.ts`
+  - オブジェクト種別ごとのコンポーネント定義を追加:
+    - character/card/table: `QuadMesh`, `UnlitMaterial`, `MeshRenderer`, `StaticTexture2D`
+    - terrain: `BoxMesh`, `PBS_Metallic`, `MeshRenderer`, `StaticTexture2D`
+    - text-note: `UIX.Text`
+  - `card-stack` から子スロットを生成する処理を追加。
+  - テクスチャプレースホルダー解決を追加:
+    - 形式: `texture://<identifier>`
+    - 解決関数: `resolveTexturePlaceholders(objects, textureMap)`
+- `src/resonite/SlotBuilder.ts`
+  - スロット作成後に `client.addComponent(...)` でコンポーネントを追加する処理を実装。
+- `src/resonite/ResoniteLinkClient.ts`
+  - `addComponent` を拡張し、任意のコンポーネントID指定とコンポーネントID返却に対応。
+  - `addComponents(...)` ヘルパーを追加。
+- `src/index.ts` と `src/gui/main.ts`
+  - 画像インポート後、スロット生成前にテクスチャ解決を接続:
+    - `resolveTexturePlaceholders(resoniteObjects, assetImporter.getImportedTextures())`
+- `src/converter/ResoniteObject.ts`
+  - `ResoniteComponent` に任意 `id` を追加（参照の安定化目的）。
+- `ObjectConverter` の可読性向上のため、オブジェクト種別ごとの変換処理をファイル分離。
+  - 追加ディレクトリ: `src/converter/objectConverters/`
+  - 追加ファイル:
+    - `characterConverter.ts`
+    - `cardConverter.ts`
+    - `cardStackConverter.ts`
+    - `terrainConverter.ts`
+    - `tableConverter.ts`
+    - `textNoteConverter.ts`
+    - `componentBuilders.ts`
+- `src/converter/ObjectConverter.ts` はディスパッチ中心に整理し、種別ごとの詳細ロジックを委譲。
+- テクスチャ置換ロジック（`replaceTexturesInValue`）を `componentBuilders.ts` に移動し、責務を集約。
+- `objectConverters` 各変換関数の単体テストを追加。
+  - 追加テスト:
+    - `src/converter/objectConverters/characterConverter.test.ts`
+    - `src/converter/objectConverters/cardConverter.test.ts`
+    - `src/converter/objectConverters/cardStackConverter.test.ts`
+    - `src/converter/objectConverters/terrainConverter.test.ts`
+    - `src/converter/objectConverters/tableConverter.test.ts`
+    - `src/converter/objectConverters/textNoteConverter.test.ts`
+  - 検証観点:
+    - オブジェクト種別ごとの scale 設定
+    - components/children の生成内容
+    - `card-stack` の子スロット高さオフセット
+    - `text-note` のフォントサイズ下限 (min=8)
+- 追加後に `npm run test` と `npm run check:validate` を実行し、すべて通過を確認。
+- AIレビュー指摘への対応を実施。
+  - `src/converter/objectConverters/cardConverter.ts`
+    - `Card.isFaceUp` と `frontImage` / `backImage` を使って表示テクスチャを選択するよう修正。
+    - フォールバック順:
+      - 表向き: `frontImage` -> `backImage` -> `images[0]`
+      - 裏向き: `backImage` -> `frontImage` -> `images[0]`
+  - `src/converter/objectConverters/cardConverter.test.ts`
+    - 表裏状態とフォールバックの単体テストを追加。
+  - `src/resonite/registerExternalUrls.ts` を新規追加し、外部URL画像登録処理を共通化。
+  - `src/gui/main.ts`
+    - GUIインポートフローでも `registerExternalUrls(parseResult.objects, assetImporter)` を実行するよう修正。
+  - `src/index.ts`
+    - CLI側の外部URL登録処理を共通モジュール利用へ置換。
+- 検証コマンド: `npm run check`（fix + validate）を実行し、通過を確認。

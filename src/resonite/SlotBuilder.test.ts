@@ -293,10 +293,8 @@ describe('SlotBuilder', () => {
   });
 
   describe('createImportGroup', () => {
-    it('should create a group slot with timestamp-based ID', async () => {
-      const beforeTime = Date.now();
+    it('should create a group slot with UUID-based ID', async () => {
       await slotBuilder.createImportGroup('My Import');
-      const afterTime = Date.now();
 
       expect(mockClient.addSlot).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -308,9 +306,7 @@ describe('SlotBuilder', () => {
       );
 
       const callArgs = mockClient.addSlot.mock.calls[0][0] as { id: string };
-      const idTimestamp = parseInt(callArgs.id.replace('udonarium_import_', ''), 10);
-      expect(idTimestamp).toBeGreaterThanOrEqual(beforeTime);
-      expect(idTimestamp).toBeLessThanOrEqual(afterTime);
+      expect(callArgs.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
     });
 
     it('should return the group slot ID', async () => {
@@ -319,7 +315,7 @@ describe('SlotBuilder', () => {
       const groupId = await slotBuilder.createImportGroup('Test Group');
 
       // Note: createImportGroup sets rootSlotId to the created ID, not returned from addSlot
-      expect(groupId).toMatch(/^udonarium_import_\d+$/);
+      expect(groupId).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
     });
 
     it('should update rootSlotId for subsequent builds', async () => {

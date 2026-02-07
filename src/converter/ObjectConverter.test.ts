@@ -92,7 +92,7 @@ describe('ObjectConverter', () => {
 
         const result = convertObject(character);
 
-        expect(result.id).toBe('udonarium_character_test-id');
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.name).toBe('Test Object');
         expect(result.position).toEqual(convertPosition(100, 200));
         expect(result.scale).toEqual(convertSize(2));
@@ -114,7 +114,7 @@ describe('ObjectConverter', () => {
 
         const result = convertObject(terrain);
 
-        expect(result.id).toBe('udonarium_terrain_test-id');
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.scale).toEqual({
           x: 10 * SIZE_MULTIPLIER,
           y: 5 * SIZE_MULTIPLIER,
@@ -136,7 +136,7 @@ describe('ObjectConverter', () => {
 
         const result = convertObject(table);
 
-        expect(result.id).toBe('udonarium_table_test-id');
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.scale).toEqual({
           x: 20 * SCALE_FACTOR,
           y: 0.01,
@@ -158,7 +158,7 @@ describe('ObjectConverter', () => {
 
         const result = convertObject(card);
 
-        expect(result.id).toBe('udonarium_card_test-id');
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.scale).toEqual({ x: 0.06, y: 0.001, z: 0.09 });
       });
     });
@@ -173,7 +173,7 @@ describe('ObjectConverter', () => {
 
         const result = convertObject(cardStack);
 
-        expect(result.id).toBe('udonarium_card-stack_test-id');
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.scale).toEqual({ x: 0.06, y: 0.001, z: 0.09 });
       });
     });
@@ -189,7 +189,7 @@ describe('ObjectConverter', () => {
 
         const result = convertObject(textNote);
 
-        expect(result.id).toBe('udonarium_text-note_test-id');
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.scale).toEqual({ x: 0.1, y: 0.1, z: 0.1 });
       });
     });
@@ -244,7 +244,7 @@ describe('ObjectConverter', () => {
       expect(result).toEqual([]);
     });
 
-    it('should convert multiple objects', () => {
+    it('should convert multiple objects with unique UUIDs', () => {
       const objects: GameCharacter[] = [
         {
           id: 'char1',
@@ -271,8 +271,53 @@ describe('ObjectConverter', () => {
       const result = convertObjects(objects);
 
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('udonarium_character_char1');
-      expect(result[1].id).toBe('udonarium_character_char2');
+      expect(result[0].id).toMatch(/^udon-imp-/);
+      expect(result[1].id).toMatch(/^udon-imp-/);
+      expect(result[0].id).not.toBe(result[1].id);
+    });
+
+    it('should generate unique IDs even for objects with same source id', () => {
+      const objects: GameCharacter[] = [
+        {
+          id: 'data',
+          type: 'character',
+          name: 'Monster A',
+          position: { x: 0, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+        {
+          id: 'data',
+          type: 'character',
+          name: 'Monster B',
+          position: { x: 100, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+        {
+          id: 'data',
+          type: 'character',
+          name: 'Monster C',
+          position: { x: 200, y: 0 },
+          images: [],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+      ];
+
+      const result = convertObjects(objects);
+
+      expect(result).toHaveLength(3);
+      const ids = new Set(result.map((r) => r.id));
+      expect(ids.size).toBe(3);
+      for (const r of result) {
+        expect(r.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
+      }
     });
   });
 });

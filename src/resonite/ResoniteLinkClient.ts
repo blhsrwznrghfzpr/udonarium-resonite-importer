@@ -253,18 +253,49 @@ export class ResoniteLinkClient {
    * Add a component to a slot
    */
   async addComponent(options: {
+    id?: string;
     slotId: string;
     componentType: string;
     fields: Record<string, unknown>;
-  }): Promise<void> {
+  }): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
     }
 
-    await this.client.createComponent(options.slotId, {
-      componentType: options.componentType,
-      members: options.fields as Record<string, never>,
-    });
+    const component = await this.client.createComponent(
+      options.slotId,
+      {
+        componentType: options.componentType,
+        members: options.fields as Record<string, never>,
+      },
+      options.id
+    );
+
+    if (!component) {
+      throw new Error(`Failed to add component: ${options.componentType}`);
+    }
+
+    return component.id;
+  }
+
+  /**
+   * Add multiple components to a slot
+   */
+  async addComponents(
+    slotId: string,
+    components: Array<{ id?: string; type: string; fields: Record<string, unknown> }>
+  ): Promise<string[]> {
+    const componentIds: string[] = [];
+    for (const component of components) {
+      const id = await this.addComponent({
+        id: component.id,
+        slotId,
+        componentType: component.type,
+        fields: component.fields,
+      });
+      componentIds.push(id);
+    }
+    return componentIds;
   }
 
   /**
@@ -276,6 +307,38 @@ export class ResoniteLinkClient {
     }
 
     return this.client.getSlot('Root');
+  }
+
+  /**
+   * Get child slot IDs of a given slot
+   */
+  async getSlotChildIds(slotId: string): Promise<string[]> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const slot = await this.client.getSlot(slotId, 1);
+    if (!slot) {
+      return [];
+    }
+
+    return slot.childrens.map((child) => child.id);
+  }
+
+  /**
+   * Move a slot to a new parent
+   */
+  async reparentSlot(slotId: string, newParentId: string): Promise<void> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const slot = await this.client.getSlot(slotId);
+    if (!slot) {
+      throw new Error(`Slot not found: ${slotId}`);
+    }
+
+    await slot.setParent(newParentId);
   }
 
   private sleep(ms: number): Promise<void> {

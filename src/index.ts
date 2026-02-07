@@ -16,10 +16,11 @@ import * as path from 'path';
 
 import { extractZip } from './parser/ZipExtractor';
 import { parseXmlFiles } from './parser/XmlParser';
-import { convertObjects } from './converter/ObjectConverter';
+import { convertObjects, resolveTexturePlaceholders } from './converter/ObjectConverter';
 import { ResoniteLinkClient } from './resonite/ResoniteLinkClient';
 import { SlotBuilder } from './resonite/SlotBuilder';
 import { AssetImporter } from './resonite/AssetImporter';
+import { registerExternalUrls } from './resonite/registerExternalUrls';
 import { SCALE_FACTOR, getResoniteLinkPort, getResoniteLinkHost } from './config/MappingConfig';
 import { t, setLocale, Locale } from './i18n';
 
@@ -186,14 +187,19 @@ async function run(options: CLIOptions): Promise<void> {
 
   const assetImporter = new AssetImporter(client);
 
+  // Register external URL references (e.g., ./assets/images/tex.jpg → https://udonarium.app/assets/images/tex.jpg)
+  registerExternalUrls(parseResult.objects, assetImporter);
+
   try {
     const slotBuilder = new SlotBuilder(client);
 
     // Create import group
     const groupName = `Udonarium Import - ${path.basename(inputPath, '.zip')}`;
-    await slotBuilder.createImportGroup(groupName);
+    const groupId = await slotBuilder.createImportGroup(groupName);
 
-    // Import images
+    // Import images and move texture slots into the import group
+    const rootChildIdsBefore = await client.getSlotChildIds('Root');
+
     let importedImages = 0;
     const imageResults = await assetImporter.importImages(
       extractedData.imageFiles,
@@ -209,6 +215,21 @@ async function run(options: CLIOptions): Promise<void> {
         console.warn(chalk.yellow(`  Warning: Failed to import ${img.identifier}: ${img.error}`));
       }
     }
+
+    // Move newly created texture slots into the import group
+    const rootChildIdsAfter = await client.getSlotChildIds('Root');
+    const beforeSet = new Set(rootChildIdsBefore);
+    const newSlotIds = rootChildIdsAfter.filter((id) => !beforeSet.has(id));
+    for (const slotId of newSlotIds) {
+      try {
+        await client.reparentSlot(slotId, groupId);
+      } catch {
+        // Non-critical: texture slot stays at root
+      }
+    }
+
+    // Resolve texture placeholders in object components using imported texture URLs.
+    resolveTexturePlaceholders(resoniteObjects, assetImporter.getImportedTextures());
 
     // Build slots
     let builtSlots = 0;

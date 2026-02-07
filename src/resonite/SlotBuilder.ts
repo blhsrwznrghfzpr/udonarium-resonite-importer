@@ -2,8 +2,11 @@
  * Helper for building Resonite slots from Udonarium objects
  */
 
+import { randomUUID } from 'crypto';
 import { ResoniteObject, Vector3 } from '../converter/ResoniteObject';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
+
+const SLOT_ID_PREFIX = 'udon-imp';
 
 export interface SlotBuildResult {
   slotId: string;
@@ -38,6 +41,16 @@ export class SlotBuilder {
         await this.client.updateSlot({
           id: slotId,
           rotation: obj.rotation,
+        });
+      }
+
+      // Attach components in the order they are defined.
+      for (const component of obj.components) {
+        await this.client.addComponent({
+          id: component.id,
+          slotId,
+          componentType: component.type,
+          fields: component.fields,
         });
       }
 
@@ -82,7 +95,7 @@ export class SlotBuilder {
    * Create a group slot to contain imported objects
    */
   async createImportGroup(name: string): Promise<string> {
-    const groupId = `udonarium_import_${Date.now()}`;
+    const groupId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
     const position: Vector3 = { x: 0, y: 0, z: 0 };
     const scale: Vector3 = { x: 1, y: 1, z: 1 };
 

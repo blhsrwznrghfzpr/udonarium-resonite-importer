@@ -9,6 +9,7 @@ export interface Vector3 {
 }
 
 export interface ResoniteComponent {
+  id?: string;
   type: string;
   fields: Record<string, unknown>;
 }

@@ -2,9 +2,19 @@
  * Converts Udonarium objects to Resonite objects
  */
 
+import { randomUUID } from 'crypto';
 import { UdonariumObject } from './UdonariumObject';
 import { ResoniteObject, Vector3 } from './ResoniteObject';
 import { SCALE_FACTOR, SIZE_MULTIPLIER } from '../config/MappingConfig';
+import { applyCharacterConversion } from './objectConverters/characterConverter';
+import { applyCardConversion } from './objectConverters/cardConverter';
+import { applyCardStackConversion } from './objectConverters/cardStackConverter';
+import { applyTerrainConversion } from './objectConverters/terrainConverter';
+import { applyTableConversion } from './objectConverters/tableConverter';
+import { applyTextNoteConversion } from './objectConverters/textNoteConverter';
+import { replaceTexturesInValue } from './objectConverters/componentBuilders';
+
+const SLOT_ID_PREFIX = 'udon-imp';
 
 /**
  * Convert Udonarium 2D coordinates to Resonite 3D coordinates
@@ -37,8 +47,9 @@ export function convertSize(size: number): Vector3 {
 export function convertObject(udonObj: UdonariumObject): ResoniteObject {
   const position = convertPosition(udonObj.position.x, udonObj.position.y);
 
+  const slotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
   const resoniteObj: ResoniteObject = {
-    id: `udonarium_${udonObj.type}_${udonObj.id}`,
+    id: slotId,
     name: udonObj.name,
     position,
     rotation: { x: 0, y: 0, z: 0 },
@@ -51,29 +62,22 @@ export function convertObject(udonObj: UdonariumObject): ResoniteObject {
   // Apply type-specific conversions
   switch (udonObj.type) {
     case 'character':
-      resoniteObj.scale = convertSize(udonObj.size);
+      applyCharacterConversion(udonObj, resoniteObj, convertSize);
       break;
     case 'terrain':
-      resoniteObj.scale = {
-        x: udonObj.width * SIZE_MULTIPLIER,
-        y: udonObj.height * SIZE_MULTIPLIER,
-        z: udonObj.depth * SIZE_MULTIPLIER,
-      };
+      applyTerrainConversion(udonObj, resoniteObj);
       break;
     case 'table':
-      resoniteObj.scale = {
-        x: udonObj.width * SCALE_FACTOR,
-        y: 0.01, // Thin table
-        z: udonObj.height * SCALE_FACTOR,
-      };
-      resoniteObj.position.y = -0.01; // Slightly below origin
+      applyTableConversion(udonObj, resoniteObj);
       break;
     case 'card':
+      applyCardConversion(udonObj, resoniteObj);
+      break;
     case 'card-stack':
-      resoniteObj.scale = { x: 0.06, y: 0.001, z: 0.09 }; // Standard card size
+      applyCardStackConversion(udonObj, resoniteObj, convertObject);
       break;
     case 'text-note':
-      resoniteObj.scale = { x: 0.1, y: 0.1, z: 0.1 };
+      applyTextNoteConversion(udonObj, resoniteObj);
       break;
     default:
       break;
@@ -87,4 +91,25 @@ export function convertObject(udonObj: UdonariumObject): ResoniteObject {
  */
 export function convertObjects(udonObjects: UdonariumObject[]): ResoniteObject[] {
   return udonObjects.map(convertObject);
+}
+
+/**
+ * Resolve texture placeholders in component fields.
+ * Placeholders use the format "texture://<identifier>".
+ */
+export function resolveTexturePlaceholders(
+  objects: ResoniteObject[],
+  textureMap: Map<string, string>
+): void {
+  for (const obj of objects) {
+    for (const component of obj.components) {
+      component.fields = replaceTexturesInValue(component.fields, textureMap) as Record<
+        string,
+        unknown
+      >;
+    }
+    if (obj.children.length > 0) {
+      resolveTexturePlaceholders(obj.children, textureMap);
+    }
+  }
 }
