@@ -143,3 +143,10 @@ resonite.z = -udonarium.y * 0.02
   - `npm run check` 通過
   - `npm run test` 通過
   - 実機確認: `roomdata-sample-image.zip` のインポート成功（Images: 2/2, Objects: 9/9）
+- TypeScript 5.9.3 対応のため、ESLintルール適合を修正。
+  - `src/resonite/ResoniteLinkClient.ts`
+    - `tryConnect()` 内の `reject(error)` を `Error` 型へ正規化して reject する実装に変更。
+    - 対応ルール: `@typescript-eslint/prefer-promise-reject-errors`
+- 検証:
+  - `npm run check` 通過
+  - `npm run test` 通過
