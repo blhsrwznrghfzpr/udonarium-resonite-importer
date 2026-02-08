@@ -150,3 +150,5 @@ resonite.z = -udonarium.y * 0.02
 - 検証:
   - `npm run check` 通過
   - `npm run test` 通過
+- 開発環境の Node.js を最新LTS系へ更新。
+  - `/.mise.toml` の `node` を `20.18.2` から `24` へ変更（24.x LTS 系を利用）。
