@@ -117,3 +117,29 @@ resonite.z = -udonarium.y * 0.02
   - `src/index.ts`
     - CLI側の外部URL登録処理を共通モジュール利用へ置換。
 - 検証コマンド: `npm run check`（fix + validate）を実行し、通過を確認。
+- ResoniteLink実機確認のため、Integrationテストを実行して converter 連携を検証。
+  - 実行: `RESONITE_LINK_AVAILABLE=true` で `vitest` の Integration テスト群を実行
+  - 結果: `src/resonite/integration.test.ts` の全15テストが通過（ResoniteLink接続状態で確認）
+- `src/resonite/integration.test.ts` を改善。
+  - `.env` から `RESONITELINK_PORT` を読み込むため `dotenv.config()` を追加
+  - `beforeAll` 失敗時に `afterAll` が二次障害を起こさないよう、`client` 未初期化ガードを追加
+- 検証:
+  - `npm run check` 通過
+  - `npm run test` 通過
+- テクスチャ処理フローを「先にasset import、後でオブジェクト生成」に変更。
+  - `src/index.ts`
+    - 非 dry-run 時は画像インポート完了後に `convertObjectsWithTextureMap(...)` でオブジェクトを生成するよう変更。
+    - `resolveTexturePlaceholders(...)` 依存を除去。
+  - `src/gui/main.ts`
+    - GUIインポート時も画像インポート後に `convertObjectsWithTextureMap(...)` で生成するよう変更。
+- converter 側で texture URL を直接反映できるよう拡張。
+  - `src/converter/ObjectConverter.ts`
+    - `convertObjectsWithTextureMap(udonObjects, textureMap)` を追加。
+  - `src/converter/objectConverters/componentBuilders.ts`
+    - `resolveTextureValue(...)` を追加。
+    - `build*Components` がプレースホルダーではなく最終URLを受け取れるよう変更。
+  - `character/card/table/terrain` converter が `textureMap` を受け取り、`StaticTexture2D.URL` に最終URL（またはフォールバック値）を設定するよう変更。
+- 実行確認:
+  - `npm run check` 通過
+  - `npm run test` 通過
+  - 実機確認: `roomdata-sample-image.zip` のインポート成功（Images: 2/2, Objects: 9/9）
