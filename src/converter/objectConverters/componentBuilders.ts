@@ -1,6 +1,35 @@
 import { ResoniteComponent } from '../ResoniteObject';
 
 const TEXTURE_PLACEHOLDER_PREFIX = 'texture://';
+const GIF_EXTENSION_PATTERN = /\.gif(?:$|[?#])/i;
+
+type StaticTexture2DFields = {
+  URL: { $type: 'Uri'; value: string };
+  FilterMode?: { $type: 'enum?'; value: 'Point'; enumType: 'TextureFilterMode' };
+};
+
+function buildStaticTexture2DFields(textureValue: string): StaticTexture2DFields {
+  const fields: StaticTexture2DFields = {
+    URL: { $type: 'Uri', value: textureValue },
+  };
+
+  if (isGifTexture(textureValue)) {
+    fields.FilterMode = {
+      $type: 'enum?',
+      value: 'Point',
+      enumType: 'TextureFilterMode',
+    };
+  }
+
+  return fields;
+}
+
+function isGifTexture(textureValue: string): boolean {
+  if (textureValue.startsWith(TEXTURE_PLACEHOLDER_PREFIX)) {
+    return GIF_EXTENSION_PATTERN.test(textureValue.slice(TEXTURE_PLACEHOLDER_PREFIX.length));
+  }
+  return GIF_EXTENSION_PATTERN.test(textureValue);
+}
 
 export function buildQuadMeshComponents(
   slotId: string,
@@ -22,9 +51,7 @@ export function buildQuadMeshComponents(
     components.push({
       id: textureId,
       type: '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      fields: {
-        URL: { $type: 'Uri', value: textureValue },
-      },
+      fields: buildStaticTexture2DFields(textureValue),
     });
   }
 
@@ -68,9 +95,7 @@ export function buildBoxMeshComponents(slotId: string, textureValue?: string): R
     components.push({
       id: textureId,
       type: '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      fields: {
-        URL: { $type: 'Uri', value: textureValue },
-      },
+      fields: buildStaticTexture2DFields(textureValue),
     });
   }
 

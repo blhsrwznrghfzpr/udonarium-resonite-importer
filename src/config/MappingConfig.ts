@@ -64,6 +64,11 @@ export const DEFAULT_RESONITE_LINK = {
  */
 export const KNOWN_IMAGE_IDENTIFIERS: ReadonlyMap<string, string> = new Map([
   ['testTableBackgroundImage_image', 'https://udonarium.app/assets/images/BG10a_80.jpg'],
+  ['testCharacter_1_image', 'https://udonarium.app/assets/images/mon_052.gif'],
+  ['testCharacter_3_image', 'https://udonarium.app/assets/images/mon_128.gif'],
+  ['testCharacter_4_image', 'https://udonarium.app/assets/images/mon_150.gif'],
+  ['testCharacter_5_image', 'https://udonarium.app/assets/images/mon_211.gif'],
+  ['testCharacter_6_image', 'https://udonarium.app/assets/images/mon_135.gif'],
 ]);
 
 /**

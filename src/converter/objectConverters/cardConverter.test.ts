@@ -101,4 +101,22 @@ describe('applyCardConversion', () => {
       URL: { $type: 'Uri', value: 'texture://fallback.png' },
     });
   });
+
+  it('GIFテクスチャではFilterModeをPointに設定する', () => {
+    const udonObj = createBaseCard();
+    udonObj.frontImage = { identifier: 'front.gif', name: 'front.gif' };
+    udonObj.images = [{ identifier: 'front.gif', name: 'front.gif' }];
+    const resoniteObj = createBaseResonite();
+    resoniteObj.textures = ['front.gif', 'back.png'];
+
+    applyCardConversion(udonObj, resoniteObj);
+
+    const textureComponent = resoniteObj.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.StaticTexture2D'
+    );
+    expect(textureComponent?.fields).toEqual({
+      URL: { $type: 'Uri', value: 'texture://front.gif' },
+      FilterMode: { $type: 'enum?', value: 'Point', enumType: 'TextureFilterMode' },
+    });
+  });
 });
