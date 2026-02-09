@@ -15,6 +15,7 @@ import { applyTextNoteConversion } from './objectConverters/textNoteConverter';
 import { replaceTexturesInValue } from './objectConverters/componentBuilders';
 
 const SLOT_ID_PREFIX = 'udon-imp';
+const BOX_COLLIDER_TYPE = '[FrooxEngine]FrooxEngine.BoxCollider';
 
 /**
  * Convert Udonarium 2D coordinates to Resonite 3D coordinates
@@ -92,7 +93,23 @@ function convertObjectWithTextures(
       break;
   }
 
+  ensureBoxCollider(resoniteObj);
   return resoniteObj;
+}
+
+function ensureBoxCollider(resoniteObj: ResoniteObject): void {
+  const hasBoxCollider = resoniteObj.components.some(
+    (component) => component.type === BOX_COLLIDER_TYPE
+  );
+  if (hasBoxCollider) {
+    return;
+  }
+
+  resoniteObj.components.push({
+    id: `${resoniteObj.id}-collider`,
+    type: BOX_COLLIDER_TYPE,
+    fields: {},
+  });
 }
 
 /**

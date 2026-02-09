@@ -194,6 +194,59 @@ describe('ObjectConverter', () => {
       });
     });
 
+    it('should add BoxCollider to all object types', () => {
+      const objects = [
+        {
+          ...createBaseObject(),
+          type: 'character' as const,
+          size: 1,
+          resources: [],
+        },
+        {
+          ...createBaseObject(),
+          type: 'terrain' as const,
+          width: 1,
+          height: 1,
+          depth: 1,
+          wallImage: null,
+          floorImage: null,
+        },
+        {
+          ...createBaseObject(),
+          type: 'table' as const,
+          width: 1,
+          height: 1,
+          gridType: 'square' as const,
+          gridColor: '#000000',
+        },
+        {
+          ...createBaseObject(),
+          type: 'card' as const,
+          isFaceUp: true,
+          frontImage: { identifier: 'front', name: 'front.png' },
+          backImage: { identifier: 'back', name: 'back.png' },
+        },
+        {
+          ...createBaseObject(),
+          type: 'card-stack' as const,
+          cards: [],
+        },
+        {
+          ...createBaseObject(),
+          type: 'text-note' as const,
+          text: 'note',
+          fontSize: 12,
+        },
+      ];
+
+      for (const obj of objects) {
+        const result = convertObject(obj);
+        expect(
+          result.components.some((c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider')
+        ).toBe(true);
+      }
+    });
+
     it('should preserve rotation as zero', () => {
       const character: GameCharacter = {
         ...createBaseObject(),
