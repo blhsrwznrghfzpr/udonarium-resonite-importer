@@ -166,3 +166,10 @@ resonite.z = -udonarium.y * 0.02
   - `mise x -- npm ci` 実行時の warning は一部残存
     - 残存 warning の主因は `electron@28` / `electron-builder` 配下の推移依存（`boolean@3`, `glob@7/10`, `inflight`, `rimraf@2`）で、現行メジャー範囲では解消不可。
     - `npm audit` の残件は moderate 2件（`electron`, `pkg`）。`electron` は `40.x` へのメジャー更新で解消可能、`pkg` は fixAvailable なし。
+- `--dry-run --verbose` 時に `UdonariumObject[]` のパース結果を JSON ファイルに出力する機能を追加。
+  - `src/index.ts`
+    - verbose 時に `parseResult.objects` を `{入力ZIP名}.parsed.json` としてファイル出力するよう変更。
+    - `Map` は `Object.fromEntries()` で変換してシリアライズ。
+  - `.gitignore`
+    - `*.parsed.json` を追加。
+  - 用途: converter 実装時に実データの構造を確認するためのデバッグ支援。

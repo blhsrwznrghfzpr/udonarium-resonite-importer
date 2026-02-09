@@ -152,7 +152,15 @@ async function run(options: CLIOptions): Promise<void> {
     console.log();
 
     if (options.verbose) {
-      console.log(chalk.bold('Objects:'));
+      const replacer = (_key: string, value: unknown): unknown =>
+        value instanceof Map ? Object.fromEntries(value as Map<string, unknown>) : value;
+      const jsonContent = JSON.stringify(parseResult.objects, replacer, 2);
+      const jsonPath = inputPath.replace(/\.zip$/i, '') + '.parsed.json';
+      fs.writeFileSync(jsonPath, jsonContent, 'utf-8');
+      console.log(chalk.bold(`Parsed Udonarium Objects → ${jsonPath}`));
+      console.log();
+
+      console.log(chalk.bold('Converted Resonite Objects:'));
       for (const obj of resoniteObjects) {
         console.log(
           `  - ${obj.name} (${obj.id}) at (${obj.position.x.toFixed(2)}, ${obj.position.y.toFixed(2)}, ${obj.position.z.toFixed(2)})`
