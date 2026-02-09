@@ -8,7 +8,7 @@ describe('applyCardConversion', () => {
     id: 'card-1',
     type: 'card',
     name: 'Card',
-    position: { x: 0, y: 0 },
+    position: { x: 0, y: 0, z: 0 },
     images: [{ identifier: 'front.png', name: 'front.png' }],
     properties: new Map(),
     isFaceUp: true,

@@ -9,7 +9,7 @@ describe('applyTerrainConversion', () => {
       id: 'terrain-1',
       type: 'terrain',
       name: 'Terrain',
-      position: { x: 0, y: 0 },
+      position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'wall.png', name: 'wall.png' }],
       properties: new Map(),
       width: 10,

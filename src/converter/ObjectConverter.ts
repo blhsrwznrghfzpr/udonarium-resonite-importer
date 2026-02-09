@@ -24,10 +24,10 @@ const BOX_MESH_TYPE = '[FrooxEngine]FrooxEngine.BoxMesh';
  * Udonarium: +X right, +Y down (CSS-like)
  * Resonite: +X right, +Y up, +Z forward (Y-up system)
  */
-export function convertPosition(x: number, y: number): Vector3 {
+export function convertPosition(x: number, y: number, z: number): Vector3 {
   return {
     x: x * SCALE_FACTOR,
-    y: 0, // Table height
+    y: z * SCALE_FACTOR,
     z: -y * SCALE_FACTOR,
   };
 }
@@ -54,7 +54,7 @@ function convertObjectWithTextures(
   udonObj: UdonariumObject,
   textureMap?: Map<string, string>
 ): ResoniteObject {
-  const position = convertPosition(udonObj.position.x, udonObj.position.y);
+  const position = convertPosition(udonObj.position.x, udonObj.position.y, udonObj.position.z);
 
   const slotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
   const resoniteObj: ResoniteObject = {

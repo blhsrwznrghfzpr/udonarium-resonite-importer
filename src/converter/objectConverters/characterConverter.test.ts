@@ -9,7 +9,7 @@ describe('applyCharacterConversion', () => {
       id: 'char-1',
       type: 'character',
       name: 'Character',
-      position: { x: 0, y: 0 },
+      position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'char.png', name: 'char.png' }],
       properties: new Map(),
       size: 3,

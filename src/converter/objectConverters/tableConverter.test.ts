@@ -9,7 +9,7 @@ describe('applyTableConversion', () => {
       id: 'table-1',
       type: 'table',
       name: 'Table',
-      position: { x: 0, y: 0 },
+      position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'table.png', name: 'table.png' }],
       properties: new Map(),
       width: 20,
