@@ -38,5 +38,13 @@ describe('applyCharacterConversion', () => {
       '[FrooxEngine]FrooxEngine.UnlitMaterial',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
     ]);
+
+    const materialComponent = resoniteObj.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.UnlitMaterial'
+    );
+    expect(materialComponent?.fields).toEqual({
+      Texture: { $type: 'reference', targetId: 'slot-char-1-tex' },
+      BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+    });
   });
 });

@@ -8,6 +8,16 @@ type StaticTexture2DFields = {
   FilterMode?: { $type: 'enum?'; value: 'Point'; enumType: 'TextureFilterMode' };
 };
 
+type BlendModeField = { $type: 'enum'; value: 'Cutout'; enumType: 'BlendMode' };
+
+function createCutoutBlendModeField(): BlendModeField {
+  return {
+    $type: 'enum',
+    value: 'Cutout',
+    enumType: 'BlendMode',
+  };
+}
+
 function buildStaticTexture2DFields(textureValue: string): StaticTexture2DFields {
   const fields: StaticTexture2DFields = {
     URL: { $type: 'Uri', value: textureValue },
@@ -58,11 +68,14 @@ export function buildQuadMeshComponents(
   components.push({
     id: materialId,
     type: '[FrooxEngine]FrooxEngine.UnlitMaterial',
-    fields: textureValue
-      ? {
-          Texture: { $type: 'reference', targetId: textureId },
-        }
-      : {},
+    fields: {
+      ...(textureValue
+        ? {
+            Texture: { $type: 'reference', targetId: textureId },
+          }
+        : {}),
+      BlendMode: createCutoutBlendModeField(),
+    },
   });
   components.push({
     id: `${slotId}-renderer`,
@@ -102,11 +115,14 @@ export function buildBoxMeshComponents(slotId: string, textureValue?: string): R
   components.push({
     id: materialId,
     type: '[FrooxEngine]FrooxEngine.PBS_Metallic',
-    fields: textureValue
-      ? {
-          AlbedoTexture: { $type: 'reference', targetId: textureId },
-        }
-      : {},
+    fields: {
+      ...(textureValue
+        ? {
+            AlbedoTexture: { $type: 'reference', targetId: textureId },
+          }
+        : {}),
+      BlendMode: createCutoutBlendModeField(),
+    },
   });
   components.push({
     id: `${slotId}-renderer`,

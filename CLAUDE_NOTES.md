@@ -195,3 +195,28 @@ resonite.z = -udonarium.y * 0.02
     - `splitListFields`: コンポーネントの fields から `$type: "list"` を分離するヘルパーを追加。
     - コンポーネント追加時に list フィールドを分離し、`addComponent` 後に `updateListFields` で設定するよう変更。
   - 参照: `resolink-mcp/CLAUDE.md` の「Materials リストの更新（2段階必要）」セクション。
+
+## 最近の更新 (2026-02-09)
+- 画像が GIF の場合、`StaticTexture2D.FilterMode` を `Point` に設定する処理を追加。
+  - `src/converter/objectConverters/componentBuilders.ts`
+    - GIF判定 (`.gif` + query/hash 対応) を追加。
+    - `StaticTexture2D` の fields 構築を共通化し、GIF時のみ `FilterMode` を付与。
+  - `src/converter/objectConverters/cardConverter.test.ts`
+    - GIFテクスチャ時に `FilterMode=Point` になることを検証するテストを追加。
+- すべてのマテリアルを `Cutout` に統一。
+  - `src/converter/objectConverters/componentBuilders.ts`
+    - `UnlitMaterial.BlendMode` を `Cutout` に固定。
+    - `PBS_Metallic.BlendMode` を `Cutout` に固定。
+  - `src/converter/objectConverters/characterConverter.test.ts`
+    - `UnlitMaterial.BlendMode=Cutout` を検証するテストを追加。
+  - `src/converter/objectConverters/terrainConverter.test.ts`
+    - `PBS_Metallic.BlendMode=Cutout` を検証するテストを追加。
+- 文字化け対策として日本語ドキュメントを UTF-8 BOM 付きに統一。
+  - `README.ja.md`
+  - `docs/development.ja.md`
+  - `docs/design.md`
+- 検証:
+  - `npm run test -- src/converter/objectConverters` 通過
+- 補足:
+  - `FilterMode` が反映されないように見えた原因は、`src` 変更前の `dist` を実行していたため。
+  - ResoniteLink の `addComponent/getComponent` レスポンス上では `FilterMode=Point` の設定が確認できることを実測済み。

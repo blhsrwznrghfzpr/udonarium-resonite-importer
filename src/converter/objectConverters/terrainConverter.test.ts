@@ -43,5 +43,13 @@ describe('applyTerrainConversion', () => {
       '[FrooxEngine]FrooxEngine.PBS_Metallic',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
     ]);
+
+    const materialComponent = resoniteObj.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.PBS_Metallic'
+    );
+    expect(materialComponent?.fields).toEqual({
+      AlbedoTexture: { $type: 'reference', targetId: 'slot-terrain-1-tex' },
+      BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+    });
   });
 });
