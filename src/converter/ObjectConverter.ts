@@ -16,6 +16,8 @@ import { replaceTexturesInValue } from './objectConverters/componentBuilders';
 
 const SLOT_ID_PREFIX = 'udon-imp';
 const BOX_COLLIDER_TYPE = '[FrooxEngine]FrooxEngine.BoxCollider';
+const QUAD_MESH_TYPE = '[FrooxEngine]FrooxEngine.QuadMesh';
+const BOX_MESH_TYPE = '[FrooxEngine]FrooxEngine.BoxMesh';
 
 /**
  * Convert Udonarium 2D coordinates to Resonite 3D coordinates
@@ -108,8 +110,26 @@ function ensureBoxCollider(resoniteObj: ResoniteObject): void {
   resoniteObj.components.push({
     id: `${resoniteObj.id}-collider`,
     type: BOX_COLLIDER_TYPE,
-    fields: {},
+    fields: {
+      Size: {
+        $type: 'float3',
+        value: resolveColliderSizeByMesh(resoniteObj),
+      },
+    },
   });
+}
+
+function resolveColliderSizeByMesh(resoniteObj: ResoniteObject): Vector3 {
+  if (resoniteObj.components.some((component) => component.type === BOX_MESH_TYPE)) {
+    return { x: 1, y: 1, z: 1 };
+  }
+
+  if (resoniteObj.components.some((component) => component.type === QUAD_MESH_TYPE)) {
+    return { x: 1, y: 1, z: 0.01 };
+  }
+
+  // Fallback for meshless objects (e.g., card-stack parent, UI-only objects)
+  return { x: 1, y: 1, z: 1 };
 }
 
 /**

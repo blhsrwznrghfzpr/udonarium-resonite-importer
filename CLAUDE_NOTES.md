@@ -220,3 +220,34 @@ resonite.z = -udonarium.y * 0.02
 - 補足:
   - `FilterMode` が反映されないように見えた原因は、`src` 変更前の `dist` を実行していたため。
   - ResoniteLink の `addComponent/getComponent` レスポンス上では `FilterMode=Point` の設定が確認できることを実測済み。
+- オブジェクトスケール基準を「1マス=1m」に統一し、最終サイズを維持するためインポートルートコンテナへ縮尺を適用。
+  - `src/config/MappingConfig.ts`
+    - `SIZE_MULTIPLIER` を `1.0` へ更新。
+  - `src/converter/objectConverters/tableConverter.ts`
+    - `x/z` のスケールを `width/height * SIZE_MULTIPLIER` に変更。
+    - テーブル厚みを `0.1`、Yオフセットを `-0.1` に変更。
+  - `src/converter/objectConverters/cardConverter.ts`
+    - カードスケールを `{ x: 0.6, y: 0.01, z: 0.9 }` に変更。
+  - `src/converter/objectConverters/cardStackConverter.ts`
+    - 山の親スロットスケールを `{ x: 0.6, y: 0.01, z: 0.9 }` に変更。
+  - `src/converter/objectConverters/textNoteConverter.ts`
+    - スケールを `{ x: 1, y: 1, z: 1 }` に変更。
+  - `src/resonite/SlotBuilder.ts`
+    - `createImportGroup()` のルートコンテナスケールを `{ x: 0.1, y: 0.1, z: 0.1 }` に変更。
+  - 意図:
+    - コンバータ内部は 1マス=1m で整合させつつ、最上位コンテナで 0.1 倍して最終的に 1マス=10cm を維持。
+- `BoxCollider` の設定を見直し、見た目メッシュに合わせたコライダー寸法へ調整。
+  - `src/converter/ObjectConverter.ts`
+    - `ensureBoxCollider()` にメッシュ種別判定を追加。
+    - `QuadMesh` の場合: `Size = { x: 1, y: 1, z: 0.01 }`
+    - `BoxMesh` の場合: `Size = { x: 1, y: 1, z: 1 }`
+    - メッシュ未設定の場合: `Size = { x: 1, y: 1, z: 1 }`（フォールバック）
+  - 背景:
+    - `Size` にスロットスケールを入れると二重スケールとなり、見た目とコライダーが不一致になるため。
+- テスト更新:
+  - `src/converter/ObjectConverter.test.ts`
+  - `src/converter/objectConverters/cardConverter.test.ts`
+  - `src/converter/objectConverters/cardStackConverter.test.ts`
+  - `src/converter/objectConverters/tableConverter.test.ts`
+  - `src/converter/objectConverters/textNoteConverter.test.ts`
+  - `src/resonite/SlotBuilder.test.ts`

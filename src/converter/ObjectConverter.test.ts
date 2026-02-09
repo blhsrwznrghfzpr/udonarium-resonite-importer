@@ -238,12 +238,27 @@ describe('ObjectConverter', () => {
           fontSize: 12,
         },
       ];
+      const expectedSizes = [
+        { x: 1, y: 1, z: 0.01 }, // character -> QuadMesh
+        { x: 1, y: 1, z: 1 }, // terrain -> BoxMesh
+        { x: 1, y: 1, z: 0.01 }, // table -> QuadMesh
+        { x: 1, y: 1, z: 0.01 }, // card -> QuadMesh
+        { x: 1, y: 1, z: 1 }, // card-stack parent -> meshless fallback
+        { x: 1, y: 1, z: 1 }, // text-note -> meshless fallback
+      ];
 
-      for (const obj of objects) {
+      for (const [index, obj] of objects.entries()) {
         const result = convertObject(obj);
-        expect(
-          result.components.some((c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider')
-        ).toBe(true);
+        const collider = result.components.find(
+          (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
+        );
+        expect(collider).toBeDefined();
+        expect(collider?.fields).toEqual({
+          Size: {
+            $type: 'float3',
+            value: expectedSizes[index],
+          },
+        });
       }
     });
 
