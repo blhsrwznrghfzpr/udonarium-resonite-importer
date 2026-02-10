@@ -156,6 +156,8 @@ src/
 - オブジェクトの原点位置の違い（底面 vs 中心）に対応（terrain: `+depth/2`, character: `+size.y/2`）。
 - terrain の寸法マッピングを修正: Udonarium `depth`→Resonite Y軸、`height`→Z軸。
 - キャラクター画像の既知識別子を `KNOWN_IMAGE_IDENTIFIERS` に追加。
+- テーブル親スロットの回転を廃止し、見た目用 `-surface` 子スロットを回転（x=90）させる構成に変更。
+  - 目的: テーブル配下の子オブジェクト（地形など）の座標ずれ防止。
 
 ### 2026-02-09
 - GIF画像に `StaticTexture2D.FilterMode = Point` を設定。

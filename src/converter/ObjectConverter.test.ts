@@ -240,7 +240,7 @@ describe('ObjectConverter', () => {
       const expectedSizes = [
         { x: 1, y: 1, z: 0.01 }, // character -> QuadMesh
         { x: 1, y: 1, z: 1 }, // terrain -> BoxMesh
-        { x: 1, y: 1, z: 0.01 }, // table -> QuadMesh
+        { x: 1, y: 1, z: 1 }, // table container -> meshless fallback
         { x: 0.6, y: 0.9, z: 0.01 }, // card -> QuadMesh
         { x: 1, y: 1, z: 1 }, // card-stack parent -> meshless fallback
         { x: 1, y: 1, z: 1 }, // text-note -> meshless fallback
