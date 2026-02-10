@@ -81,6 +81,13 @@ resonite.z = -udonarium.y    * SCALE_FACTOR (0.02)
 - インポートルートコンテナに `IMPORT_GROUP_SCALE`（0.1）を適用して最終サイズを調整。
 - `BoxCollider.Size` はメッシュ `Size` から自動計算。`QuadMesh` は厚み `z=0.01` を付与。
 
+### 親子関係
+- `<game-table>` 内のオブジェクト（terrain, character, card-stack 等）は `GameTable.children` に格納。
+- `<card-stack>` 内の `<card>` は `CardStack.cards` に格納（`<node name="cardRoot">` 内を探索）。
+- `XmlParser` のコンテナタグ（`game-table`, `card-stack`）は再帰探索をスキップし、重複を防止。
+- `GameTable.children` の型は `GameTableChild[]`（`GameTable` を除外して循環型参照を回避）。
+- テーブルの `position.y -= 0.1` オフセットは廃止（子要素の相対座標に影響するため）。
+
 ### マテリアル設定
 - すべてのマテリアルは `BlendMode = Cutout` に統一（`UnlitMaterial`, `PBS_Metallic` 共通）。
 
@@ -141,6 +148,10 @@ src/
 ## 更新履歴
 
 ### 2026-02-10
+- `game-table` の親子関係保持: 子オブジェクトを `GameTable.children` に格納。
+- `card-stack` の重複カード問題を修正: `<node name="cardRoot">` 内のカード探索を追加。
+- コンテナタグ（`game-table`, `card-stack`）の再帰探索スキップで重複防止。
+- テーブルの Y オフセット（-0.1）を廃止。
 - XML座標パースを `location.x` / `location.y` / `posZ` に統一。
 - オブジェクトの原点位置の違い（底面 vs 中心）に対応（terrain: `+depth/2`, character: `+size.y/2`）。
 - terrain の寸法マッピングを修正: Udonarium `depth`→Resonite Y軸、`height`→Z軸。

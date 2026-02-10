@@ -4,7 +4,7 @@ import { GameTable } from '../UdonariumObject';
 import { ResoniteObject } from '../ResoniteObject';
 
 describe('applyTableConversion', () => {
-  it('テーブルサイズ・Yオフセット・Quad系コンポーネントを設定する', () => {
+  it('テーブルサイズ・Quad系コンポーネントを設定する', () => {
     const udonObj: GameTable = {
       id: 'table-1',
       type: 'table',
@@ -16,6 +16,7 @@ describe('applyTableConversion', () => {
       height: 10,
       gridType: 'square',
       gridColor: '#ffffff',
+      children: [],
     };
     const resoniteObj: ResoniteObject = {
       id: 'slot-table-1',
@@ -32,7 +33,7 @@ describe('applyTableConversion', () => {
 
     expect(resoniteObj.rotation).toEqual({ x: 90, y: 0, z: 0 });
     expect(resoniteObj.scale).toEqual({ x: 1, y: 1, z: 1 });
-    expect(resoniteObj.position.y).toBe(-0.1);
+    expect(resoniteObj.position.y).toBe(0);
     expect(resoniteObj.components[0].fields).toEqual({
       Size: {
         $type: 'float2',

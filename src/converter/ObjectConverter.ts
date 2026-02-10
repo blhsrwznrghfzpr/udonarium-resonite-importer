@@ -77,7 +77,9 @@ function convertObjectWithTextures(
       applyTerrainConversion(udonObj, resoniteObj, textureMap);
       break;
     case 'table':
-      applyTableConversion(udonObj, resoniteObj, textureMap);
+      applyTableConversion(udonObj, resoniteObj, textureMap, (obj) =>
+        convertObjectWithTextures(obj, textureMap)
+      );
       break;
     case 'card':
       applyCardConversion(udonObj, resoniteObj, textureMap);

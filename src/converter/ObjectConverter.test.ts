@@ -133,13 +133,14 @@ describe('ObjectConverter', () => {
           height: 20,
           gridType: 'square',
           gridColor: '#000000',
+          children: [],
         };
 
         const result = convertObject(table);
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
-        expect(result.position.y).toBe(0.9);
+        expect(result.position.y).toBe(1);
       });
     });
 
@@ -215,6 +216,7 @@ describe('ObjectConverter', () => {
           height: 1,
           gridType: 'square' as const,
           gridColor: '#000000',
+          children: [],
         },
         {
           ...createBaseObject(),
