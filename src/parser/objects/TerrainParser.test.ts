@@ -169,8 +169,8 @@ describe('TerrainParser', () => {
     it('should parse position', () => {
       const data = {
         '@_identifier': 'terrain-005',
-        '@_posX': '500',
-        '@_posY': '600',
+        '@_location.x': '500',
+        '@_location.y': '600',
         '@_posZ': '30',
         data: [
           {
@@ -207,6 +207,32 @@ describe('TerrainParser', () => {
       expect(result.position.x).toBe(0);
       expect(result.position.y).toBe(0);
       expect(result.position.z).toBe(0);
+    });
+
+    it('should parse position from location.x/location.y attributes', () => {
+      const data = {
+        '@_identifier': 'terrain-006',
+        '@_location.x': '575',
+        '@_location.y': '175',
+        '@_posZ': '100',
+        data: [
+          {
+            '@_name': 'terrain',
+            data: [
+              {
+                '@_name': 'common',
+                data: [{ '@_name': 'name', '#text': '地形' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = parseTerrain(data, 'test.xml');
+
+      expect(result.position.x).toBe(575);
+      expect(result.position.y).toBe(175);
+      expect(result.position.z).toBe(100);
     });
 
     it('should handle empty data gracefully', () => {

@@ -260,8 +260,8 @@ describe('TableParser', () => {
     it('should parse position', () => {
       const data = {
         '@_identifier': 'mask-002',
-        '@_posX': '150',
-        '@_posY': '250',
+        '@_location.x': '150',
+        '@_location.y': '250',
         '@_posZ': '4',
         data: [
           {
@@ -276,6 +276,27 @@ describe('TableParser', () => {
       expect(result.position.x).toBe(150);
       expect(result.position.y).toBe(250);
       expect(result.position.z).toBe(4);
+    });
+
+    it('should parse position from location.x/location.y attributes', () => {
+      const data = {
+        '@_identifier': 'mask-004',
+        '@_location.x': '300',
+        '@_location.y': '400',
+        '@_posZ': '5',
+        data: [
+          {
+            '@_name': 'table-mask',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseTableMask(data, 'test.xml');
+
+      expect(result.position.x).toBe(300);
+      expect(result.position.y).toBe(400);
+      expect(result.position.z).toBe(5);
     });
 
     it('should default position to (0, 0)', () => {

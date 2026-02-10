@@ -161,8 +161,8 @@ describe('CardParser', () => {
     it('should parse position', () => {
       const data = {
         '@_identifier': 'card-006',
-        '@_posX': '150',
-        '@_posY': '250',
+        '@_location.x': '150',
+        '@_location.y': '250',
         '@_posZ': '12',
         data: [
           {
@@ -177,6 +177,27 @@ describe('CardParser', () => {
       expect(result.position.x).toBe(150);
       expect(result.position.y).toBe(250);
       expect(result.position.z).toBe(12);
+    });
+
+    it('should parse position from location.x/location.y attributes', () => {
+      const data = {
+        '@_identifier': 'card-007',
+        '@_location.x': '865.5179751952622',
+        '@_location.y': '656.0392841109901',
+        '@_posZ': '0',
+        data: [
+          {
+            '@_name': 'card',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseCard(data, 'test.xml');
+
+      expect(result.position.x).toBeCloseTo(865.518, 2);
+      expect(result.position.y).toBeCloseTo(656.039, 2);
+      expect(result.position.z).toBe(0);
     });
 
     it('should default position to (0, 0)', () => {
@@ -334,8 +355,8 @@ describe('CardParser', () => {
     it('should parse position', () => {
       const data = {
         '@_identifier': 'stack-005',
-        '@_posX': '300',
-        '@_posY': '400',
+        '@_location.x': '300',
+        '@_location.y': '400',
         '@_posZ': '8',
         data: [
           {
@@ -350,6 +371,27 @@ describe('CardParser', () => {
       expect(result.position.x).toBe(300);
       expect(result.position.y).toBe(400);
       expect(result.position.z).toBe(8);
+    });
+
+    it('should parse position from location.x/location.y attributes', () => {
+      const data = {
+        '@_identifier': 'stack-006',
+        '@_location.x': '750',
+        '@_location.y': '625',
+        '@_posZ': '0',
+        data: [
+          {
+            '@_name': 'card-stack',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseCardStack(data, 'test.xml');
+
+      expect(result.position.x).toBe(750);
+      expect(result.position.y).toBe(625);
+      expect(result.position.z).toBe(0);
     });
 
     it('should use fileName as fallback for name and id', () => {
