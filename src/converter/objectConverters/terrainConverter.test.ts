@@ -173,4 +173,38 @@ describe('applyTerrainConversion', () => {
     expect(resoniteObj.children[1].isActive).toBe(false);
     expect(resoniteObj.children[1].children).toHaveLength(4);
   });
+
+  it('terrain rotate maps to Resonite Y rotation and keeps edge-to-center offset', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-rotate',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 30,
+      locationName: 'table',
+      name: 'Terrain Rotate',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-terrain-rotate',
+      name: 'Terrain Rotate',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: [],
+      components: [],
+      children: [],
+    };
+
+    applyTerrainConversion(udonObj, resoniteObj);
+
+    expect(resoniteObj.position).toEqual({ x: 1, y: 1, z: -1 });
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: 30, z: 0 });
+  });
 });

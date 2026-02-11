@@ -11,6 +11,7 @@ export function applyTerrainConversion(
   resoniteObj: ResoniteObject,
   textureMap?: Map<string, string>
 ): void {
+  resoniteObj.rotation = { x: 0, y: udonObj.rotate, z: 0 };
   const topTextureIdentifier =
     udonObj.floorImage?.identifier ??
     udonObj.wallImage?.identifier ??
