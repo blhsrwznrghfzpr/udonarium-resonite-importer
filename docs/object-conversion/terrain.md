@@ -1,5 +1,7 @@
 # Terrain Conversion Specification
 
+[日本語版](terrain.ja.md)
+
 ## 1. Scope
 
 Defines conversion behavior for Udonarium `terrain` objects into Resonite slots/components.

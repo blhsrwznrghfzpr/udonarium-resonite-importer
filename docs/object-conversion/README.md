@@ -2,6 +2,8 @@
 
 This directory contains per-object conversion specifications from Udonarium to Resonite.
 
+[日本語版](README.ja.md)
+
 ## Current Specs
 
 - `terrain.md`: Terrain conversion rules and component structure
