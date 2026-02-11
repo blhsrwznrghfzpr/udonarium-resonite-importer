@@ -21,7 +21,6 @@ describe('applyCardConversion', () => {
     name: 'Card',
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
-    scale: { x: 1, y: 1, z: 1 },
     textures: ['front.png', 'back.png'],
     components: [],
     children: [],
@@ -33,9 +32,11 @@ describe('applyCardConversion', () => {
 
     applyCardConversion(udonObj, resoniteObj);
 
+    expect(resoniteObj.position.x).toBe(0.3);
+    expect(resoniteObj.position.z).toBe(-0.45);
     expect(resoniteObj.position.y).toBe(0.001);
     expect(resoniteObj.rotation).toEqual({ x: 90, y: 0, z: 0 });
-    expect(resoniteObj.scale).toEqual({ x: 1, y: 1, z: 1 });
+
     expect(resoniteObj.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 0.6, y: 0.9 } },
       DualSided: { $type: 'bool', value: true },
@@ -59,6 +60,8 @@ describe('applyCardConversion', () => {
     );
     expect(textureComponent?.fields).toEqual({
       URL: { $type: 'Uri', value: 'texture://front.png' },
+      WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
+      WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
     });
   });
 
@@ -74,6 +77,8 @@ describe('applyCardConversion', () => {
     );
     expect(textureComponent?.fields).toEqual({
       URL: { $type: 'Uri', value: 'texture://back.png' },
+      WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
+      WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
     });
   });
 
@@ -90,6 +95,8 @@ describe('applyCardConversion', () => {
     );
     expect(textureComponent?.fields).toEqual({
       URL: { $type: 'Uri', value: 'texture://front.png' },
+      WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
+      WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
     });
   });
 
@@ -108,6 +115,8 @@ describe('applyCardConversion', () => {
     );
     expect(textureComponent?.fields).toEqual({
       URL: { $type: 'Uri', value: 'texture://fallback.png' },
+      WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
+      WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
     });
   });
 
@@ -125,6 +134,8 @@ describe('applyCardConversion', () => {
     );
     expect(textureComponent?.fields).toEqual({
       URL: { $type: 'Uri', value: 'texture://front.gif' },
+      WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
+      WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
       FilterMode: { $type: 'enum?', value: 'Point', enumType: 'TextureFilterMode' },
     });
   });

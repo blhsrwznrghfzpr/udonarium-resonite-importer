@@ -113,6 +113,12 @@ udonarium-resonite-importer/
     └── workflows/               # CI/CDパイプライン
 ```
 
+## 変換仕様ドキュメント
+
+オブジェクト種別ごとの変換仕様は以下を参照してください。
+
+- [docs/object-conversion/README.ja.md](object-conversion/README.ja.md)
+
 ## 座標系変換
 
 Udonariumの2D座標系からResoniteの3D座標系に変換されます：
@@ -131,4 +137,8 @@ Udonarium (2D)           Resonite (3D Y-up)
 デフォルトの`SCALE_FACTOR`は0.02（50px = 1m）です。
 
 Udonariumは `location.x` / `location.y` / `posZ` を座標に使用します。
-Udonariumではオブジェクト底面が座標位置ですが、Resoniteでは中心が座標位置のため、terrain・character には Y 方向のオフセットが適用されます。
+Udonariumではオブジェクトの端が座標位置ですが、Resoniteでは中心が座標位置のため、各converterでオブジェクトごとに中心補正を適用しています。
+例:
+- terrain: `x += width/2`, `y += height/2`, `z -= depth/2`
+- character: `x += size/2`, `y += size/2`, `z -= size/2`
+- card/card-stack/text-note: `x += width/2`, `z -= height/2`

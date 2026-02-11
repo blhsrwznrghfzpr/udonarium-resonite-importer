@@ -3,7 +3,13 @@
  */
 
 import { Terrain, ImageRef } from '../../converter/UdonariumObject';
-import { findDataByName, getTextValue, getNumberValue, parsePosition } from './ParserUtils';
+import {
+  findDataByName,
+  getTextValue,
+  getNumberValue,
+  getBooleanValue,
+  parsePosition,
+} from './ParserUtils';
 
 export function parseTerrain(data: unknown, fileName: string): Terrain {
   const root = data as Record<string, unknown>;
@@ -33,6 +39,10 @@ export function parseTerrain(data: unknown, fileName: string): Terrain {
 
   // Parse position
   const position = parsePosition(root);
+  const isLocked = getBooleanValue(root['@_isLocked']) ?? false;
+  const mode = getNumberValue(root['@_mode']) ?? 0;
+  const rotate = getNumberValue(root['@_rotate']) ?? 0;
+  const locationName = (root['@_location.name'] as string) || '';
 
   const images: ImageRef[] = [];
   if (wallImage) images.push(wallImage);
@@ -43,6 +53,10 @@ export function parseTerrain(data: unknown, fileName: string): Terrain {
     type: 'terrain',
     name,
     position,
+    isLocked,
+    mode,
+    rotate,
+    locationName,
     width,
     height,
     depth,

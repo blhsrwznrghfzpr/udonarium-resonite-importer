@@ -8,6 +8,10 @@ describe('applyTableConversion', () => {
     const childTerrain: Terrain = {
       id: 'terrain-1',
       type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      locationName: 'table',
       name: 'Terrain',
       position: { x: 10, y: 20, z: 0 },
       images: [],
@@ -38,7 +42,6 @@ describe('applyTableConversion', () => {
       name: 'Table',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      scale: { x: 1, y: 1, z: 1 },
       textures: ['table.png'],
       components: [],
       children: [],
@@ -49,7 +52,6 @@ describe('applyTableConversion', () => {
       name: 'Terrain',
       position: { x: 1, y: 2, z: 3 },
       rotation: { x: 0, y: 0, z: 0 },
-      scale: { x: 1, y: 1, z: 1 },
       textures: [],
       components: [],
       children: [],
@@ -58,7 +60,6 @@ describe('applyTableConversion', () => {
     applyTableConversion(udonObj, resoniteObj, undefined, () => convertedTerrain);
 
     expect(resoniteObj.rotation).toEqual({ x: 0, y: 0, z: 0 });
-    expect(resoniteObj.scale).toEqual({ x: 1, y: 1, z: 1 });
     expect(resoniteObj.components).toEqual([]);
     expect(resoniteObj.children).toHaveLength(2);
 

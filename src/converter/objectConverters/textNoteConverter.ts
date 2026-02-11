@@ -3,6 +3,9 @@ import { ResoniteObject } from '../ResoniteObject';
 import { buildBoxColliderComponent } from './componentBuilders';
 
 export function applyTextNoteConversion(udonObj: TextNote, resoniteObj: ResoniteObject): void {
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  resoniteObj.position.x += 1 / 2;
+  resoniteObj.position.z -= 1 / 2;
   resoniteObj.components = [
     {
       id: `${resoniteObj.id}-text`,

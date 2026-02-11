@@ -33,6 +33,10 @@ describe('TerrainParser', () => {
       expect(result.id).toBe('terrain-001');
       expect(result.type).toBe('terrain');
       expect(result.name).toBe('Mountain');
+      expect(result.isLocked).toBe(false);
+      expect(result.mode).toBe(0);
+      expect(result.rotate).toBe(0);
+      expect(result.locationName).toBe('');
       expect(result.width).toBe(3);
       expect(result.height).toBe(2);
       expect(result.depth).toBe(4);
@@ -192,6 +196,29 @@ describe('TerrainParser', () => {
       expect(result.position.z).toBe(30);
     });
 
+    it('should parse terrain attributes (isLocked/mode/rotate/location.name)', () => {
+      const data = {
+        '@_identifier': 'terrain-007',
+        '@_isLocked': 'true',
+        '@_mode': '3',
+        '@_rotate': '30',
+        '@_location.name': 'table',
+        data: [
+          {
+            '@_name': 'terrain',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseTerrain(data, 'test.xml');
+
+      expect(result.isLocked).toBe(true);
+      expect(result.mode).toBe(3);
+      expect(result.rotate).toBe(30);
+      expect(result.locationName).toBe('table');
+    });
+
     it('should default position to (0, 0)', () => {
       const data = {
         data: [
@@ -245,6 +272,10 @@ describe('TerrainParser', () => {
       expect(result.width).toBe(1);
       expect(result.height).toBe(1);
       expect(result.depth).toBe(1);
+      expect(result.isLocked).toBe(false);
+      expect(result.mode).toBe(0);
+      expect(result.rotate).toBe(0);
+      expect(result.locationName).toBe('');
       expect(result.wallImage).toBeNull();
       expect(result.floorImage).toBeNull();
       expect(result.images).toHaveLength(0);

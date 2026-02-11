@@ -20,6 +20,9 @@ export function applyCardConversion(
       udonObj.images[0]?.identifier);
   const textureValue = resolveTextureValue(textureIdentifier, textureMap);
 
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  resoniteObj.position.x += 0.6 / 2;
+  resoniteObj.position.z -= 0.9 / 2;
   // Slight Y offset so cards don't z-fight with the table surface.
   resoniteObj.position.y += 0.001;
   // Lay cards flat on the table (horizontal quad).

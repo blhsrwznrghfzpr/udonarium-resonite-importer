@@ -94,13 +94,14 @@ describe('ObjectConverter', () => {
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.name).toBe('Test Object');
-        // convertPosition(100, 200, 50) = {x:2, y:1, z:-4}, then +size/2 offset on y
+        // convertPosition(100, 200, 50) = {x:2, y:1, z:-4}, then +size/2 offset on x/y/z (z is negative direction)
         const basePos = convertPosition(100, 200, 50);
         expect(result.position).toEqual({
-          ...basePos,
+          x: basePos.x + character.size / 2,
           y: basePos.y + character.size / 2,
+          z: basePos.z - character.size / 2,
         });
-        expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
+
         expect(result.textures).toEqual(['img1']);
       });
     });
@@ -110,6 +111,10 @@ describe('ObjectConverter', () => {
         const terrain: Terrain = {
           ...createBaseObject(),
           type: 'terrain',
+          isLocked: false,
+          mode: 3,
+          rotate: 0,
+          locationName: 'table',
           width: 10,
           height: 5,
           depth: 3,
@@ -120,7 +125,6 @@ describe('ObjectConverter', () => {
         const result = convertObject(terrain);
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
-        expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
       });
     });
 
@@ -139,7 +143,7 @@ describe('ObjectConverter', () => {
         const result = convertObject(table);
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
-        expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
+
         expect(result.position.y).toBe(1);
       });
     });
@@ -157,7 +161,6 @@ describe('ObjectConverter', () => {
         const result = convertObject(card);
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
-        expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
       });
     });
 
@@ -172,7 +175,6 @@ describe('ObjectConverter', () => {
         const result = convertObject(cardStack);
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
-        expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
       });
     });
 
@@ -188,7 +190,6 @@ describe('ObjectConverter', () => {
         const result = convertObject(textNote);
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
-        expect(result.scale).toEqual({ x: 1, y: 1, z: 1 });
       });
     });
 
@@ -203,6 +204,10 @@ describe('ObjectConverter', () => {
         {
           ...createBaseObject(),
           type: 'terrain' as const,
+          isLocked: false,
+          mode: 3,
+          rotate: 0,
+          locationName: 'table',
           width: 1,
           height: 1,
           depth: 1,
