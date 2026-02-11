@@ -21,13 +21,12 @@ export function applyTerrainConversion(
     udonObj.images[0]?.identifier;
   const topTextureValue = resolveTextureValue(topTextureIdentifier, textureMap);
   const sideTextureValue = resolveTextureValue(sideTextureIdentifier, textureMap);
-  // Udonarium: width=X, height=Y(horizontal), depth=Z(vertical)
-  // Resonite (Y-up): X=width, Y=depth(vertical), Z=height(horizontal)
+  // Axis mapping: width -> X, height -> Y, depth -> Z
   resoniteObj.components = [
     buildBoxColliderComponent(resoniteObj.id, {
       x: udonObj.width,
-      y: udonObj.depth,
-      z: udonObj.height,
+      y: udonObj.height,
+      z: udonObj.depth,
     }),
   ];
 
@@ -41,36 +40,36 @@ export function applyTerrainConversion(
     {
       id: topId,
       name: `${resoniteObj.name}-top`,
-      position: { x: 0, y: udonObj.depth / 2, z: 0 },
+      position: { x: 0, y: udonObj.height / 2, z: 0 },
       rotation: { x: 90, y: 0, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(topId, topTextureValue, false, {
         x: udonObj.width,
-        y: udonObj.height,
+        y: udonObj.depth,
       }),
       children: [],
     },
     {
       id: frontId,
       name: `${resoniteObj.name}-front`,
-      position: { x: 0, y: 0, z: -udonObj.height / 2 },
+      position: { x: 0, y: 0, z: -udonObj.depth / 2 },
       rotation: { x: 0, y: 0, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(frontId, sideTextureValue, false, {
         x: udonObj.width,
-        y: udonObj.depth,
+        y: udonObj.height,
       }),
       children: [],
     },
     {
       id: backId,
       name: `${resoniteObj.name}-back`,
-      position: { x: 0, y: 0, z: udonObj.height / 2 },
+      position: { x: 0, y: 0, z: udonObj.depth / 2 },
       rotation: { x: 0, y: 180, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(backId, sideTextureValue, false, {
         x: udonObj.width,
-        y: udonObj.depth,
+        y: udonObj.height,
       }),
       children: [],
     },
@@ -81,8 +80,8 @@ export function applyTerrainConversion(
       rotation: { x: 0, y: 90, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(leftId, sideTextureValue, false, {
-        x: udonObj.height,
-        y: udonObj.depth,
+        x: udonObj.depth,
+        y: udonObj.height,
       }),
       children: [],
     },
@@ -93,13 +92,13 @@ export function applyTerrainConversion(
       rotation: { x: 0, y: -90, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(rightId, sideTextureValue, false, {
-        x: udonObj.height,
-        y: udonObj.depth,
+        x: udonObj.depth,
+        y: udonObj.height,
       }),
       children: [],
     },
   ];
 
   // Udonarium positions at object bottom; Resonite positions at center
-  resoniteObj.position.y += udonObj.depth / 2;
+  resoniteObj.position.y += udonObj.height / 2;
 }

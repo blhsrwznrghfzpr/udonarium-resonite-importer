@@ -42,12 +42,12 @@ describe('applyTerrainConversion', () => {
         $type: 'float3',
         value: {
           x: 10,
-          y: 4,
-          z: 2,
+          y: 2,
+          z: 4,
         },
       },
     });
-    expect(resoniteObj.position.y).toBe(2);
+    expect(resoniteObj.position.y).toBe(1);
 
     expect(resoniteObj.children).toHaveLength(5);
     for (const child of resoniteObj.children) {
@@ -60,22 +60,22 @@ describe('applyTerrainConversion', () => {
     }
 
     const topFace = resoniteObj.children.find((child) => child.id === 'slot-terrain-1-top');
-    expect(topFace?.position).toEqual({ x: 0, y: 2, z: 0 });
+    expect(topFace?.position).toEqual({ x: 0, y: 1, z: 0 });
     expect(topFace?.rotation).toEqual({ x: 90, y: 0, z: 0 });
     expect(topFace?.components[0].fields).toEqual({
-      Size: { $type: 'float2', value: { x: 10, y: 2 } },
+      Size: { $type: 'float2', value: { x: 10, y: 4 } },
     });
 
     const frontFace = resoniteObj.children.find((child) => child.id === 'slot-terrain-1-front');
-    expect(frontFace?.position).toEqual({ x: 0, y: 0, z: -1 });
+    expect(frontFace?.position).toEqual({ x: 0, y: 0, z: -2 });
     expect(frontFace?.components[0].fields).toEqual({
-      Size: { $type: 'float2', value: { x: 10, y: 4 } },
+      Size: { $type: 'float2', value: { x: 10, y: 2 } },
     });
 
     const leftFace = resoniteObj.children.find((child) => child.id === 'slot-terrain-1-left');
     expect(leftFace?.position).toEqual({ x: -5, y: 0, z: 0 });
     expect(leftFace?.components[0].fields).toEqual({
-      Size: { $type: 'float2', value: { x: 2, y: 4 } },
+      Size: { $type: 'float2', value: { x: 4, y: 2 } },
     });
   });
 });
