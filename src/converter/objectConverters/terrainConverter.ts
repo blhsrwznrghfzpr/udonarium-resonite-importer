@@ -29,6 +29,13 @@ export function applyTerrainConversion(
       z: udonObj.depth,
     }),
   ];
+  if (!udonObj.isLocked) {
+    resoniteObj.components.push({
+      id: `${resoniteObj.id}-grabbable`,
+      type: '[FrooxEngine]FrooxEngine.Grabbable',
+      fields: {},
+    });
+  }
 
   const topId = `${resoniteObj.id}-top`;
   const frontId = `${resoniteObj.id}-front`;

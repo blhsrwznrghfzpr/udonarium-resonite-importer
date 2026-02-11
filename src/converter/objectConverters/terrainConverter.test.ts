@@ -4,7 +4,7 @@ import { Terrain } from '../UdonariumObject';
 import { ResoniteObject } from '../ResoniteObject';
 
 describe('applyTerrainConversion', () => {
-  it('terrain container has BoxCollider and creates five QuadMesh faces', () => {
+  it('terrain (unlocked) has BoxCollider + Grabbable and creates five QuadMesh faces', () => {
     const udonObj: Terrain = {
       id: 'terrain-1',
       type: 'terrain',
@@ -36,6 +36,7 @@ describe('applyTerrainConversion', () => {
 
     expect(resoniteObj.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
+      '[FrooxEngine]FrooxEngine.Grabbable',
     ]);
     expect(resoniteObj.components[0].fields).toEqual({
       Size: {
@@ -79,5 +80,40 @@ describe('applyTerrainConversion', () => {
     expect(leftFace?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 4, y: 2 } },
     });
+  });
+
+  it('terrain (locked) does not add Grabbable', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-2',
+      type: 'terrain',
+      isLocked: true,
+      mode: 3,
+      rotate: 0,
+      locationName: 'table',
+      name: 'Locked Terrain',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-terrain-2',
+      name: 'Locked Terrain',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: [],
+      components: [],
+      children: [],
+    };
+
+    applyTerrainConversion(udonObj, resoniteObj);
+
+    expect(resoniteObj.components.map((c) => c.type)).toEqual([
+      '[FrooxEngine]FrooxEngine.BoxCollider',
+    ]);
   });
 });
