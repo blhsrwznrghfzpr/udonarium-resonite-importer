@@ -364,6 +364,10 @@ describe('XmlParser', () => {
       expect(terrain.type).toBe('terrain');
       expect(terrain.name).toBe('地形');
       expect(terrain.position).toEqual({ x: 575, y: 175, z: 100 });
+      expect(terrain.isLocked).toBe(false);
+      expect(terrain.mode).toBe(3);
+      expect(terrain.rotate).toBe(0);
+      expect(terrain.locationName).toBe('table');
       expect(terrain.width).toBe(2);
       expect(terrain.height).toBe(2);
       expect(terrain.depth).toBe(2);
@@ -396,6 +400,10 @@ describe('XmlParser', () => {
       expect(result.errors).toHaveLength(0);
       const terrain = result.objects[0] as Terrain;
       expect(terrain.position).toEqual({ x: 775, y: 450, z: 0 });
+      expect(terrain.isLocked).toBe(true);
+      expect(terrain.mode).toBe(3);
+      expect(terrain.rotate).toBe(0);
+      expect(terrain.locationName).toBe('table');
     });
 
     it('should parse terrain with different dimensions', () => {

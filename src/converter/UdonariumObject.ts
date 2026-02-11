@@ -58,6 +58,10 @@ export interface CardStack extends BaseUdonariumObject {
 
 export interface Terrain extends BaseUdonariumObject {
   type: 'terrain';
+  isLocked: boolean;
+  mode: number;
+  rotate: number;
+  locationName: string;
   width: number;
   height: number;
   depth: number;

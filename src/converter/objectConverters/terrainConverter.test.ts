@@ -8,6 +8,10 @@ describe('applyTerrainConversion', () => {
     const udonObj: Terrain = {
       id: 'terrain-1',
       type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      locationName: 'table',
       name: 'Terrain',
       position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'wall.png', name: 'wall.png' }],

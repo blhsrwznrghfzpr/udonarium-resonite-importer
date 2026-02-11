@@ -110,6 +110,10 @@ describe('ObjectConverter', () => {
         const terrain: Terrain = {
           ...createBaseObject(),
           type: 'terrain',
+          isLocked: false,
+          mode: 3,
+          rotate: 0,
+          locationName: 'table',
           width: 10,
           height: 5,
           depth: 3,
@@ -199,6 +203,10 @@ describe('ObjectConverter', () => {
         {
           ...createBaseObject(),
           type: 'terrain' as const,
+          isLocked: false,
+          mode: 3,
+          rotate: 0,
+          locationName: 'table',
           width: 1,
           height: 1,
           depth: 1,
