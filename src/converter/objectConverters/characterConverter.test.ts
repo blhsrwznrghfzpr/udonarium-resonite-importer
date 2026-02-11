@@ -41,7 +41,8 @@ describe('applyCharacterConversion', () => {
       Size: { $type: 'float2', value: { x: 0.3, y: 0.3 } },
       DualSided: { $type: 'bool', value: true },
     });
-    // Bottom-origin offset: position.y += size.y / 2
+    expect(resoniteObj.position.x).toBe(0.15);
+    expect(resoniteObj.position.z).toBe(-0.15);
     expect(resoniteObj.position.y).toBe(0.15);
 
     const materialComponent = resoniteObj.components.find(

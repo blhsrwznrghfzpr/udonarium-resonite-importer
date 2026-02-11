@@ -99,6 +99,8 @@ export function applyTerrainConversion(
     },
   ];
 
-  // Udonarium positions at object bottom; Resonite positions at center
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  resoniteObj.position.x += udonObj.width / 2;
   resoniteObj.position.y += udonObj.height / 2;
+  resoniteObj.position.z -= udonObj.depth / 2;
 }

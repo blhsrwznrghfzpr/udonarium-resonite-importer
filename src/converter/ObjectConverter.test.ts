@@ -94,11 +94,12 @@ describe('ObjectConverter', () => {
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.name).toBe('Test Object');
-        // convertPosition(100, 200, 50) = {x:2, y:1, z:-4}, then +size/2 offset on y
+        // convertPosition(100, 200, 50) = {x:2, y:1, z:-4}, then +size/2 offset on x/y/z (z is negative direction)
         const basePos = convertPosition(100, 200, 50);
         expect(result.position).toEqual({
-          ...basePos,
+          x: basePos.x + character.size / 2,
           y: basePos.y + character.size / 2,
+          z: basePos.z - character.size / 2,
         });
 
         expect(result.textures).toEqual(['img1']);

@@ -47,7 +47,9 @@ describe('applyTerrainConversion', () => {
         },
       },
     });
+    expect(resoniteObj.position.x).toBe(5);
     expect(resoniteObj.position.y).toBe(1);
+    expect(resoniteObj.position.z).toBe(-2);
 
     expect(resoniteObj.children).toHaveLength(5);
     for (const child of resoniteObj.children) {

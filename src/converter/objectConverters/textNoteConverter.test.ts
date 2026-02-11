@@ -27,6 +27,7 @@ describe('applyTextNoteConversion', () => {
 
     applyTextNoteConversion(udonObj, resoniteObj);
 
+    expect(resoniteObj.position).toEqual({ x: 0.5, y: 0, z: -0.5 });
     expect(resoniteObj.components).toEqual([
       {
         id: 'slot-note-1-text',
@@ -69,6 +70,7 @@ describe('applyTextNoteConversion', () => {
 
     applyTextNoteConversion(udonObj, resoniteObj);
 
+    expect(resoniteObj.position).toEqual({ x: 0.5, y: 0, z: -0.5 });
     expect(resoniteObj.components[0].fields).toEqual({
       Content: { $type: 'string', value: 'tiny' },
       Size: { $type: 'float', value: 8 },

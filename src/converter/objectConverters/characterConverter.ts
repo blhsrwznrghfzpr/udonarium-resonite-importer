@@ -25,6 +25,8 @@ export function applyCharacterConversion(
       z: 0.05,
     })
   );
-  // Udonarium positions at object bottom; Resonite positions at center
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  resoniteObj.position.x += size.x / 2;
+  resoniteObj.position.z -= size.x / 2;
   resoniteObj.position.y += size.y / 2;
 }

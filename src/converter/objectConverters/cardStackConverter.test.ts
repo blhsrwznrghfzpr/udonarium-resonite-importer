@@ -63,6 +63,7 @@ describe('applyCardStackConversion', () => {
         },
       },
     ]);
+    expect(resoniteObj.position).toEqual({ x: 0.3, y: 0, z: -0.45 });
     expect(resoniteObj.children).toHaveLength(2);
     expect(resoniteObj.children[0].position).toEqual({ x: 0, y: 0, z: 0 });
     expect(resoniteObj.children[1].position).toEqual({ x: 0, y: 0.0005, z: 0 });

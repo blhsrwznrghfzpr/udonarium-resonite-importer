@@ -7,6 +7,9 @@ export function applyCardStackConversion(
   resoniteObj: ResoniteObject,
   convertObject: (obj: UdonariumObject) => ResoniteObject
 ): void {
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  resoniteObj.position.x += 0.6 / 2;
+  resoniteObj.position.z -= 0.9 / 2;
   resoniteObj.components = [buildBoxColliderComponent(resoniteObj.id, { x: 0.6, y: 0.05, z: 0.9 })];
   resoniteObj.children = udonObj.cards.map((card, i) => {
     const child = convertObject(card);

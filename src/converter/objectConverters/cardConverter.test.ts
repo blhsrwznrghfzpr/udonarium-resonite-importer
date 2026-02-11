@@ -32,6 +32,8 @@ describe('applyCardConversion', () => {
 
     applyCardConversion(udonObj, resoniteObj);
 
+    expect(resoniteObj.position.x).toBe(0.3);
+    expect(resoniteObj.position.z).toBe(-0.45);
     expect(resoniteObj.position.y).toBe(0.001);
     expect(resoniteObj.rotation).toEqual({ x: 90, y: 0, z: 0 });
 
