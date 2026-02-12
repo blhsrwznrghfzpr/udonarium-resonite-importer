@@ -72,7 +72,7 @@ describe('applyTableConversion', () => {
     );
     expect(collider).toBeDefined();
     expect(collider!.fields).toEqual({
-      Size: { $type: 'float3', value: { x: 20, y: 10, z: 0.02 } },
+      Size: { $type: 'float3', value: { x: 20, y: 10, z: 0 } },
     });
     expect(visual.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 20, y: 10 } },

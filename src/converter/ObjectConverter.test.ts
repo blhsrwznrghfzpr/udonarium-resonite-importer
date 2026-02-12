@@ -7,6 +7,7 @@ import type {
   CardStack,
   Terrain,
   GameTable,
+  TableMask,
   TextNote,
 } from './UdonariumObject';
 
@@ -193,6 +194,27 @@ describe('ObjectConverter', () => {
       });
     });
 
+    describe('table-mask conversion', () => {
+      it('should convert table-mask into visible quad components', () => {
+        const tableMask: TableMask = {
+          ...createBaseObject(),
+          type: 'table-mask',
+          width: 5,
+          height: 4,
+          properties: new Map([['opacity', 30]]),
+        };
+
+        const result = convertObject(tableMask);
+
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
+        expect(result.rotation).toEqual({ x: 90, y: 0, z: 0 });
+        expect(result.components.map((c) => c.type)).toContain('[FrooxEngine]FrooxEngine.QuadMesh');
+        expect(result.components.map((c) => c.type)).toContain(
+          '[FrooxEngine]FrooxEngine.MeshRenderer'
+        );
+      });
+    });
+
     it('should add BoxCollider to all object types', () => {
       const objects = [
         {
@@ -245,7 +267,7 @@ describe('ObjectConverter', () => {
       const expectedSizes = [
         { x: 1, y: 1, z: 0.05 }, // character -> converter-defined collider
         { x: 1, y: 1, z: 1 }, // terrain -> converter-defined collider
-        { x: 1, y: 1, z: 0.02 }, // table -> collider on -surface child slot
+        { x: 1, y: 1, z: 0 }, // table -> collider on -surface child slot
         { x: 0.6, y: 0.9, z: 0.01 }, // card -> converter-defined collider
         { x: 0.6, y: 0.05, z: 0.9 }, // card-stack -> converter-defined collider
         { x: 1, y: 0.02, z: 1 }, // text-note -> converter-defined collider

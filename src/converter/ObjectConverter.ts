@@ -11,6 +11,7 @@ import { applyCardConversion } from './objectConverters/cardConverter';
 import { applyCardStackConversion } from './objectConverters/cardStackConverter';
 import { applyTerrainConversion } from './objectConverters/terrainConverter';
 import { applyTableConversion } from './objectConverters/tableConverter';
+import { applyTableMaskConversion } from './objectConverters/tableMaskConverter';
 import { applyTextNoteConversion } from './objectConverters/textNoteConverter';
 import { replaceTexturesInValue } from './objectConverters/componentBuilders';
 
@@ -76,6 +77,9 @@ function convertObjectWithTextures(
       applyTableConversion(udonObj, resoniteObj, textureMap, (obj) =>
         convertObjectWithTextures(obj, textureMap)
       );
+      break;
+    case 'table-mask':
+      applyTableMaskConversion(udonObj, resoniteObj, textureMap);
       break;
     case 'card':
       applyCardConversion(udonObj, resoniteObj, textureMap);

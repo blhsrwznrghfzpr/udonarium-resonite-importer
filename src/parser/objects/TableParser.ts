@@ -84,15 +84,30 @@ export function parseTable(data: unknown, fileName: string): GameTable {
 export function parseTableMask(data: unknown, fileName: string): TableMask {
   const root = data as Record<string, unknown>;
   const maskData = findDataByName(root.data, 'table-mask');
+  const imageData = findDataByName(maskData, 'image');
+  const imageIdentifier = getTextValue(findDataByName(imageData, 'imageIdentifier'));
 
   // Parse common data
   const commonData = findDataByName(maskData, 'common');
   const name = getTextValue(findDataByName(commonData, 'name')) || fileName;
   const width = getNumberValue(findDataByName(commonData, 'width')) || 4;
   const height = getNumberValue(findDataByName(commonData, 'height')) || 4;
+  const opacityNode = findDataByName(commonData, 'opacity') as Record<string, unknown> | undefined;
+  const opacity = getNumberValue(opacityNode?.['@_currentValue']) ?? getNumberValue(opacityNode);
 
   // Parse position
   const position = parsePosition(root);
+  const properties = new Map<string, string | number>();
+  if (opacity !== undefined) {
+    properties.set('opacity', opacity);
+  }
+  const images: ImageRef[] = [];
+  if (imageIdentifier) {
+    images.push({
+      identifier: imageIdentifier,
+      name: 'mask',
+    });
+  }
 
   return {
     id: (root['@_identifier'] as string) || fileName,
@@ -101,7 +116,7 @@ export function parseTableMask(data: unknown, fileName: string): TableMask {
     position,
     width,
     height,
-    images: [],
-    properties: new Map(),
+    images,
+    properties,
   };
 }

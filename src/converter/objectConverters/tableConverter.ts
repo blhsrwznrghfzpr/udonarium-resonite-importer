@@ -32,7 +32,7 @@ export function applyTableConversion(
       buildBoxColliderComponent(surfaceId, {
         x: udonObj.width,
         y: udonObj.height,
-        z: 0.02,
+        z: 0,
       }),
     ],
     children: [],

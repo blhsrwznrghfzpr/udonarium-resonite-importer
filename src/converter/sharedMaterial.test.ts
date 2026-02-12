@@ -68,4 +68,25 @@ describe('sharedMaterial', () => {
       elements: [{ $type: 'reference', targetId: 'shared-mat-id' }],
     });
   });
+
+  it('does not deduplicate materials when fields differ', () => {
+    const objects: ResoniteObject[] = [createObject('a'), createObject('b')];
+    const materialB = objects[1].components.find(
+      (component) => component.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
+    );
+    if (!materialB) {
+      throw new Error('material missing');
+    }
+    materialB.fields = {
+      ...materialB.fields,
+      Color: {
+        $type: 'colorX',
+        value: { r: 1, g: 1, b: 1, a: 0.5, profile: 'sRGB' },
+      },
+    };
+
+    const definitions = prepareSharedMaterialDefinitions(objects);
+
+    expect(definitions).toHaveLength(2);
+  });
 });
