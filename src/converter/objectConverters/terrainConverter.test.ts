@@ -58,7 +58,7 @@ describe('applyTerrainConversion', () => {
     expect(topFace?.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.QuadMesh',
       '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      '[FrooxEngine]FrooxEngine.UnlitMaterial',
+      '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
     ]);
 
@@ -70,7 +70,7 @@ describe('applyTerrainConversion', () => {
       expect(wallFace.components.map((c) => c.type)).toEqual([
         '[FrooxEngine]FrooxEngine.QuadMesh',
         '[FrooxEngine]FrooxEngine.StaticTexture2D',
-        '[FrooxEngine]FrooxEngine.UnlitMaterial',
+        '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
         '[FrooxEngine]FrooxEngine.MeshRenderer',
       ]);
     }
@@ -166,7 +166,7 @@ describe('applyTerrainConversion', () => {
     expect(resoniteObj.children[0].components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.QuadMesh',
       '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      '[FrooxEngine]FrooxEngine.UnlitMaterial',
+      '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
     ]);
     expect(resoniteObj.children[1].id).toBe('slot-terrain-3-walls');

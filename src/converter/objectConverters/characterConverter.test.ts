@@ -33,7 +33,7 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.QuadMesh',
       '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      '[FrooxEngine]FrooxEngine.UnlitMaterial',
+      '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
       '[FrooxEngine]FrooxEngine.BoxCollider',
     ]);
@@ -46,10 +46,10 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.position.y).toBe(0.15);
 
     const materialComponent = resoniteObj.components.find(
-      (c) => c.type === '[FrooxEngine]FrooxEngine.UnlitMaterial'
+      (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
     );
     expect(materialComponent?.fields).toEqual({
-      Texture: { $type: 'reference', targetId: 'slot-char-1-tex' },
+      MainTexture: { $type: 'reference', targetId: 'slot-char-1-tex' },
       BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
     });
     expect(resoniteObj.components[4].fields).toEqual({

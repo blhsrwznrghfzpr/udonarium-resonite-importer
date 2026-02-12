@@ -90,11 +90,11 @@ export function buildQuadMeshComponents(
 
   components.push({
     id: materialId,
-    type: '[FrooxEngine]FrooxEngine.UnlitMaterial',
+    type: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
     fields: {
       ...(textureValue
         ? {
-            Texture: { $type: 'reference', targetId: sharedTextureId ?? localTextureId! },
+            MainTexture: { $type: 'reference', targetId: sharedTextureId ?? localTextureId! },
           }
         : {}),
       BlendMode: createCutoutBlendModeField(),
@@ -145,11 +145,11 @@ export function buildBoxMeshComponents(
 
   components.push({
     id: materialId,
-    type: '[FrooxEngine]FrooxEngine.PBS_Metallic',
+    type: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
     fields: {
       ...(textureValue
         ? {
-            AlbedoTexture: { $type: 'reference', targetId: sharedTextureId ?? localTextureId! },
+            MainTexture: { $type: 'reference', targetId: sharedTextureId ?? localTextureId! },
           }
         : {}),
       BlendMode: createCutoutBlendModeField(),

@@ -7,7 +7,10 @@ describe('componentBuilders', () => {
 
     expect(components.find((c) => c.type.endsWith('StaticTexture2D'))).toBeUndefined();
 
-    const material = components.find((c) => c.type.endsWith('UnlitMaterial'));
-    expect(material?.fields.Texture).toEqual({ $type: 'reference', targetId: 'shared-texture-id' });
+    const material = components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+    expect(material?.fields.MainTexture).toEqual({
+      $type: 'reference',
+      targetId: 'shared-texture-id',
+    });
   });
 });
