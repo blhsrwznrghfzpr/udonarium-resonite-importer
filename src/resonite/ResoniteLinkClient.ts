@@ -171,6 +171,7 @@ export class ResoniteLinkClient {
     position: Vector3;
     scale?: Vector3;
     isActive?: boolean;
+    tag?: string;
   }): Promise<string> {
     if (!this.isConnected()) {
       throw new Error('Not connected to ResoniteLink');
@@ -186,7 +187,7 @@ export class ResoniteLinkClient {
         rotation: createFloatQ({ x: 0, y: 0, z: 0, w: 1 }),
         isActive: createBool(options.isActive ?? true),
         isPersistent: createBool(true),
-        tag: createString(''),
+        tag: createString(options.tag ?? ''),
         orderOffset: createLong(0),
       },
       options.id
@@ -436,6 +437,74 @@ export class ResoniteLinkClient {
     }
 
     return slot.childrens.map((child) => child.id);
+  }
+
+  /**
+   * Remove slot by ID.
+   */
+  async removeSlot(slotId: string): Promise<void> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const response = (await this.client.send({
+      $type: 'removeSlot' as const,
+      slotId,
+    })) as { success?: boolean; errorInfo?: string };
+
+    if (!response.success) {
+      throw new Error(response.errorInfo || `Failed to remove slot: ${slotId}`);
+    }
+  }
+
+  /**
+   * Read slot tag value.
+   */
+  async getSlotTag(slotId: string): Promise<string | undefined> {
+    if (!this.isConnected()) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+
+    const response = (await this.client.send({
+      $type: 'getSlot' as const,
+      slotId,
+      depth: 0,
+    })) as {
+      success?: boolean;
+      data?: { tag?: { value?: unknown } };
+    };
+
+    if (!response.success) {
+      return undefined;
+    }
+
+    const tag = response.data?.tag?.value;
+    return typeof tag === 'string' ? tag : undefined;
+  }
+
+  /**
+   * Remove all direct children under Root that match the given tag.
+   * Returns removed slot count.
+   */
+  async removeRootChildrenByTag(tag: string): Promise<number> {
+    if (!tag) {
+      return 0;
+    }
+
+    const childIds = await this.getSlotChildIds('Root');
+    let removedCount = 0;
+
+    for (const childId of childIds) {
+      const childTag = await this.getSlotTag(childId);
+      if (childTag !== tag) {
+        continue;
+      }
+
+      await this.removeSlot(childId);
+      removedCount += 1;
+    }
+
+    return removedCount;
   }
 
   /**

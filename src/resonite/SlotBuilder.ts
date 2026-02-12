@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 import { ResoniteObject, Vector3 } from '../converter/ResoniteObject';
 import { SharedMeshDefinition } from '../converter/sharedMesh';
 import { SharedMaterialDefinition } from '../converter/sharedMaterial';
-import { IMPORT_GROUP_SCALE } from '../config/MappingConfig';
+import { IMPORT_GROUP_SCALE, IMPORT_ROOT_TAG } from '../config/MappingConfig';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 
 const SLOT_ID_PREFIX = 'udon-imp';
@@ -152,6 +152,7 @@ export class SlotBuilder {
       name,
       position,
       scale,
+      tag: IMPORT_ROOT_TAG,
     });
 
     this.rootSlotId = groupId;

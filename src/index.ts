@@ -27,7 +27,12 @@ import { ResoniteLinkClient } from './resonite/ResoniteLinkClient';
 import { SlotBuilder } from './resonite/SlotBuilder';
 import { AssetImporter } from './resonite/AssetImporter';
 import { registerExternalUrls } from './resonite/registerExternalUrls';
-import { SCALE_FACTOR, getResoniteLinkPort, getResoniteLinkHost } from './config/MappingConfig';
+import {
+  SCALE_FACTOR,
+  IMPORT_ROOT_TAG,
+  getResoniteLinkPort,
+  getResoniteLinkHost,
+} from './config/MappingConfig';
 import { t, setLocale, Locale } from './i18n';
 
 const VERSION = '1.0.0';
@@ -213,6 +218,7 @@ async function run(options: CLIOptions): Promise<void> {
 
   try {
     const slotBuilder = new SlotBuilder(client);
+    await client.removeRootChildrenByTag(IMPORT_ROOT_TAG);
 
     // Create import group
     const groupName = `Udonarium Import - ${path.basename(inputPath, '.zip')}`;

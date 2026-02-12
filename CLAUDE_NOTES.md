@@ -91,6 +91,11 @@ resonite.z = -udonarium.y    * SCALE_FACTOR (0.02)
 ### マテリアル設定
 - すべてのマテリアルは `BlendMode = Cutout` に統一（`UnlitMaterial`, `PBS_Metallic` 共通）。
 
+### インポートの上書き動作
+- ルートコンテナに `IMPORT_ROOT_TAG`（`udonarium-resonite-importer:root`）を付与。
+- 新規インポート開始前に `Root` 直下を走査し、同タグの旧インポートルートを削除してから取り込みを実行。
+- CLI（`src/index.ts`）とGUI（`src/gui/main.ts`）の両方で同じクリーンアップを実施。
+
 ### Electron IPC通信
 - `select-file`: ファイル選択ダイアログ
 - `analyze-zip`: ZIPファイル解析
@@ -177,6 +182,10 @@ src/
   - `addSlot` の `scale` 引数を optional 化（未指定時は `{1,1,1}`）。
 - テーブル surface の位置を `(width/2, 0, -height/2)` にオフセット（QuadMesh の原点補正）。
 - カードに Y+0.001 オフセットを追加（テーブル surface との z-fighting 防止）。
+- インポートルートのタグ管理を追加。
+  - `SlotBuilder.createImportGroup()` で作成するルートスロットに `IMPORT_ROOT_TAG` を設定。
+  - `ResoniteLinkClient` に `removeSlot` / `getSlotTag` / `removeRootChildrenByTag` を追加。
+  - 新規インポート前に同タグの既存ルートを削除するフローを CLI/GUI に導入。
 
 ### 2026-02-10
 - `game-table` の親子関係保持: 子オブジェクトを `GameTable.children` に格納。
