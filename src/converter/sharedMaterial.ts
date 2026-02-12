@@ -1,4 +1,5 @@
 import { ResoniteComponent, ResoniteObject } from './ResoniteObject';
+import { createHash } from 'crypto';
 
 const MATERIAL_REFERENCE_PREFIX = 'material-ref://';
 
@@ -13,16 +14,30 @@ function buildMaterialKey(component: ResoniteComponent): string | undefined {
   if (component.type !== '[FrooxEngine]FrooxEngine.XiexeToonMaterial') {
     return undefined;
   }
-  const blendMode = (component.fields.BlendMode as { value?: string } | undefined)?.value;
-  if (!blendMode) {
+  if (!component.fields || Object.keys(component.fields).length === 0) {
     return undefined;
   }
-  return `xiexe-toon:${blendMode.toLowerCase()}`;
+  const serialized = stableSerialize(component.fields);
+  const digest = createHash('sha1').update(serialized).digest('hex').slice(0, 12);
+  return `xiexe-toon:${digest}`;
 }
 
 function buildMaterialName(key: string): string {
-  const blendMode = key.split(':')[1] ?? 'default';
-  return `XiexeToon_${blendMode}`;
+  const digest = key.split(':')[1] ?? 'default';
+  return `XiexeToon_${digest}`;
+}
+
+function stableSerialize(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
+  }
+  if (!value || typeof value !== 'object') {
+    return JSON.stringify(value);
+  }
+  const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
+    a.localeCompare(b)
+  );
+  return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${stableSerialize(item)}`).join(',')}}`;
 }
 
 function prepareObjectForSharedMaterials(

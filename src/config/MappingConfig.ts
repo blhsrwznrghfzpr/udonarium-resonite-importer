@@ -75,6 +75,7 @@ export const KNOWN_IMAGE_IDENTIFIERS: ReadonlyMap<string, string> = new Map([
   ['testCharacter_4_image', 'https://udonarium.app/assets/images/mon_150.gif'],
   ['testCharacter_5_image', 'https://udonarium.app/assets/images/mon_211.gif'],
   ['testCharacter_6_image', 'https://udonarium.app/assets/images/mon_135.gif'],
+  ['none_icon', 'https://udonarium.app/assets/images/ic_account_circle_black_24dp_2x.png'],
 ]);
 
 /**

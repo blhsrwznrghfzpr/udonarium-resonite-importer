@@ -332,6 +332,52 @@ describe('TableParser', () => {
       expect(result.images).toHaveLength(0);
     });
 
+    it('should parse mask image identifier', () => {
+      const data = {
+        '@_identifier': 'mask-image',
+        data: [
+          {
+            '@_name': 'table-mask',
+            data: [
+              {
+                '@_name': 'image',
+                data: [{ '@_name': 'imageIdentifier', '#text': 'none_icon' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = parseTableMask(data, 'test.xml');
+
+      expect(result.images).toHaveLength(1);
+      expect(result.images[0]).toEqual({
+        identifier: 'none_icon',
+        name: 'mask',
+      });
+    });
+
+    it('should parse opacity from numberResource currentValue', () => {
+      const data = {
+        '@_identifier': 'mask-opacity',
+        data: [
+          {
+            '@_name': 'table-mask',
+            data: [
+              {
+                '@_name': 'common',
+                data: [{ '@_name': 'opacity', '@_currentValue': '30', '#text': '100' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = parseTableMask(data, 'test.xml');
+
+      expect(result.properties.get('opacity')).toBe(30);
+    });
+
     it('should handle empty data gracefully', () => {
       const data = {};
 
