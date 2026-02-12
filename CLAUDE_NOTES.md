@@ -95,6 +95,8 @@ resonite.z = -udonarium.y    * SCALE_FACTOR (0.02)
 - ルートコンテナに `IMPORT_ROOT_TAG`（`udonarium-resonite-importer:root`）を付与。
 - 新規インポート開始前に `Root` 直下を走査し、同タグの旧インポートルートを削除してから取り込みを実行。
 - CLI（`src/index.ts`）とGUI（`src/gui/main.ts`）の両方で同じクリーンアップを実施。
+- 旧インポートが存在する場合は、削除前に `position` / `rotation` / `scale` を取得し、
+  新規インポートのルートコンテナに引き継ぐ。
 
 ### Electron IPC通信
 - `select-file`: ファイル選択ダイアログ
@@ -186,6 +188,13 @@ src/
   - `SlotBuilder.createImportGroup()` で作成するルートスロットに `IMPORT_ROOT_TAG` を設定。
   - `ResoniteLinkClient` に `removeSlot` / `getSlotTag` / `removeRootChildrenByTag` を追加。
   - 新規インポート前に同タグの既存ルートを削除するフローを CLI/GUI に導入。
+- 再インポート時にルート変換を保持するよう改善。
+  - `ResoniteLinkClient.captureTransformAndRemoveRootChildrenByTag()` を追加し、
+    旧ルート削除前の `position` / `rotation` / `scale` を取得。
+  - `SlotBuilder.createImportGroup(name, transform?)` で取得した変換を新規ルートに適用。
+- Terrain の `width` / `height` / `depth` で `0` が `1` に上書きされる問題を修正。
+  - `TerrainParser` のデフォルト値適用を `|| 1` から `?? 1` に変更。
+  - `width=0` / `height=0` / `depth=0` の単体テストを追加。
 
 ### 2026-02-10
 - `game-table` の親子関係保持: 子オブジェクトを `GameTable.children` に格納。
