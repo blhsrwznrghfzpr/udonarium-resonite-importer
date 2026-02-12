@@ -76,7 +76,6 @@ npm run start -- -i ./save.zip --verbose
 | `--scale` | `-s` | スケール係数 | 0.02 |
 | `--dry-run` | `-d` | 解析のみ（接続しない） | false |
 | `--verbose` | `-v` | 詳細ログ出力 | false |
-| `--dump-json` | | パース結果をJSONファイルに出力（dry-run時のみ） | false |
 | `--lang` | `-l` | 言語（en, ja） | 自動検出 |
 
 ## 開発

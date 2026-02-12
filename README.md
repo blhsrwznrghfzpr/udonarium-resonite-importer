@@ -78,7 +78,6 @@ npm run start -- -i ./save.zip --verbose
 | `--scale` | `-s` | Scale factor | 0.02 |
 | `--dry-run` | `-d` | Analysis only (no connection) | false |
 | `--verbose` | `-v` | Verbose output | false |
-| `--dump-json` | | Dump parsed objects to JSON file (dry-run only) | false |
 | `--lang` | `-l` | Language (en, ja) | Auto-detect |
 
 ## Development
