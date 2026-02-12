@@ -5,6 +5,7 @@
 import { randomUUID } from 'crypto';
 import { ResoniteObject, Vector3 } from '../converter/ResoniteObject';
 import { SharedMeshDefinition } from '../converter/sharedMesh';
+import { SharedMaterialDefinition } from '../converter/sharedMaterial';
 import { IMPORT_GROUP_SCALE } from '../config/MappingConfig';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 
@@ -49,6 +50,7 @@ export class SlotBuilder {
   private assetsSlotId?: string;
   private texturesSlotId?: string;
   private meshesSlotId?: string;
+  private materialsSlotId?: string;
 
   constructor(client: ResoniteLinkClient, rootSlotId = 'Root') {
     this.client = client;
@@ -195,6 +197,14 @@ export class SlotBuilder {
             : {}),
         },
       });
+      await this.client.addComponent({
+        id: `${textureSlotId}-main-texture-property-block`,
+        slotId: textureSlotId,
+        componentType: '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
+        fields: {
+          Texture: { $type: 'reference', targetId: textureComponentId },
+        },
+      });
 
       textureReferenceMap.set(identifier, textureComponentId);
     }
@@ -237,6 +247,40 @@ export class SlotBuilder {
     return meshReferenceMap;
   }
 
+  async createMaterialAssets(
+    materialDefinitions: SharedMaterialDefinition[]
+  ): Promise<Map<string, string>> {
+    const materialReferenceMap = new Map<string, string>();
+
+    if (materialDefinitions.length === 0) {
+      return materialReferenceMap;
+    }
+
+    const materialsSlotId = await this.ensureMaterialsSlot();
+
+    for (const materialDefinition of materialDefinitions) {
+      const materialSlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
+      await this.client.addSlot({
+        id: materialSlotId,
+        parentId: materialsSlotId,
+        name: materialDefinition.name,
+        position: { x: 0, y: 0, z: 0 },
+      });
+
+      const materialComponentId = `${materialSlotId}-material`;
+      await this.client.addComponent({
+        id: materialComponentId,
+        slotId: materialSlotId,
+        componentType: materialDefinition.componentType,
+        fields: materialDefinition.fields,
+      });
+
+      materialReferenceMap.set(materialDefinition.key, materialComponentId);
+    }
+
+    return materialReferenceMap;
+  }
+
   private async ensureAssetsSlot(): Promise<string> {
     if (this.assetsSlotId) {
       return this.assetsSlotId;
@@ -277,5 +321,19 @@ export class SlotBuilder {
       position: { x: 0, y: 0, z: 0 },
     });
     return this.meshesSlotId;
+  }
+
+  private async ensureMaterialsSlot(): Promise<string> {
+    if (this.materialsSlotId) {
+      return this.materialsSlotId;
+    }
+    this.materialsSlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
+    await this.client.addSlot({
+      id: this.materialsSlotId,
+      parentId: await this.ensureAssetsSlot(),
+      name: 'Materials',
+      position: { x: 0, y: 0, z: 0 },
+    });
+    return this.materialsSlotId;
   }
 }

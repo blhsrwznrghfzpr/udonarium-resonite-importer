@@ -10,12 +10,22 @@ describe('componentBuilders', () => {
     const material = components.find((c) => c.type.endsWith('XiexeToonMaterial'));
     expect(material?.fields).toEqual({
       BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+      ShadowRamp: { $type: 'reference', targetId: null },
+      ShadowSharpness: { $type: 'float', value: 0 },
     });
 
     const textureBlock = components.find((c) => c.type.endsWith('MainTexturePropertyBlock'));
-    expect(textureBlock?.fields.Texture).toEqual({
-      $type: 'reference',
-      targetId: 'shared-texture-id',
+    expect(textureBlock).toBeUndefined();
+
+    const renderer = components.find((c) => c.type.endsWith('MeshRenderer'));
+    expect(renderer?.fields.MaterialPropertyBlocks).toEqual({
+      $type: 'list',
+      elements: [
+        {
+          $type: 'reference',
+          targetId: 'shared-texture-id-main-texture-property-block',
+        },
+      ],
     });
 
     expect(material).toBeDefined();

@@ -334,6 +334,19 @@ describe('SlotBuilder', () => {
         URL: { $type: 'Uri', value: 'resdb:///card-front' },
       });
 
+      const secondComponentCall = mockClient.addComponent.mock.calls[1][0] as {
+        componentType: string;
+        fields: Record<string, unknown>;
+      };
+      expect(secondComponentCall.componentType).toBe(
+        '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock'
+      );
+      const textureField = secondComponentCall.fields.Texture as
+        | { $type?: string; targetId?: string }
+        | undefined;
+      expect(textureField?.$type).toBe('reference');
+      expect(textureField?.targetId).toMatch(/-static-texture$/);
+
       expect(result.get('card-front.png')).toMatch(/-static-texture$/);
     });
 
@@ -455,6 +468,46 @@ describe('SlotBuilder', () => {
         2,
         expect.objectContaining({ name: 'QuadMesh_2x3' })
       );
+    });
+  });
+
+  describe('createMaterialAssets', () => {
+    it('should create shared material slots under Assets/Materials', async () => {
+      const result = await slotBuilder.createMaterialAssets([
+        {
+          key: 'xiexe-toon:cutout',
+          name: 'XiexeToon_cutout',
+          componentType: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
+          fields: {
+            BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+          },
+        },
+      ]);
+
+      expect(mockClient.addSlot).toHaveBeenCalledTimes(3);
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ name: 'Assets', parentId: 'Root' })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ name: 'Materials' })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ name: 'XiexeToon_cutout' })
+      );
+
+      const firstComponentCall = mockClient.addComponent.mock.calls[0][0] as {
+        componentType: string;
+        fields: Record<string, unknown>;
+      };
+      expect(firstComponentCall.componentType).toBe('[FrooxEngine]FrooxEngine.XiexeToonMaterial');
+      expect(firstComponentCall.fields).toMatchObject({
+        BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+      });
+
+      expect(result.get('xiexe-toon:cutout')).toMatch(/-material$/);
     });
   });
 

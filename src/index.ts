@@ -19,6 +19,10 @@ import { parseXmlFiles } from './parser/XmlParser';
 import { convertObjects, convertObjectsWithTextureMap } from './converter/ObjectConverter';
 import { toTextureReference } from './converter/objectConverters/componentBuilders';
 import { prepareSharedMeshDefinitions, resolveSharedMeshReferences } from './converter/sharedMesh';
+import {
+  prepareSharedMaterialDefinitions,
+  resolveSharedMaterialReferences,
+} from './converter/sharedMaterial';
 import { ResoniteLinkClient } from './resonite/ResoniteLinkClient';
 import { SlotBuilder } from './resonite/SlotBuilder';
 import { AssetImporter } from './resonite/AssetImporter';
@@ -262,6 +266,9 @@ async function run(options: CLIOptions): Promise<void> {
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);
     resolveSharedMeshReferences(resoniteObjects, meshReferenceMap);
+    const sharedMaterialDefinitions = prepareSharedMaterialDefinitions(resoniteObjects);
+    const materialReferenceMap = await slotBuilder.createMaterialAssets(sharedMaterialDefinitions);
+    resolveSharedMaterialReferences(resoniteObjects, materialReferenceMap);
 
     // Build slots
     let builtSlots = 0;

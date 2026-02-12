@@ -51,6 +51,8 @@ describe('applyCharacterConversion', () => {
     );
     expect(materialComponent?.fields).toEqual({
       BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+      ShadowRamp: { $type: 'reference', targetId: null },
+      ShadowSharpness: { $type: 'float', value: 0 },
     });
     const textureBlockComponent = resoniteObj.components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock'
