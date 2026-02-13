@@ -191,13 +191,9 @@ describe.skipIf(SKIP_INTEGRATION)('ResoniteLink Integration Tests', () => {
     }
 
     // Cleanup: Remove all created slots
-    const underlyingClient = client.getClient();
     for (const slotId of createdSlotIds) {
       try {
-        await underlyingClient.send({
-          $type: 'removeSlot',
-          slotId,
-        });
+        await client.removeSlot(slotId);
       } catch {
         // Ignore cleanup errors
       }

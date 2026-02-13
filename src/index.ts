@@ -32,6 +32,7 @@ import {
   IMPORT_ROOT_TAG,
   getResoniteLinkPort,
   getResoniteLinkHost,
+  VERIFIED_RESONITE_LINK_VERSION,
 } from './config/MappingConfig';
 import { t, setLocale, Locale } from './i18n';
 
@@ -64,6 +65,31 @@ program
   .option('-v, --verbose', 'Verbose output', false)
   .option('-l, --lang <locale>', 'Language (en, ja)', undefined)
   .action(run);
+
+async function warnResoniteLinkVersionIfChanged(client: ResoniteLinkClient): Promise<void> {
+  try {
+    const sessionData = await client.getSessionData();
+    const runtimeVersion = sessionData.resoniteLinkVersion;
+
+    if (!runtimeVersion) {
+      return;
+    }
+
+    if (runtimeVersion !== VERIFIED_RESONITE_LINK_VERSION) {
+      console.warn(
+        chalk.yellow(
+          `⚠ ResoniteLink version changed: expected ${VERIFIED_RESONITE_LINK_VERSION}, connected ${runtimeVersion}. Please validate compatibility.`
+        )
+      );
+    }
+  } catch (error) {
+    console.warn(
+      chalk.yellow(
+        `⚠ Warning: Failed to check ResoniteLink version: ${error instanceof Error ? error.message : String(error)}`
+      )
+    );
+  }
+}
 
 async function run(options: CLIOptions): Promise<void> {
   // Set locale if specified
@@ -200,6 +226,7 @@ async function run(options: CLIOptions): Promise<void> {
 
   try {
     await client.connect();
+    await warnResoniteLinkVersionIfChanged(client);
     connectSpinner.succeed(`[3/4] ${t('cli.connected')}`);
   } catch (error) {
     connectSpinner.fail(`[3/4] ${t('cli.error.connectFailed')}`);

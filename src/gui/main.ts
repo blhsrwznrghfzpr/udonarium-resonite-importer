@@ -17,7 +17,7 @@ import { ResoniteLinkClient } from '../resonite/ResoniteLinkClient';
 import { SlotBuilder } from '../resonite/SlotBuilder';
 import { AssetImporter } from '../resonite/AssetImporter';
 import { registerExternalUrls } from '../resonite/registerExternalUrls';
-import { IMPORT_ROOT_TAG } from '../config/MappingConfig';
+import { IMPORT_ROOT_TAG, VERIFIED_RESONITE_LINK_VERSION } from '../config/MappingConfig';
 import { AnalyzeResult, ImportOptions, ImportResult } from './types';
 
 let mainWindow: BrowserWindow | null = null;
@@ -58,6 +58,29 @@ app.on('window-all-closed', () => {
     app.quit();
   }
 });
+
+async function warnVersionIfChangedForGui(
+  client: ResoniteLinkClient,
+  onWarning: (message: string) => void
+): Promise<void> {
+  try {
+    const sessionData = await client.getSessionData();
+    const runtimeVersion = sessionData.resoniteLinkVersion;
+    if (!runtimeVersion) {
+      return;
+    }
+
+    if (runtimeVersion !== VERIFIED_RESONITE_LINK_VERSION) {
+      onWarning(
+        `ResoniteLink version changed: expected ${VERIFIED_RESONITE_LINK_VERSION}, connected ${runtimeVersion}. Please validate compatibility.`
+      );
+    }
+  } catch (error) {
+    onWarning(
+      `Warning: Failed to check ResoniteLink version: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+}
 
 // IPC Handlers
 
@@ -139,6 +162,9 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     sendProgress('connect', 0, 'ResoniteLinkに接続中...');
     const client = new ResoniteLinkClient({ host, port });
     await client.connect();
+    await warnVersionIfChangedForGui(client, (message) => {
+      sendProgress('connect', 100, message);
+    });
     sendProgress('connect', 100);
 
     // Step 4: Import

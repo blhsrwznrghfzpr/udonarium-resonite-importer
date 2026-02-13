@@ -1,4 +1,0 @@
-[submodule "lib/resonitelink.js"]
-	path = lib/resonitelink.js
-	url = https://github.com/blhsrwznrghfzpr/ResoniteLink.js.git
-	branch = fix/yoshi

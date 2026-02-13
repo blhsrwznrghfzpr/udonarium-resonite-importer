@@ -22,6 +22,7 @@ import { getResoniteLinkPort, getResoniteLinkHost } from '../src/config/MappingC
 
 const FIXTURES_DIR = path.join(__dirname, '../src/__fixtures__/resonitelink');
 const COMPONENTS_DIR = path.join(FIXTURES_DIR, 'components');
+const REFLECTION_DIR = path.join(FIXTURES_DIR, 'reflection');
 const DEFAULT_TIMEOUT = 10000;
 
 interface CollectedData {
@@ -37,10 +38,7 @@ interface CollectedData {
  */
 const REQUIRED_COMPONENTS = {
   // Mesh components (FrooxEngine namespace)
-  mesh: [
-    '[FrooxEngine]FrooxEngine.QuadMesh',
-    '[FrooxEngine]FrooxEngine.BoxMesh',
-  ],
+  mesh: ['[FrooxEngine]FrooxEngine.QuadMesh', '[FrooxEngine]FrooxEngine.BoxMesh'],
   // Rendering components (FrooxEngine namespace)
   rendering: [
     '[FrooxEngine]FrooxEngine.MeshRenderer',
@@ -53,14 +51,9 @@ const REQUIRED_COMPONENTS = {
     '[FrooxEngine]FrooxEngine.UnlitMaterial',
   ],
   // Texture components (FrooxEngine namespace)
-  textures: [
-    '[FrooxEngine]FrooxEngine.StaticTexture2D',
-  ],
+  textures: ['[FrooxEngine]FrooxEngine.StaticTexture2D'],
   // Interaction components (FrooxEngine namespace)
-  interaction: [
-    '[FrooxEngine]FrooxEngine.Grabbable',
-    '[FrooxEngine]FrooxEngine.BoxCollider',
-  ],
+  interaction: ['[FrooxEngine]FrooxEngine.Grabbable', '[FrooxEngine]FrooxEngine.BoxCollider'],
   // UIX components (FrooxEngine.UIX namespace)
   uix: [
     '[FrooxEngine]FrooxEngine.UIX.Canvas',
@@ -77,12 +70,15 @@ async function ensureFixturesDir(): Promise<void> {
   if (!fs.existsSync(COMPONENTS_DIR)) {
     fs.mkdirSync(COMPONENTS_DIR, { recursive: true });
   }
+  if (!fs.existsSync(REFLECTION_DIR)) {
+    fs.mkdirSync(REFLECTION_DIR, { recursive: true });
+  }
 }
 
 function saveJson(filename: string, data: unknown): void {
   const filepath = path.join(FIXTURES_DIR, filename);
   fs.writeFileSync(filepath, JSON.stringify(data, null, 2) + '\n');
-  console.log(`  ✓ Saved: ${filename}`);
+  console.log(`  [ok] Saved: ${filename}`);
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms: number, operation: string): Promise<T> {
@@ -101,14 +97,32 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, operation: string
   }
 }
 
-async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
-  console.log('\n📦 Collecting Slot Data...');
+function getConnectedLink(client: ResoniteLinkClient): {
+  call: (message: Record<string, unknown>, binaryPayload?: ArrayBuffer) => Promise<unknown>;
+} {
+  const link = client.getClient();
+  if (!link) {
+    throw new Error('ResoniteLink client is not connected');
+  }
 
-  const underlyingClient = client.getClient();
+  return {
+    call: (message: Record<string, unknown>, binaryPayload?: ArrayBuffer) =>
+      (
+        link as unknown as {
+          call: (m: Record<string, unknown>, p?: ArrayBuffer) => Promise<unknown>;
+        }
+      ).call(message, binaryPayload),
+  };
+}
+
+async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
+  console.log('\nCollecting Slot Data...');
+
+  const underlyingClient = getConnectedLink(client);
 
   // Create a test slot
   const testSlotId = `test_collect_${Date.now()}`;
-  const createResponse = await underlyingClient.send({
+  const createResponse = await underlyingClient.call({
     $type: 'addSlot',
     data: {
       id: testSlotId,
@@ -125,7 +139,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('addSlot-response.json', createResponse);
 
   // Get the slot
-  const getResponse = await underlyingClient.send({
+  const getResponse = await underlyingClient.call({
     $type: 'getSlot',
     slotId: testSlotId,
     depth: 0,
@@ -134,7 +148,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('getSlot-response.json', getResponse);
 
   // Get slot with depth
-  const getDepthResponse = await underlyingClient.send({
+  const getDepthResponse = await underlyingClient.call({
     $type: 'getSlot',
     slotId: testSlotId,
     depth: 2,
@@ -143,7 +157,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('getSlot-depth-response.json', getDepthResponse);
 
   // Update slot
-  const updateResponse = await underlyingClient.send({
+  const updateResponse = await underlyingClient.call({
     $type: 'updateSlot',
     data: {
       id: testSlotId,
@@ -153,7 +167,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('updateSlot-response.json', updateResponse);
 
   // Remove slot (cleanup)
-  const removeResponse = await underlyingClient.send({
+  const removeResponse = await underlyingClient.call({
     $type: 'removeSlot',
     slotId: testSlotId,
   });
@@ -168,7 +182,13 @@ function saveComponentJson(componentType: string, data: unknown): void {
   const filename = componentType.split('.').pop() + '.json';
   const filepath = path.join(COMPONENTS_DIR, filename);
   fs.writeFileSync(filepath, JSON.stringify(data, null, 2) + '\n');
-  console.log(`    ✓ ${componentType} -> ${filename}`);
+  console.log(`    [ok] ${componentType} -> ${filename}`);
+}
+
+function saveReflectionJson(filename: string, data: unknown): void {
+  const filepath = path.join(REFLECTION_DIR, filename);
+  fs.writeFileSync(filepath, JSON.stringify(data, null, 2) + '\n');
+  console.log(`    [ok] reflection/${filename}`);
 }
 
 /**
@@ -179,12 +199,12 @@ async function testComponent(
   slotId: string,
   componentType: string
 ): Promise<{ success: boolean; response: unknown; error?: string }> {
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
   const componentId = `test_${componentType.replace(/\./g, '_')}_${Date.now()}`;
 
   try {
     // Add component
-    const addResponse = await underlyingClient.send({
+    const addResponse = (await underlyingClient.call({
       $type: 'addComponent',
       containerSlotId: slotId,
       data: {
@@ -192,17 +212,17 @@ async function testComponent(
         componentType: componentType,
         members: {},
       },
-    });
+    })) as { success?: boolean; errorInfo?: string };
 
     // Get component data if creation succeeded
     if (addResponse.success) {
-      const getResponse = await underlyingClient.send({
+      const getResponse = await underlyingClient.call({
         $type: 'getComponent',
         componentId: componentId,
       });
 
       // Remove component (cleanup)
-      await underlyingClient.send({
+      await underlyingClient.call({
         $type: 'removeComponent',
         componentId: componentId,
       });
@@ -238,13 +258,13 @@ async function testComponent(
 }
 
 async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
-  console.log('\n🔧 Collecting Component Data...');
+  console.log('\nCollecting Component Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Create a test slot first
   const testSlotId = `test_component_${Date.now()}`;
-  await underlyingClient.send({
+  await underlyingClient.call({
     $type: 'addSlot',
     data: {
       id: testSlotId,
@@ -277,7 +297,7 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
     saveComponentJson(componentType, result.response);
 
     if (!result.success) {
-      console.log(`    ⚠ ${componentType}: ${result.error}`);
+      console.log(`    [warn] ${componentType}: ${result.error}`);
     }
   }
 
@@ -285,8 +305,10 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   const summary = {
     testedAt: new Date().toISOString(),
     totalComponents: allComponents.length,
-    successful: Object.values(results).filter((r: unknown) => (r as { success: boolean }).success).length,
-    failed: Object.values(results).filter((r: unknown) => !(r as { success: boolean }).success).length,
+    successful: Object.values(results).filter((r: unknown) => (r as { success: boolean }).success)
+      .length,
+    failed: Object.values(results).filter((r: unknown) => !(r as { success: boolean }).success)
+      .length,
     results: Object.fromEntries(
       Object.entries(results).map(([type, result]) => [
         type,
@@ -299,19 +321,21 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   };
   saveJson('components/_summary.json', summary);
 
-  console.log(`\n  Summary: ${summary.successful}/${summary.totalComponents} components successful`);
+  console.log(
+    `\n  Summary: ${summary.successful}/${summary.totalComponents} components successful`
+  );
 
   // Cleanup: remove the test slot
-  await underlyingClient.send({
+  await underlyingClient.call({
     $type: 'removeSlot',
     slotId: testSlotId,
   });
 }
 
 async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
-  console.log('\n🖼️  Collecting Texture Import Data...');
+  console.log('\nCollecting Texture Import Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Create raw RGBA pixel data (not PNG-encoded)
   // importTexture2DRawData expects raw 8-bit RGBA bytes, not encoded image files
@@ -330,13 +354,12 @@ async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
 
   const arrayBuffer = rawData.buffer;
 
-  const importResponse = await underlyingClient.send(
+  const importResponse = await underlyingClient.call(
     {
       $type: 'importTexture2DRawData',
       width,
       height,
       colorProfile: 'sRGB',
-      messageId: '',
     },
     arrayBuffer
   );
@@ -344,24 +367,24 @@ async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
 }
 
 async function collectSessionData(client: ResoniteLinkClient): Promise<void> {
-  console.log('\n📋 Collecting Session Data...');
+  console.log('\nCollecting Session Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
-  const sessionResponse = await underlyingClient.send({
+  const sessionResponse = await underlyingClient.call({
     $type: 'requestSessionData',
   });
   saveJson('requestSessionData-response.json', sessionResponse);
 }
 
 async function collectErrorResponses(client: ResoniteLinkClient): Promise<void> {
-  console.log('\n❌ Collecting Error Responses...');
+  console.log('\nCollecting Error Responses...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Try to get a non-existent slot
   try {
-    const notFoundResponse = await underlyingClient.send({
+    const notFoundResponse = await underlyingClient.call({
       $type: 'getSlot',
       slotId: 'non_existent_slot_id_12345',
       depth: 0,
@@ -375,6 +398,86 @@ async function collectErrorResponses(client: ResoniteLinkClient): Promise<void> 
   }
 }
 
+async function collectReflectionData(client: ResoniteLinkClient): Promise<void> {
+  console.log('\nCollecting Reflection Data...');
+
+  const underlyingClient = getConnectedLink(client);
+  const allComponents = [
+    ...REQUIRED_COMPONENTS.mesh,
+    ...REQUIRED_COMPONENTS.rendering,
+    ...REQUIRED_COMPONENTS.materials,
+    ...REQUIRED_COMPONENTS.textures,
+    ...REQUIRED_COMPONENTS.interaction,
+    ...REQUIRED_COMPONENTS.uix,
+  ];
+
+  const captureReflection = async (
+    filename: string,
+    request: Record<string, unknown>,
+    allowFailure = false
+  ): Promise<void> => {
+    try {
+      const response = await underlyingClient.call(request);
+      saveReflectionJson(filename, response);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!allowFailure) {
+        throw error;
+      }
+
+      saveReflectionJson(filename.replace('-response.json', '-error.json'), {
+        request,
+        error: message,
+      });
+      console.log(`    [warn] reflection/${filename}: ${message}`);
+    }
+  };
+
+  await captureReflection('getComponentTypeList-root-response.json', {
+    $type: 'getComponentTypeList',
+    categoryPath: '',
+  });
+
+  await captureReflection('getComponentTypeList-all-response.json', {
+    $type: 'getComponentTypeList',
+    categoryPath: '*',
+  });
+
+  await captureReflection('getTypeDefinition-float3-response.json', {
+    $type: 'getTypeDefinition',
+    type: 'float3',
+  });
+
+  const enumTypes = ['[Renderite.Shared]Renderite.Shared.BillboardAlignment'] as const;
+  for (const enumType of enumTypes) {
+    const enumName = enumType.split('.').pop() ?? enumType;
+    await captureReflection(
+      `getEnumDefinition-${enumName}-response.json`,
+      {
+        $type: 'getEnumDefinition',
+        type: enumType,
+      },
+      true
+    );
+  }
+
+  for (const componentType of allComponents) {
+    const componentName = componentType.split('.').pop();
+    if (!componentName) {
+      continue;
+    }
+
+    await captureReflection(
+      `getComponentDefinition-${componentName}-response.json`,
+      {
+        $type: 'getComponentDefinition',
+        componentType,
+        flattened: true,
+      },
+      true
+    );
+  }
+}
 function createMinimalPNG(width: number, height: number, rgba: number[]): Uint8Array {
   // This creates a minimal valid PNG with a solid color
   // For simplicity, we just return raw RGBA data encoded in a minimal PNG structure
@@ -510,7 +613,7 @@ function adler32(data: number[]): number {
 }
 
 async function main(): Promise<void> {
-  console.log('🚀 ResoniteLink Data Collection Script');
+  console.log('ResoniteLink Data Collection Script');
   console.log('=====================================');
   console.log('');
 
@@ -518,7 +621,7 @@ async function main(): Promise<void> {
   const host = getResoniteLinkHost();
 
   if (!port) {
-    console.error('❌ RESONITELINK_PORT is required');
+    console.error('[error] RESONITELINK_PORT is required');
     console.error('');
     console.error('Set via environment variable:');
     console.error('  RESONITELINK_PORT=<port> npm run collect:resonitelink');
@@ -537,14 +640,14 @@ async function main(): Promise<void> {
 
   const client = new ResoniteLinkClient({ host, port });
 
-  console.log(`🔌 Connecting to ResoniteLink at ${host}:${port}...`);
+  console.log(`Connecting to ResoniteLink at ${host}:${port}...`);
 
   try {
     await withTimeout(client.connect(), DEFAULT_TIMEOUT, 'Connection');
-    console.log('  ✓ Connected!');
+    console.log('  [ok] Connected!');
   } catch (error) {
     console.error('');
-    console.error('❌ Failed to connect to ResoniteLink');
+    console.error('[error] Failed to connect to ResoniteLink');
     console.error('');
     console.error('Please ensure:');
     console.error('  1. Resonite is running');
@@ -564,6 +667,7 @@ async function main(): Promise<void> {
   try {
     // Collect session data first to get version info
     await collectSessionData(client);
+    await collectReflectionData(client);
 
     // Collect various response types
     await collectSlotData(client);
@@ -576,16 +680,16 @@ async function main(): Promise<void> {
     saveJson('_metadata.json', collectedData);
 
     console.log('');
-    console.log('✅ Data collection complete!');
+    console.log('[ok] Data collection complete!');
     console.log(`   Files saved to: ${FIXTURES_DIR}`);
   } catch (error) {
     console.error('');
-    console.error('❌ Error during data collection:', error);
+    console.error('[error] Error during data collection:', error);
     process.exit(1);
   } finally {
     client.disconnect();
     console.log('');
-    console.log('🔌 Disconnected from ResoniteLink');
+    console.log('Disconnected from ResoniteLink');
   }
 }
 

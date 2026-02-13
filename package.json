@@ -8,8 +8,6 @@
   },
   "scripts": {
     "clean": "rm -rf dist release coverage parsed",
-    "verify:resonitelink": "node scripts/ensure-resonitelink-setup.js",
-    "prebuild": "npm run verify:resonitelink",
     "build": "run-p build:*",
     "build:cli": "tsc -p tsconfig.cli.json",
     "build:gui": "tsc -p tsconfig.gui.json",
@@ -19,7 +17,6 @@
     "start:gui": "electron .",
     "dev": "ts-node src/index.ts",
     "dev:gui": "run-s build:gui start:gui",
-    "precheck": "npm run verify:resonitelink",
     "check": "run-s check:fix check:validate",
     "check:fix": "run-s check:fix:lint check:fix:format",
     "check:fix:lint": "eslint \"src/**/*.ts\" --fix",
@@ -30,11 +27,10 @@
     "check:validate:types": "run-p check:validate:types:*",
     "check:validate:types:cli": "tsc -p tsconfig.cli.json --noEmit",
     "check:validate:types:gui": "tsc -p tsconfig.gui.json --noEmit",
-    "pretest": "npm run verify:resonitelink",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:integration": "RESONITE_LINK_AVAILABLE=true vitest run --testNamePattern='Integration'",
+    "test:integration": "powershell -NoProfile -Command \"$env:RESONITE_LINK_AVAILABLE='true'; vitest run --testNamePattern='Integration'\"",
     "collect:resonitelink": "ts-node scripts/collect-resonitelink-data.ts",
     "package": "run-s package:cli package:gui",
     "package:cli": "run-p package:cli:*",
@@ -45,8 +41,7 @@
     "package:gui:win": "electron-builder --win",
     "package:gui:mac": "electron-builder --mac",
     "package:gui:linux": "electron-builder --linux",
-    "prepare": "husky",
-    "setup:resonitelink": "git submodule update --init --recursive && npm --prefix lib/resonitelink.js install && npm --prefix lib/resonitelink.js run build"
+    "prepare": "husky"
   },
   "keywords": [
     "udonarium",
@@ -66,7 +61,8 @@
     "fast-xml-parser": "^5.3.4",
     "ora": "^5.4.1",
     "sharp": "^0.34.5",
-    "ws": "^8.14.2"
+    "ws": "^8.14.2",
+    "@eth0fox/tsrl": "^2.0.0"
   },
   "devDependencies": {
     "@types/adm-zip": "^0.5.5",
