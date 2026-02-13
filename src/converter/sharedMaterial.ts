@@ -1,5 +1,4 @@
 import { ResoniteComponent, ResoniteObject } from '../domain/ResoniteObject';
-import { createHash } from 'crypto';
 
 const MATERIAL_REFERENCE_PREFIX = 'material-ref://';
 
@@ -17,27 +16,51 @@ function buildMaterialKey(component: ResoniteComponent): string | undefined {
   if (!component.fields || Object.keys(component.fields).length === 0) {
     return undefined;
   }
-  const serialized = stableSerialize(component.fields);
-  const digest = createHash('sha1').update(serialized).digest('hex').slice(0, 12);
-  return `xiexe-toon:${digest}`;
+
+  const colorHex = extractColorHexWithAlpha(component.fields) ?? '#FFFFFFFF';
+  const blendMode = extractBlendMode(component.fields) ?? 'Unknown';
+  return `xiexe-toon:${colorHex}:${blendMode}`;
 }
 
 function buildMaterialName(key: string): string {
-  const digest = key.split(':')[1] ?? 'default';
-  return `XiexeToon_${digest}`;
+  const [, colorHex = '#FFFFFFFF', blendMode = 'Unknown'] = key.split(':');
+  return `XiexeToon_${blendMode}_${colorHex.slice(1)}`;
 }
 
-function stableSerialize(value: unknown): string {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
+function extractBlendMode(fields: Record<string, unknown>): string | undefined {
+  const blendModeField = fields.BlendMode as { value?: unknown } | undefined;
+  if (typeof blendModeField?.value === 'string' && blendModeField.value.length > 0) {
+    return blendModeField.value;
   }
-  if (!value || typeof value !== 'object') {
-    return JSON.stringify(value);
+  return undefined;
+}
+
+function extractColorHexWithAlpha(fields: Record<string, unknown>): string | undefined {
+  const colorField = fields.Color as { value?: unknown } | undefined;
+  const colorValue = colorField?.value as
+    | { r?: unknown; g?: unknown; b?: unknown; a?: unknown }
+    | undefined;
+  if (!colorValue) {
+    return undefined;
   }
-  const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) =>
-    a.localeCompare(b)
+
+  const channels = [colorValue.r, colorValue.g, colorValue.b, colorValue.a].map((channel) =>
+    toHexChannel(channel)
   );
-  return `{${entries.map(([key, item]) => `${JSON.stringify(key)}:${stableSerialize(item)}`).join(',')}}`;
+  if (channels.some((channel) => channel === undefined)) {
+    return undefined;
+  }
+  return `#${channels.join('')}`;
+}
+
+function toHexChannel(value: unknown): string | undefined {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return undefined;
+  }
+
+  const normalized = value <= 1 ? value * 255 : value;
+  const clamped = Math.min(255, Math.max(0, normalized));
+  return Math.round(clamped).toString(16).toUpperCase().padStart(2, '0');
 }
 
 function prepareObjectForSharedMaterials(
