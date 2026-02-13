@@ -33,9 +33,7 @@ A tool to import [Udonarium](https://github.com/TK11235/udonarium) save data int
 ```bash
 git clone https://github.com/blhsrwznrghfzpr/udonarium-resonite-importer.git
 cd udonarium-resonite-importer
-git submodule update --init --recursive
 npm install
-npm run setup:resonitelink
 npm run build
 ```
 

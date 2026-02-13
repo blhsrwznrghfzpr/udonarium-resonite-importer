@@ -22,6 +22,7 @@ import { getResoniteLinkPort, getResoniteLinkHost } from '../src/config/MappingC
 
 const FIXTURES_DIR = path.join(__dirname, '../src/__fixtures__/resonitelink');
 const COMPONENTS_DIR = path.join(FIXTURES_DIR, 'components');
+const REFLECTION_DIR = path.join(FIXTURES_DIR, 'reflection');
 const DEFAULT_TIMEOUT = 10000;
 
 interface CollectedData {
@@ -37,10 +38,7 @@ interface CollectedData {
  */
 const REQUIRED_COMPONENTS = {
   // Mesh components (FrooxEngine namespace)
-  mesh: [
-    '[FrooxEngine]FrooxEngine.QuadMesh',
-    '[FrooxEngine]FrooxEngine.BoxMesh',
-  ],
+  mesh: ['[FrooxEngine]FrooxEngine.QuadMesh', '[FrooxEngine]FrooxEngine.BoxMesh'],
   // Rendering components (FrooxEngine namespace)
   rendering: [
     '[FrooxEngine]FrooxEngine.MeshRenderer',
@@ -53,14 +51,9 @@ const REQUIRED_COMPONENTS = {
     '[FrooxEngine]FrooxEngine.UnlitMaterial',
   ],
   // Texture components (FrooxEngine namespace)
-  textures: [
-    '[FrooxEngine]FrooxEngine.StaticTexture2D',
-  ],
+  textures: ['[FrooxEngine]FrooxEngine.StaticTexture2D'],
   // Interaction components (FrooxEngine namespace)
-  interaction: [
-    '[FrooxEngine]FrooxEngine.Grabbable',
-    '[FrooxEngine]FrooxEngine.BoxCollider',
-  ],
+  interaction: ['[FrooxEngine]FrooxEngine.Grabbable', '[FrooxEngine]FrooxEngine.BoxCollider'],
   // UIX components (FrooxEngine.UIX namespace)
   uix: [
     '[FrooxEngine]FrooxEngine.UIX.Canvas',
@@ -76,6 +69,9 @@ async function ensureFixturesDir(): Promise<void> {
   }
   if (!fs.existsSync(COMPONENTS_DIR)) {
     fs.mkdirSync(COMPONENTS_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(REFLECTION_DIR)) {
+    fs.mkdirSync(REFLECTION_DIR, { recursive: true });
   }
 }
 
@@ -101,14 +97,32 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, operation: string
   }
 }
 
+function getConnectedLink(client: ResoniteLinkClient): {
+  call: (message: Record<string, unknown>, binaryPayload?: ArrayBuffer) => Promise<unknown>;
+} {
+  const link = client.getClient();
+  if (!link) {
+    throw new Error('ResoniteLink client is not connected');
+  }
+
+  return {
+    call: (message: Record<string, unknown>, binaryPayload?: ArrayBuffer) =>
+      (
+        link as unknown as {
+          call: (m: Record<string, unknown>, p?: ArrayBuffer) => Promise<unknown>;
+        }
+      ).call(message, binaryPayload),
+  };
+}
+
 async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   console.log('\n📦 Collecting Slot Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Create a test slot
   const testSlotId = `test_collect_${Date.now()}`;
-  const createResponse = await underlyingClient.send({
+  const createResponse = await underlyingClient.call({
     $type: 'addSlot',
     data: {
       id: testSlotId,
@@ -125,7 +139,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('addSlot-response.json', createResponse);
 
   // Get the slot
-  const getResponse = await underlyingClient.send({
+  const getResponse = await underlyingClient.call({
     $type: 'getSlot',
     slotId: testSlotId,
     depth: 0,
@@ -134,7 +148,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('getSlot-response.json', getResponse);
 
   // Get slot with depth
-  const getDepthResponse = await underlyingClient.send({
+  const getDepthResponse = await underlyingClient.call({
     $type: 'getSlot',
     slotId: testSlotId,
     depth: 2,
@@ -143,7 +157,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('getSlot-depth-response.json', getDepthResponse);
 
   // Update slot
-  const updateResponse = await underlyingClient.send({
+  const updateResponse = await underlyingClient.call({
     $type: 'updateSlot',
     data: {
       id: testSlotId,
@@ -153,7 +167,7 @@ async function collectSlotData(client: ResoniteLinkClient): Promise<void> {
   saveJson('updateSlot-response.json', updateResponse);
 
   // Remove slot (cleanup)
-  const removeResponse = await underlyingClient.send({
+  const removeResponse = await underlyingClient.call({
     $type: 'removeSlot',
     slotId: testSlotId,
   });
@@ -171,6 +185,12 @@ function saveComponentJson(componentType: string, data: unknown): void {
   console.log(`    ✓ ${componentType} -> ${filename}`);
 }
 
+function saveReflectionJson(filename: string, data: unknown): void {
+  const filepath = path.join(REFLECTION_DIR, filename);
+  fs.writeFileSync(filepath, JSON.stringify(data, null, 2) + '\n');
+  console.log(`    ✓ reflection/${filename}`);
+}
+
 /**
  * Test creating a single component type
  */
@@ -179,12 +199,12 @@ async function testComponent(
   slotId: string,
   componentType: string
 ): Promise<{ success: boolean; response: unknown; error?: string }> {
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
   const componentId = `test_${componentType.replace(/\./g, '_')}_${Date.now()}`;
 
   try {
     // Add component
-    const addResponse = await underlyingClient.send({
+    const addResponse = (await underlyingClient.call({
       $type: 'addComponent',
       containerSlotId: slotId,
       data: {
@@ -192,17 +212,17 @@ async function testComponent(
         componentType: componentType,
         members: {},
       },
-    });
+    })) as { success?: boolean; errorInfo?: string };
 
     // Get component data if creation succeeded
     if (addResponse.success) {
-      const getResponse = await underlyingClient.send({
+      const getResponse = await underlyingClient.call({
         $type: 'getComponent',
         componentId: componentId,
       });
 
       // Remove component (cleanup)
-      await underlyingClient.send({
+      await underlyingClient.call({
         $type: 'removeComponent',
         componentId: componentId,
       });
@@ -240,11 +260,11 @@ async function testComponent(
 async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   console.log('\n🔧 Collecting Component Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Create a test slot first
   const testSlotId = `test_component_${Date.now()}`;
-  await underlyingClient.send({
+  await underlyingClient.call({
     $type: 'addSlot',
     data: {
       id: testSlotId,
@@ -285,8 +305,10 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   const summary = {
     testedAt: new Date().toISOString(),
     totalComponents: allComponents.length,
-    successful: Object.values(results).filter((r: unknown) => (r as { success: boolean }).success).length,
-    failed: Object.values(results).filter((r: unknown) => !(r as { success: boolean }).success).length,
+    successful: Object.values(results).filter((r: unknown) => (r as { success: boolean }).success)
+      .length,
+    failed: Object.values(results).filter((r: unknown) => !(r as { success: boolean }).success)
+      .length,
     results: Object.fromEntries(
       Object.entries(results).map(([type, result]) => [
         type,
@@ -299,10 +321,12 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   };
   saveJson('components/_summary.json', summary);
 
-  console.log(`\n  Summary: ${summary.successful}/${summary.totalComponents} components successful`);
+  console.log(
+    `\n  Summary: ${summary.successful}/${summary.totalComponents} components successful`
+  );
 
   // Cleanup: remove the test slot
-  await underlyingClient.send({
+  await underlyingClient.call({
     $type: 'removeSlot',
     slotId: testSlotId,
   });
@@ -311,7 +335,7 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
 async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
   console.log('\n🖼️  Collecting Texture Import Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Create raw RGBA pixel data (not PNG-encoded)
   // importTexture2DRawData expects raw 8-bit RGBA bytes, not encoded image files
@@ -330,13 +354,12 @@ async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
 
   const arrayBuffer = rawData.buffer;
 
-  const importResponse = await underlyingClient.send(
+  const importResponse = await underlyingClient.call(
     {
       $type: 'importTexture2DRawData',
       width,
       height,
       colorProfile: 'sRGB',
-      messageId: '',
     },
     arrayBuffer
   );
@@ -346,9 +369,9 @@ async function collectTextureData(client: ResoniteLinkClient): Promise<void> {
 async function collectSessionData(client: ResoniteLinkClient): Promise<void> {
   console.log('\n📋 Collecting Session Data...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
-  const sessionResponse = await underlyingClient.send({
+  const sessionResponse = await underlyingClient.call({
     $type: 'requestSessionData',
   });
   saveJson('requestSessionData-response.json', sessionResponse);
@@ -357,11 +380,11 @@ async function collectSessionData(client: ResoniteLinkClient): Promise<void> {
 async function collectErrorResponses(client: ResoniteLinkClient): Promise<void> {
   console.log('\n❌ Collecting Error Responses...');
 
-  const underlyingClient = client.getClient();
+  const underlyingClient = getConnectedLink(client);
 
   // Try to get a non-existent slot
   try {
-    const notFoundResponse = await underlyingClient.send({
+    const notFoundResponse = await underlyingClient.call({
       $type: 'getSlot',
       slotId: 'non_existent_slot_id_12345',
       depth: 0,
@@ -372,6 +395,64 @@ async function collectErrorResponses(client: ResoniteLinkClient): Promise<void> 
     saveJson('getSlot-notFound-error.json', {
       error: error instanceof Error ? error.message : String(error),
     });
+  }
+}
+
+async function collectReflectionData(client: ResoniteLinkClient): Promise<void> {
+  console.log('\n🪞 Collecting Reflection Data...');
+
+  const underlyingClient = getConnectedLink(client);
+  const allComponents = [
+    ...REQUIRED_COMPONENTS.mesh,
+    ...REQUIRED_COMPONENTS.rendering,
+    ...REQUIRED_COMPONENTS.materials,
+    ...REQUIRED_COMPONENTS.textures,
+    ...REQUIRED_COMPONENTS.interaction,
+    ...REQUIRED_COMPONENTS.uix,
+  ];
+
+  const componentTypeListRoot = await underlyingClient.call({
+    $type: 'getComponentTypeList',
+    categoryPath: '',
+  });
+  saveReflectionJson('getComponentTypeList-root-response.json', componentTypeListRoot);
+
+  const componentTypeListAll = await underlyingClient.call({
+    $type: 'getComponentTypeList',
+    categoryPath: '*',
+  });
+  saveReflectionJson('getComponentTypeList-all-response.json', componentTypeListAll);
+
+  const typeDefinitionFloat3 = await underlyingClient.call({
+    $type: 'getTypeDefinition',
+    type: '[BaseX]BaseX.float3',
+  });
+  saveReflectionJson('getTypeDefinition-float3-response.json', typeDefinitionFloat3);
+
+  const enumDefinitionTextHorizontalAlignment = await underlyingClient.call({
+    $type: 'getEnumDefinition',
+    type: '[FrooxEngine]FrooxEngine.UIX.TextHorizontalAlignment',
+  });
+  saveReflectionJson(
+    'getEnumDefinition-TextHorizontalAlignment-response.json',
+    enumDefinitionTextHorizontalAlignment
+  );
+
+  for (const componentType of allComponents) {
+    const componentName = componentType.split('.').pop();
+    if (!componentName) {
+      continue;
+    }
+
+    const componentDefinition = await underlyingClient.call({
+      $type: 'getComponentDefinition',
+      componentType,
+      flattened: true,
+    });
+    saveReflectionJson(
+      `getComponentDefinition-${componentName}-response.json`,
+      componentDefinition
+    );
   }
 }
 
@@ -564,6 +645,7 @@ async function main(): Promise<void> {
   try {
     // Collect session data first to get version info
     await collectSessionData(client);
+    await collectReflectionData(client);
 
     // Collect various response types
     await collectSlotData(client);

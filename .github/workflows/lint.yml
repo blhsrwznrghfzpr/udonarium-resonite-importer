@@ -18,21 +18,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          submodules: recursive
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.SUBMODULE_TOKEN != '' && secrets.SUBMODULE_TOKEN || github.token }}
 
       - name: Setup mise
         uses: jdx/mise-action@v2
 
       - name: Install dependencies
         run: npm ci --ignore-scripts
-
-      - name: Build submodule
-        run: |
-          cd lib/resonitelink.js
-          npm ci
-          npm run build
 
       - name: Auto-fix (lint, format)
         run: npm run check:fix

@@ -65,6 +65,12 @@ export const DEFAULT_RESONITE_LINK = {
 };
 
 /**
+ * ResoniteLink version that fixtures and compatibility checks were last validated against.
+ * If runtime version differs, import can continue but behavior may have changed.
+ */
+export const VERIFIED_RESONITE_LINK_VERSION = '0.7.0.0';
+
+/**
  * Known Udonarium image identifiers mapped to their asset URLs.
  * These are built-in images used by default Udonarium save data.
  */

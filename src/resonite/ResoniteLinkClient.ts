@@ -1,18 +1,10 @@
 /**
  * WebSocket client for ResoniteLink communication
- * Uses resonitelink.js library (local submodule)
+ * Uses @eth0fox/tsrl library
  */
 
-import {
-  Client,
-  ClientSlot,
-  createString,
-  createReference,
-  createFloat3,
-  createFloatQ,
-  createBool,
-  createLong,
-} from '../../lib/resonitelink.js/dist';
+import type { ResoniteLink } from '@eth0fox/tsrl';
+import WebSocket from 'ws';
 import { RETRY_CONFIG, getResoniteLinkHost } from '../config/MappingConfig';
 
 export interface ResoniteLinkConfig {
@@ -39,8 +31,24 @@ export interface SlotTransform {
   scale: Vector3;
 }
 
+export interface ResoniteLinkSessionData {
+  resoniteVersion?: string;
+  resoniteLinkVersion?: string;
+  uniqueSessionId?: string;
+}
+
+interface SlotLike {
+  id: string;
+  children?: Array<{ id: string }> | null;
+}
+
+type ComponentMembers = Record<string, Record<string, unknown>>;
+
+const createReference = (targetId: string) => ({ $type: 'reference' as const, targetId });
+const createField = <T>(value: T) => ({ value });
+
 export class ResoniteLinkClient {
-  private client: Client;
+  private link?: ResoniteLink;
   private config: ResoniteLinkConfig;
   private _isConnected = false;
 
@@ -49,45 +57,6 @@ export class ResoniteLinkClient {
       host: config.host || getResoniteLinkHost(),
       port: config.port,
     };
-    this.client = new Client({
-      host: this.config.host,
-      port: this.config.port,
-    });
-    this.assertClientContract(this.client);
-
-    // Register disconnect listener once in constructor
-    this.client.on('disconnected', () => {
-      this._isConnected = false;
-    });
-  }
-
-  /**
-   * Runtime compatibility check against resonitelink.js API.
-   * This helps detect breaking library updates even when ambient type declarations exist.
-   */
-  private assertClientContract(value: unknown): void {
-    const requiredMethods = [
-      'on',
-      'off',
-      'connect',
-      'disconnect',
-      'send',
-      'createSlot',
-      'getSlot',
-      'createComponent',
-      'getComponent',
-    ] as const;
-
-    if (!value || typeof value !== 'object') {
-      throw new Error('Invalid resonitelink client instance');
-    }
-
-    const candidate = value as Record<string, unknown>;
-    for (const method of requiredMethods) {
-      if (typeof candidate[method] !== 'function') {
-        throw new Error(`Incompatible resonitelink client API: missing method "${method}"`);
-      }
-    }
   }
 
   /**
@@ -116,40 +85,18 @@ export class ResoniteLinkClient {
     );
   }
 
-  private tryConnect(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => {
-        cleanup();
-        reject(new Error('Connection timeout'));
-      }, 5000);
-
-      const onConnected = () => {
-        cleanup();
-        this._isConnected = true;
-        resolve();
-      };
-
-      const cleanup = () => {
-        clearTimeout(timeout);
-        this.client.off('connected', onConnected);
-      };
-
-      this.client.on('connected', onConnected);
-
-      try {
-        this.client.connect();
-      } catch (error) {
-        cleanup();
-        reject(error instanceof Error ? error : new Error(String(error)));
-      }
-    });
+  private async tryConnect(): Promise<void> {
+    const { ResoniteLink } = await import('@eth0fox/tsrl');
+    const url = `ws://${this.config.host}:${this.config.port}`;
+    this.link = await ResoniteLink.connect(url, WebSocket as never);
+    this._isConnected = true;
   }
 
   /**
    * Disconnect from ResoniteLink
    */
   disconnect(): void {
-    this.client.disconnect();
+    this.link?.socket.close();
     this._isConnected = false;
   }
 
@@ -157,14 +104,36 @@ export class ResoniteLinkClient {
    * Check if connected
    */
   isConnected(): boolean {
-    return this._isConnected && this.client.isConnected;
+    const socket = this.link?.socket;
+    return this._isConnected && !!socket && socket.readyState === socket.OPEN;
   }
 
   /**
-   * Get the underlying resonitelink.js Client instance
+   * Get the underlying tsrl link instance
    */
-  getClient(): Client {
-    return this.client;
+  getClient(): ResoniteLink | undefined {
+    return this.link;
+  }
+
+  private getConnectedLink(): ResoniteLink {
+    if (!this.isConnected() || !this.link) {
+      throw new Error('Not connected to ResoniteLink');
+    }
+    return this.link;
+  }
+
+  /**
+   * Get session information from ResoniteLink.
+   */
+  async getSessionData(): Promise<ResoniteLinkSessionData> {
+    const link = this.getConnectedLink();
+    const sessionData = await link.requestSessionData();
+
+    return {
+      resoniteVersion: sessionData.resoniteVersion,
+      resoniteLinkVersion: sessionData.resoniteLinkVersion,
+      uniqueSessionId: sessionData.uniqueSessionId,
+    };
   }
 
   /**
@@ -180,28 +149,24 @@ export class ResoniteLinkClient {
     isActive?: boolean;
     tag?: string;
   }): Promise<string> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
+    const link = this.getConnectedLink();
 
     const scale = options.scale ?? { x: 1, y: 1, z: 1 };
     const rotation = options.rotation ?? { x: 0, y: 0, z: 0, w: 1 };
-    const slot = await this.client.createSlot(
-      {
-        parent: createReference(options.parentId),
-        name: createString(options.name),
-        position: createFloat3(options.position),
-        scale: createFloat3(scale),
-        rotation: createFloatQ(rotation),
-        isActive: createBool(options.isActive ?? true),
-        isPersistent: createBool(true),
-        tag: createString(options.tag ?? ''),
-        orderOffset: createLong(0),
-      },
-      options.id
-    );
+    const slotId = await link.slotAdd(options.parentId, {
+      id: options.id,
+      parent: createReference(options.parentId),
+      name: createField(options.name),
+      position: createField(options.position),
+      scale: createField(scale),
+      rotation: createField(rotation),
+      isActive: createField(options.isActive ?? true),
+      isPersistent: createField(true),
+      tag: createField(options.tag ?? ''),
+      orderOffset: createField(0),
+    });
 
-    return slot?.id ?? options.id;
+    return slotId ?? options.id;
   }
 
   /**
@@ -213,49 +178,32 @@ export class ResoniteLinkClient {
     rotation?: Vector3;
     scale?: Vector3;
   }): Promise<void> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
+    const link = this.getConnectedLink();
 
-    const slot = await this.client.getSlot(options.id);
-    if (!slot) {
-      throw new Error(`Slot not found: ${options.id}`);
-    }
-
+    const data: Record<string, unknown> = {};
     if (options.position) {
-      await slot.setPosition(options.position);
+      data.position = createField(options.position);
     }
-
     if (options.rotation) {
-      // Convert euler to quaternion (simplified)
-      const rotation = this.eulerToQuaternion(options.rotation);
-      await slot.setRotation(rotation);
+      data.rotation = createField(this.eulerToQuaternion(options.rotation));
+    }
+    if (options.scale) {
+      data.scale = createField(options.scale);
     }
 
-    if (options.scale) {
-      await slot.setScale(options.scale);
+    if (Object.keys(data).length === 0) {
+      return;
     }
+
+    await link.slotUpdate(options.id, data as never);
   }
 
   /**
    * Import a texture from file path
    */
   async importTexture(filePath: string): Promise<string> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const response = await this.client.send({
-      $type: 'importTexture2DFile',
-      filePath,
-    });
-
-    const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
-    if (!result.success) {
-      throw new Error(result.errorInfo || 'Failed to import texture');
-    }
-
-    return result.assetURL || filePath;
+    const link = this.getConnectedLink();
+    return link.importTexture2DFile(filePath);
   }
 
   /**
@@ -267,27 +215,8 @@ export class ResoniteLinkClient {
     height: number,
     colorProfile: string = 'sRGB'
   ): Promise<string> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const response = await this.client.send(
-      {
-        $type: 'importTexture2DRawData' as const,
-        width,
-        height,
-        colorProfile,
-        messageId: '',
-      },
-      data
-    );
-
-    const result = response as { assetURL?: string; success?: boolean; errorInfo?: string };
-    if (!result.success) {
-      throw new Error(result.errorInfo || 'Failed to import raw texture data');
-    }
-
-    return result.assetURL || `texture_${width}x${height}`;
+    const link = this.getConnectedLink();
+    return link.importTexture2DRawData(width, height, data, colorProfile as never);
   }
 
   /**
@@ -299,24 +228,16 @@ export class ResoniteLinkClient {
     componentType: string;
     fields: Record<string, unknown>;
   }): Promise<string> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
+    const link = this.getConnectedLink();
+    if (options.id) {
+      await link.componentAdd(options.slotId, options.componentType, {
+        id: options.id,
+        ...options.fields,
+      } as never);
+      return options.id;
     }
 
-    const component = await this.client.createComponent(
-      options.slotId,
-      {
-        componentType: options.componentType,
-        members: options.fields as Record<string, never>,
-      },
-      options.id
-    );
-
-    if (!component) {
-      throw new Error(`Failed to add component: ${options.componentType}`);
-    }
-
-    return component.id;
+    return link.componentAdd(options.slotId, options.componentType, options.fields as never);
   }
 
   /**
@@ -326,54 +247,25 @@ export class ResoniteLinkClient {
     componentId: string;
     fields: Record<string, unknown>;
   }): Promise<void> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const response = (await this.client.send({
-      $type: 'updateComponent' as const,
-      data: {
-        id: options.componentId,
-        members: options.fields as Record<string, never>,
-      },
-    })) as { success?: boolean; errorInfo?: string };
-
-    if (!response.success) {
-      throw new Error(response.errorInfo || 'Failed to update component');
-    }
+    const link = this.getConnectedLink();
+    await link.componentUpdate(options.componentId, options.fields as never);
   }
 
   /**
    * Get component members from Resonite.
    * Returns the raw members object keyed by member name.
    */
-  async getComponentMembers(componentId: string): Promise<Record<string, Record<string, unknown>>> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const component = await this.client.getComponent(componentId);
-    if (!component) {
-      throw new Error(`Component not found: ${componentId}`);
-    }
-
-    return component.members as unknown as Record<string, Record<string, unknown>>;
+  async getComponentMembers(componentId: string): Promise<ComponentMembers> {
+    const link = this.getConnectedLink();
+    const component = await link.componentGet(componentId);
+    return component.members as unknown as ComponentMembers;
   }
 
-  /**
-   * Update SyncList fields on a component using the 2-step protocol:
-   *  1. Send list with elements (id omitted) to add new elements (targetId ignored)
-   *  2. Fetch component to get server-assigned element IDs
-   *  3. Send list with elements including id to set targetId
-   */
   async updateListFields(componentId: string, listFields: Record<string, unknown>): Promise<void> {
-    // Step 1: Add elements (targetId will be null)
     await this.updateComponent({ componentId, fields: listFields });
 
-    // Step 2: Fetch server-assigned element IDs
     const members = await this.getComponentMembers(componentId);
 
-    // Step 3: For each list field, re-send with server-assigned element IDs
     const resolvedFields: Record<string, unknown> = {};
     for (const [fieldName, listValue] of Object.entries(listFields)) {
       const list = listValue as { $type: string; elements: Array<Record<string, unknown>> };
@@ -400,9 +292,6 @@ export class ResoniteLinkClient {
     }
   }
 
-  /**
-   * Add multiple components to a slot
-   */
   async addComponents(
     slotId: string,
     components: Array<{ id?: string; type: string; fields: Record<string, unknown> }>
@@ -420,63 +309,33 @@ export class ResoniteLinkClient {
     return componentIds;
   }
 
-  /**
-   * Get the root slot
-   */
-  getRootSlot(): Promise<ClientSlot | undefined> {
-    if (!this.isConnected()) {
-      return Promise.reject(new Error('Not connected to ResoniteLink'));
-    }
-
-    return this.client.getSlot('Root');
+  getRootSlot(): Promise<SlotLike> {
+    const link = this.getConnectedLink();
+    return link.slotGet('Root', false, 0) as unknown as Promise<SlotLike>;
   }
 
-  /**
-   * Get child slot IDs of a given slot
-   */
   async getSlotChildIds(slotId: string): Promise<string[]> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
+    const link = this.getConnectedLink();
+    const slot = (await link.slotGet(slotId, false, 1)) as unknown as SlotLike | undefined;
 
-    const slot = await this.client.getSlot(slotId, 1);
     if (!slot) {
       return [];
     }
 
-    return slot.childrens.map((child) => child.id);
+    return (slot.children ?? []).map((child) => child.id);
   }
 
-  /**
-   * Remove slot by ID.
-   */
   async removeSlot(slotId: string): Promise<void> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const response = (await this.client.send({
-      $type: 'removeSlot' as const,
-      slotId,
-    })) as { success?: boolean; errorInfo?: string };
-
-    if (!response.success) {
-      throw new Error(response.errorInfo || `Failed to remove slot: ${slotId}`);
-    }
+    const link = this.getConnectedLink();
+    await link.slotRemove(slotId);
   }
 
-  /**
-   * Read slot tag value.
-   */
   async getSlotTag(slotId: string): Promise<string | undefined> {
     const slotData = await this.getSlotData(slotId);
     const tag = slotData?.tag?.value;
     return typeof tag === 'string' ? tag : undefined;
   }
 
-  /**
-   * Read position/rotation/scale from a slot.
-   */
   async getSlotTransform(slotId: string): Promise<SlotTransform | undefined> {
     const slotData = await this.getSlotData(slotId);
     if (!slotData) {
@@ -494,10 +353,6 @@ export class ResoniteLinkClient {
     return { position, rotation, scale };
   }
 
-  /**
-   * Remove all direct children under Root that match the given tag.
-   * Returns removed slot count and the transform of the first matched slot.
-   */
   async captureTransformAndRemoveRootChildrenByTag(
     tag: string
   ): Promise<{ removedCount: number; transform?: SlotTransform }> {
@@ -529,10 +384,6 @@ export class ResoniteLinkClient {
     };
   }
 
-  /**
-   * Remove all direct children under Root that match the given tag.
-   * Returns removed slot count.
-   */
   async removeRootChildrenByTag(tag: string): Promise<number> {
     const result = await this.captureTransformAndRemoveRootChildrenByTag(tag);
     return result.removedCount;
@@ -547,29 +398,17 @@ export class ResoniteLinkClient {
       }
     | undefined
   > {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const response = (await this.client.send({
-      $type: 'getSlot' as const,
-      slotId,
-      depth: 0,
-    })) as {
-      success?: boolean;
-      data?: {
+    const link = this.getConnectedLink();
+    try {
+      return (await link.slotGet(slotId, false, 0)) as unknown as {
         tag?: { value?: unknown };
         position?: { value?: unknown };
         rotation?: { value?: unknown };
         scale?: { value?: unknown };
       };
-    };
-
-    if (!response.success) {
+    } catch {
       return undefined;
     }
-
-    return response.data;
   }
 
   private isVector3(value: unknown): value is Vector3 {
@@ -597,20 +436,9 @@ export class ResoniteLinkClient {
     );
   }
 
-  /**
-   * Move a slot to a new parent
-   */
   async reparentSlot(slotId: string, newParentId: string): Promise<void> {
-    if (!this.isConnected()) {
-      throw new Error('Not connected to ResoniteLink');
-    }
-
-    const slot = await this.client.getSlot(slotId);
-    if (!slot) {
-      throw new Error(`Slot not found: ${slotId}`);
-    }
-
-    await slot.setParent(newParentId);
+    const link = this.getConnectedLink();
+    await link.slotUpdate(slotId, { parent: createReference(newParentId) } as never);
   }
 
   private sleep(ms: number): Promise<void> {
@@ -618,7 +446,6 @@ export class ResoniteLinkClient {
   }
 
   private eulerToQuaternion(euler: Vector3): Quaternion {
-    // Convert degrees to radians
     const x = (euler.x * Math.PI) / 180 / 2;
     const y = (euler.y * Math.PI) / 180 / 2;
     const z = (euler.z * Math.PI) / 180 / 2;

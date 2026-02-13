@@ -180,8 +180,6 @@ udonarium-resonite-importer/
 │   ├── i18n/                    # 国際化
 │   └── config/
 │       └── MappingConfig.ts     # 定数・マッピング設定
-├── lib/
-│   └── resonitelink.js/         # ResoniteLink library (submodule)
 ├── dist/                        # ビルド出力
 ├── package.json
 └── tsconfig.json

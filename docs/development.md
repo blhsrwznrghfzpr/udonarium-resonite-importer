@@ -2,15 +2,15 @@
 
 [日本語版](development.ja.md)
 
-## ResoniteLink Submodule Setup
+## Note: Why `dynamic import()` is used for tsrl
 
-Before running `build`, `check`, or `test`, initialize and build the ResoniteLink submodule:
+`src/resonite/ResoniteLinkClient.ts` loads `@eth0fox/tsrl` via `await import('@eth0fox/tsrl')` at connection time.
 
-```bash
-npm run setup:resonitelink
-```
+Reason:
+- this project currently compiles CLI code as **CommonJS** (`tsconfig.cli.json` uses `"module": "commonjs"`)
+- `@eth0fox/tsrl` is published as an **ESM package** (`type: "module"`)
 
-The scripts `npm run build`, `npm run check`, and `npm run test` now validate this prerequisite and fail fast if the submodule build artifacts are missing.
+Using `dynamic import()` avoids CJS/ESM interop issues from static `require`-style loading and keeps runtime compatibility stable.
 
 ## Build Commands
 
@@ -117,8 +117,6 @@ udonarium-resonite-importer/
 │   ├── i18n/                    # Internationalization
 │   └── __fixtures__/            # Test fixtures
 ├── scripts/                     # Utility scripts
-├── lib/
-│   └── resonitelink.js/         # ResoniteLink library (submodule)
 └── .github/
     └── workflows/               # CI/CD pipelines
 ```
