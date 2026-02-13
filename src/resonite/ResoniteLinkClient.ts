@@ -3,7 +3,13 @@
  * Uses @eth0fox/tsrl library
  */
 
-import type { ResoniteLink } from '@eth0fox/tsrl';
+import type {
+  AddComponentMessage,
+  AddSlotMessage,
+  AnyFieldValue,
+  ClientMessage,
+  ResoniteLink,
+} from '@eth0fox/tsrl';
 import WebSocket from 'ws';
 import { RETRY_CONFIG, getResoniteLinkHost } from '../config/MappingConfig';
 
@@ -43,9 +49,76 @@ interface SlotLike {
 }
 
 type ComponentMembers = Record<string, Record<string, unknown>>;
+type RawFieldValue<T> = { value: T };
+type RawReferenceValue = { $type: 'reference'; targetId: string };
+
+interface RawAddSlotMessage {
+  $type: 'addSlot';
+  data: {
+    id: string;
+    parent: RawReferenceValue;
+    name: RawFieldValue<string>;
+    position: RawFieldValue<Vector3>;
+    scale: RawFieldValue<Vector3>;
+    rotation: RawFieldValue<Quaternion>;
+    isActive: RawFieldValue<boolean>;
+    isPersistent: RawFieldValue<boolean>;
+    tag: RawFieldValue<string>;
+    orderOffset: RawFieldValue<number>;
+  };
+}
+
+interface RawAddComponentMessage {
+  $type: 'addComponent';
+  containerSlotId: string;
+  data: {
+    id: string;
+    componentType: string;
+    members: Record<string, unknown>;
+  };
+}
+
+type RawClientMessage = RawAddSlotMessage | RawAddComponentMessage;
 
 const createReference = (targetId: string) => ({ $type: 'reference' as const, targetId });
 const createField = <T>(value: T) => ({ value });
+const toTsrlMembers = (members: Record<string, unknown>): Record<string, AnyFieldValue> =>
+  members as Record<string, AnyFieldValue>;
+
+function toTsrlClientMessage(message: RawClientMessage): ClientMessage {
+  switch (message.$type) {
+    case 'addSlot': {
+      const converted: AddSlotMessage = {
+        $type: 'addSlot',
+        data: {
+          id: message.data.id,
+          parent: message.data.parent,
+          name: message.data.name,
+          position: message.data.position,
+          scale: message.data.scale,
+          rotation: message.data.rotation,
+          isActive: message.data.isActive,
+          isPersistent: message.data.isPersistent,
+          tag: message.data.tag,
+          orderOffset: message.data.orderOffset,
+        },
+      };
+      return converted;
+    }
+    case 'addComponent': {
+      const converted: AddComponentMessage = {
+        $type: 'addComponent',
+        containerSlotId: message.containerSlotId,
+        data: {
+          id: message.data.id,
+          componentType: message.data.componentType,
+          members: toTsrlMembers(message.data.members),
+        },
+      };
+      return converted;
+    }
+  }
+}
 
 export class ResoniteLinkClient {
   private link?: ResoniteLink;
@@ -122,6 +195,11 @@ export class ResoniteLinkClient {
     return this.link;
   }
 
+  private callRaw(message: RawClientMessage): Promise<unknown> {
+    const link = this.getConnectedLink();
+    return link.call(toTsrlClientMessage(message));
+  }
+
   /**
    * Get session information from ResoniteLink.
    */
@@ -149,24 +227,26 @@ export class ResoniteLinkClient {
     isActive?: boolean;
     tag?: string;
   }): Promise<string> {
-    const link = this.getConnectedLink();
-
     const scale = options.scale ?? { x: 1, y: 1, z: 1 };
     const rotation = options.rotation ?? { x: 0, y: 0, z: 0, w: 1 };
-    const slotId = await link.slotAdd(options.parentId, {
-      id: options.id,
-      parent: createReference(options.parentId),
-      name: createField(options.name),
-      position: createField(options.position),
-      scale: createField(scale),
-      rotation: createField(rotation),
-      isActive: createField(options.isActive ?? true),
-      isPersistent: createField(true),
-      tag: createField(options.tag ?? ''),
-      orderOffset: createField(0),
-    });
+    const message: RawAddSlotMessage = {
+      $type: 'addSlot',
+      data: {
+        id: options.id,
+        parent: createReference(options.parentId),
+        name: createField(options.name),
+        position: createField(options.position),
+        scale: createField(scale),
+        rotation: createField(rotation),
+        isActive: createField(options.isActive ?? true),
+        isPersistent: createField(true),
+        tag: createField(options.tag ?? ''),
+        orderOffset: createField(0),
+      },
+    };
+    await this.callRaw(message);
 
-    return slotId ?? options.id;
+    return options.id;
   }
 
   /**
@@ -230,10 +310,16 @@ export class ResoniteLinkClient {
   }): Promise<string> {
     const link = this.getConnectedLink();
     if (options.id) {
-      await link.componentAdd(options.slotId, options.componentType, {
-        id: options.id,
-        ...options.fields,
-      } as never);
+      const message: RawAddComponentMessage = {
+        $type: 'addComponent',
+        containerSlotId: options.slotId,
+        data: {
+          id: options.id,
+          componentType: options.componentType,
+          members: options.fields,
+        },
+      };
+      await this.callRaw(message);
       return options.id;
     }
 

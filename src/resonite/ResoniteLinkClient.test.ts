@@ -4,6 +4,7 @@ const TEST_PORT = 12345;
 
 const createMockLink = () => ({
   socket: { readyState: 1, OPEN: 1, close: vi.fn() },
+  call: vi.fn(),
   slotAdd: vi.fn(),
   slotUpdate: vi.fn(),
   slotGet: vi.fn(),
@@ -46,9 +47,9 @@ describe('ResoniteLinkClient', () => {
     expect(client.isConnected()).toBe(false);
   });
 
-  it('addSlot sends slotAdd with field wrappers', async () => {
+  it('addSlot sends addSlot call with field wrappers', async () => {
     await client.connect();
-    mockLink.slotAdd.mockResolvedValue('slot-id');
+    mockLink.call.mockResolvedValue({ success: true });
 
     const id = await client.addSlot({
       id: 'slot-id',
@@ -59,11 +60,13 @@ describe('ResoniteLinkClient', () => {
     });
 
     expect(id).toBe('slot-id');
-    expect(mockLink.slotAdd).toHaveBeenCalledTimes(1);
-    const [, payload] = mockLink.slotAdd.mock.calls[0] as [string, Record<string, unknown>];
-    expect(payload.id).toBe('slot-id');
-    expect(payload.parent).toEqual(expect.objectContaining({ targetId: 'Root' }));
-    expect(payload.tag).toEqual(expect.objectContaining({ value: 'tagged' }));
+    expect(mockLink.call).toHaveBeenCalledTimes(1);
+    const [payload] = mockLink.call.mock.calls[0] as [Record<string, unknown>];
+    expect(payload.$type).toBe('addSlot');
+    const data = payload.data as Record<string, unknown>;
+    expect(data.id).toBe('slot-id');
+    expect(data.parent).toEqual(expect.objectContaining({ targetId: 'Root' }));
+    expect(data.tag).toEqual(expect.objectContaining({ value: 'tagged' }));
   });
 
   it('throws when not connected', async () => {
