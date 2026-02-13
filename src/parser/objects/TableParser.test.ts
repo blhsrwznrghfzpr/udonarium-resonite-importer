@@ -388,5 +388,55 @@ describe('TableParser', () => {
       expect(result.width).toBe(4);
       expect(result.height).toBe(4);
     });
+
+    it('should parse isLocked as false when attribute is "false"', () => {
+      const data = {
+        '@_identifier': 'mask-unlocked',
+        '@_isLocked': 'false',
+        data: [
+          {
+            '@_name': 'table-mask',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseTableMask(data, 'test.xml');
+
+      expect(result.isLocked).toBe(false);
+    });
+
+    it('should parse isLocked as true when attribute is "true"', () => {
+      const data = {
+        '@_identifier': 'mask-locked',
+        '@_isLocked': 'true',
+        data: [
+          {
+            '@_name': 'table-mask',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseTableMask(data, 'test.xml');
+
+      expect(result.isLocked).toBe(true);
+    });
+
+    it('should default isLocked to false when attribute is missing', () => {
+      const data = {
+        '@_identifier': 'mask-default',
+        data: [
+          {
+            '@_name': 'table-mask',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseTableMask(data, 'test.xml');
+
+      expect(result.isLocked).toBe(false);
+    });
   });
 });

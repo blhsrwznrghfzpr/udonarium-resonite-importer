@@ -3,7 +3,13 @@
  */
 
 import { GameTable, TableMask, ImageRef } from '../../converter/UdonariumObject';
-import { findDataByName, getTextValue, getNumberValue, parsePosition } from './ParserUtils';
+import {
+  findDataByName,
+  getTextValue,
+  getNumberValue,
+  getBooleanValue,
+  parsePosition,
+} from './ParserUtils';
 
 /**
  * Parse game-table element with attributes (used in room save data)
@@ -95,8 +101,9 @@ export function parseTableMask(data: unknown, fileName: string): TableMask {
   const opacityNode = findDataByName(commonData, 'opacity') as Record<string, unknown> | undefined;
   const opacity = getNumberValue(opacityNode?.['@_currentValue']) ?? getNumberValue(opacityNode);
 
-  // Parse position
+  // Parse position and attributes
   const position = parsePosition(root);
+  const isLocked = getBooleanValue(root['@_isLocked']) ?? false;
   const properties = new Map<string, string | number>();
   if (opacity !== undefined) {
     properties.set('opacity', opacity);
@@ -114,6 +121,7 @@ export function parseTableMask(data: unknown, fileName: string): TableMask {
     type: 'table-mask',
     name,
     position,
+    isLocked,
     width,
     height,
     images,
