@@ -26,6 +26,7 @@ describe('applyCardStackConversion', () => {
       id: 'stack-1',
       type: 'card-stack',
       name: 'Stack',
+      rotate: 45,
       position: { x: 0, y: 0, z: 0 },
       images: [],
       properties: new Map(),
@@ -55,6 +56,8 @@ describe('applyCardStackConversion', () => {
     applyCardStackConversion(udonObj, resoniteObj, convertObject);
 
     expect(convertObject).toHaveBeenCalledTimes(2);
+    expect(convertObject).toHaveBeenNthCalledWith(1, cardB);
+    expect(convertObject).toHaveBeenNthCalledWith(2, cardA);
     expect(resoniteObj.components).toEqual([
       {
         id: 'slot-stack-1-collider',
@@ -63,9 +66,17 @@ describe('applyCardStackConversion', () => {
           Size: { $type: 'float3', value: { x: 2, y: 0.05, z: 3 } },
         },
       },
+      {
+        id: 'slot-stack-1-grabbable',
+        type: '[FrooxEngine]FrooxEngine.Grabbable',
+        fields: {},
+      },
     ]);
     expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -1.5 });
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: 45, z: 0 });
     expect(resoniteObj.children).toHaveLength(2);
+    expect(resoniteObj.children[0].name).toBe('B');
+    expect(resoniteObj.children[1].name).toBe('A');
     expect(resoniteObj.children[0].position).toEqual({ x: 0, y: 0, z: 0 });
     expect(resoniteObj.children[1].position).toEqual({ x: 0, y: 0.0005, z: 0 });
   });

@@ -130,10 +130,10 @@ describe('CardParser', () => {
       expect(result.images).toHaveLength(1);
     });
 
-    it('should parse isFaceUp attribute as true', () => {
+    it('should parse state=0 as face-up', () => {
       const data = {
         '@_identifier': 'card-004',
-        '@_isFaceUp': 'true',
+        '@_state': '0',
         data: [
           {
             '@_name': 'card',
@@ -147,10 +147,10 @@ describe('CardParser', () => {
       expect(result.isFaceUp).toBe(true);
     });
 
-    it('should parse isFaceUp attribute as false', () => {
+    it('should parse state=1 as face-down', () => {
       const data = {
         '@_identifier': 'card-005',
-        '@_isFaceUp': 'false',
+        '@_state': '1',
         data: [
           {
             '@_name': 'card',
@@ -164,7 +164,7 @@ describe('CardParser', () => {
       expect(result.isFaceUp).toBe(false);
     });
 
-    it('should default isFaceUp to true', () => {
+    it('should default to face-up when state is missing', () => {
       const data = {
         data: [
           {
@@ -203,6 +203,7 @@ describe('CardParser', () => {
     it('should parse position from location.x/location.y attributes', () => {
       const data = {
         '@_identifier': 'card-007',
+        '@_rotate': '30',
         '@_location.x': '865.5179751952622',
         '@_location.y': '656.0392841109901',
         '@_posZ': '0',
@@ -219,6 +220,7 @@ describe('CardParser', () => {
       expect(result.position.x).toBeCloseTo(865.518, 2);
       expect(result.position.y).toBeCloseTo(656.039, 2);
       expect(result.position.z).toBe(0);
+      expect(result.rotate).toBe(30);
     });
 
     it('should default position to (0, 0)', () => {
@@ -397,6 +399,7 @@ describe('CardParser', () => {
     it('should parse position from location.x/location.y attributes', () => {
       const data = {
         '@_identifier': 'stack-006',
+        '@_rotate': '45',
         '@_location.x': '750',
         '@_location.y': '625',
         '@_posZ': '0',
@@ -413,6 +416,7 @@ describe('CardParser', () => {
       expect(result.position.x).toBe(750);
       expect(result.position.y).toBe(625);
       expect(result.position.z).toBe(0);
+      expect(result.rotate).toBe(45);
     });
 
     it('should use fileName as fallback for name and id', () => {

@@ -15,10 +15,16 @@ export function applyCardStackConversion(
   resoniteObj.position.x += cardWidth / 2;
   resoniteObj.position.z -= cardHeight / 2;
   resoniteObj.position.y += CARD_STACK_Y_OFFSET;
+  resoniteObj.rotation = { x: 0, y: udonObj.rotate ?? 0, z: 0 };
   resoniteObj.components = [
     buildBoxColliderComponent(resoniteObj.id, { x: cardWidth, y: 0.05, z: cardHeight }),
+    {
+      id: `${resoniteObj.id}-grabbable`,
+      type: '[FrooxEngine]FrooxEngine.Grabbable',
+      fields: {},
+    },
   ];
-  resoniteObj.children = udonObj.cards.map((card, i) => {
+  resoniteObj.children = [...udonObj.cards].reverse().map((card, i) => {
     const child = convertObject(card);
     // Stack cards locally under the parent slot.
     child.position = { x: 0, y: i * 0.0005, z: 0 };

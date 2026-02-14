@@ -33,7 +33,7 @@ describe('applyCardConversion', () => {
     applyCardConversion(udonObj, resoniteObj);
 
     expect(resoniteObj.position).toEqual({ x: 0.5, y: 0.001, z: -0.75 });
-    expect(resoniteObj.rotation).toEqual({ x: 90, y: 0, z: 0 });
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: 0, z: 0 });
     expect(resoniteObj.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
       '[FrooxEngine]FrooxEngine.Grabbable',
@@ -43,6 +43,8 @@ describe('applyCardConversion', () => {
       'slot-card-1-front',
       'slot-card-1-back',
     ]);
+    expect(resoniteObj.children[0].rotation).toEqual({ x: 90, y: 0, z: 0 });
+    expect(resoniteObj.children[1].rotation).toEqual({ x: -90, y: 180, z: 0 });
   });
 
   it('scales card width by size and keeps 1:1.5 aspect ratio', () => {
@@ -57,7 +59,7 @@ describe('applyCardConversion', () => {
       (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
     );
     expect(collider?.fields).toEqual({
-      Size: { $type: 'float3', value: { x: 2, y: 3, z: 0.01 } },
+      Size: { $type: 'float3', value: { x: 2, y: 0.01, z: 3 } },
     });
 
     const frontQuad = resoniteObj.children[0].components.find(
@@ -94,14 +96,15 @@ describe('applyCardConversion', () => {
     });
   });
 
-  it('flips orientation when isFaceUp is false', () => {
+  it('maps fixture-like back-rotated card to parent rotation (0, -30, 180)', () => {
     const udonObj = createBaseCard();
     udonObj.isFaceUp = false;
+    udonObj.rotate = -30;
     const resoniteObj = createBaseResonite();
 
     applyCardConversion(udonObj, resoniteObj);
 
-    expect(resoniteObj.rotation).toEqual({ x: -90, y: 0, z: 0 });
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: -30, z: 180 });
   });
 
   it('falls back textures when one or both sides are missing', () => {

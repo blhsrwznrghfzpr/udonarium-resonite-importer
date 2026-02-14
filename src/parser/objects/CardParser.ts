@@ -3,13 +3,7 @@
  */
 
 import { Card, CardStack, ImageRef } from '../../domain/UdonariumObject';
-import {
-  findDataByName,
-  getTextValue,
-  getBooleanValue,
-  getNumberValue,
-  parsePosition,
-} from './ParserUtils';
+import { findDataByName, getTextValue, getNumberValue, parsePosition } from './ParserUtils';
 
 export function parseCard(data: unknown, fileName: string): Card {
   const root = data as Record<string, unknown>;
@@ -34,9 +28,11 @@ export function parseCard(data: unknown, fileName: string): Card {
   const commonData = findDataByName(cardData, 'common');
   const name = getTextValue(findDataByName(commonData, 'name')) || fileName;
   const size = getNumberValue(findDataByName(commonData, 'size')) ?? 1;
+  const rotate = getNumberValue(root['@_rotate']) ?? 0;
 
-  // Parse state
-  const isFaceUp = getBooleanValue(root['@_isFaceUp']) ?? true;
+  // Parse state. Udonarium card state uses 0=face-up, 1=face-down.
+  const state = getNumberValue(root['@_state']);
+  const isFaceUp = state === 1 ? false : true;
 
   // Parse position
   const position = parsePosition(root);
@@ -53,6 +49,7 @@ export function parseCard(data: unknown, fileName: string): Card {
     images,
     properties: new Map(),
     size,
+    rotate,
     isFaceUp,
     frontImage,
     backImage,
@@ -69,6 +66,7 @@ export function parseCardStack(data: unknown, fileName: string): CardStack {
 
   // Parse position
   const position = parsePosition(root);
+  const rotate = getNumberValue(root['@_rotate']) ?? 0;
 
   // Parse cards in stack.
   // Cards may be direct children or inside <node name="cardRoot">.
@@ -97,6 +95,7 @@ export function parseCardStack(data: unknown, fileName: string): CardStack {
     position,
     images: [],
     properties: new Map(),
+    rotate,
     cards,
   };
 }

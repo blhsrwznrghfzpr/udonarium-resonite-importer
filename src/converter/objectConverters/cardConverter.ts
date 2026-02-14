@@ -37,11 +37,15 @@ export function applyCardConversion(
   resoniteObj.position.z -= cardHeight / 2;
   // Slight Y offset so cards don't z-fight with the table surface.
   resoniteObj.position.y += CARD_Y_OFFSET;
-  // Lay cards flat on the table (horizontal quad).
-  resoniteObj.rotation = { x: udonObj.isFaceUp ? 90 : -90, y: 0, z: 0 };
+  // Keep parent slot rotation on table plane; lay-flat rotation is applied on child faces.
+  resoniteObj.rotation = {
+    x: 0,
+    y: udonObj.rotate ?? 0,
+    z: udonObj.isFaceUp ? 0 : 180,
+  };
   resoniteObj.components = [
-    // Cards are rotated (x=90), so thickness must stay on local Z.
-    buildBoxColliderComponent(resoniteObj.id, { x: cardWidth, y: cardHeight, z: 0.01 }),
+    // Parent slot rotates only on Y, so make collider thin on local Y.
+    buildBoxColliderComponent(resoniteObj.id, { x: cardWidth, y: 0.01, z: cardHeight }),
     {
       id: `${resoniteObj.id}-grabbable`,
       type: '[FrooxEngine]FrooxEngine.Grabbable',
@@ -52,8 +56,8 @@ export function applyCardConversion(
     {
       id: `${resoniteObj.id}-front`,
       name: `${resoniteObj.name}-front`,
-      position: { x: 0, y: 0, z: CARD_FACE_SEPARATION },
-      rotation: { x: 0, y: 0, z: 0 },
+      position: { x: 0, y: CARD_FACE_SEPARATION, z: 0 },
+      rotation: { x: 90, y: 0, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(`${resoniteObj.id}-front`, frontTextureValue, false, {
         x: cardWidth,
@@ -64,8 +68,8 @@ export function applyCardConversion(
     {
       id: `${resoniteObj.id}-back`,
       name: `${resoniteObj.name}-back`,
-      position: { x: 0, y: 0, z: -CARD_FACE_SEPARATION },
-      rotation: { x: 0, y: 180, z: 0 },
+      position: { x: 0, y: -CARD_FACE_SEPARATION, z: 0 },
+      rotation: { x: -90, y: 180, z: 0 },
       textures: [],
       components: buildQuadMeshComponents(`${resoniteObj.id}-back`, backTextureValue, false, {
         x: cardWidth,

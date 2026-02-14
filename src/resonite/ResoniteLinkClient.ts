@@ -536,18 +536,19 @@ export class ResoniteLinkClient {
     const y = (euler.y * Math.PI) / 180 / 2;
     const z = (euler.z * Math.PI) / 180 / 2;
 
-    const cx = Math.cos(x);
     const sx = Math.sin(x);
-    const cy = Math.cos(y);
     const sy = Math.sin(y);
-    const cz = Math.cos(z);
     const sz = Math.sin(z);
+    const cx = Math.cos(x);
+    const cy = Math.cos(y);
+    const cz = Math.cos(z);
 
     return {
-      x: sx * cy * cz - cx * sy * sz,
-      y: cx * sy * cz + sx * cy * sz,
-      z: cx * cy * sz - sx * sy * cz,
-      w: cx * cy * cz + sx * sy * sz,
+      // Match Resonite's Elements.Core.floatQ.Euler implementation.
+      x: cy * sx * cz + sy * cx * sz,
+      y: sy * cx * cz - cy * sx * sz,
+      z: cy * cx * sz - sy * sx * cz,
+      w: cy * cx * cz + sy * sx * sz,
     };
   }
 }

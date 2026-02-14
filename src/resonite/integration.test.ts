@@ -31,6 +31,28 @@ const TEST_TIMEOUT = 30000; // 30 seconds for integration tests
 const RESONITELINK_PORT = getResoniteLinkPort();
 const RESONITELINK_HOST = getResoniteLinkHost();
 
+function isClose(a: number, b: number, epsilon = 1e-3): boolean {
+  return Math.abs(a - b) <= epsilon;
+}
+
+function isQuaternionClose(
+  actual: { x: number; y: number; z: number; w: number },
+  expected: { x: number; y: number; z: number; w: number },
+  epsilon = 1e-3
+): boolean {
+  const direct =
+    isClose(actual.x, expected.x, epsilon) &&
+    isClose(actual.y, expected.y, epsilon) &&
+    isClose(actual.z, expected.z, epsilon) &&
+    isClose(actual.w, expected.w, epsilon);
+  const negated =
+    isClose(actual.x, -expected.x, epsilon) &&
+    isClose(actual.y, -expected.y, epsilon) &&
+    isClose(actual.z, -expected.z, epsilon) &&
+    isClose(actual.w, -expected.w, epsilon);
+  return direct || negated;
+}
+
 // Helper to create test objects
 const createTestResoniteObject = (id: string, name: string): ResoniteObject => ({
   id,
@@ -265,6 +287,38 @@ describe.skipIf(SKIP_INTEGRATION)('ResoniteLink Integration Tests', () => {
             position: { x: 1, y: 2, z: 3 },
           })
         ).resolves.not.toThrow();
+      },
+      TEST_TIMEOUT
+    );
+
+    it(
+      'should apply rotation update and return matching quaternion via ResoniteLink',
+      async () => {
+        const testId = `integration_test_rotation_${Date.now()}`;
+        createdSlotIds.push(testId);
+
+        await client.addSlot({
+          id: testId,
+          parentId: 'Root',
+          name: 'Rotation Test Slot',
+          position: { x: 0, y: 0, z: 0 },
+          scale: { x: 1, y: 1, z: 1 },
+        });
+
+        await client.updateSlot({
+          id: testId,
+          rotation: { x: 0, y: -30, z: 180 },
+        });
+
+        const transform = await client.getSlotTransform(testId);
+        expect(transform).toBeDefined();
+
+        // Expected quaternion for Euler (0, -30, 180), matching Resonite floatQ.Euler.
+        const expected = { x: -0.258819, y: 0, z: 0.965926, w: 0 };
+        expect(
+          isQuaternionClose(transform!.rotation, expected),
+          `rotation quaternion mismatch: actual=${JSON.stringify(transform!.rotation)}`
+        ).toBe(true);
       },
       TEST_TIMEOUT
     );
