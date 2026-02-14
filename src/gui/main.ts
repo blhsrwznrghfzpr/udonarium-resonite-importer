@@ -7,6 +7,7 @@ import * as path from 'path';
 import { extractZip } from '../parser/ZipExtractor';
 import { parseXmlFiles } from '../parser/XmlParser';
 import { convertObjectsWithTextureMap } from '../converter/ObjectConverter';
+import { buildImageAspectRatioMap } from '../converter/imageAspectRatioMap';
 import { toTextureReference } from '../converter/objectConverters/componentBuilders';
 import { prepareSharedMeshDefinitions, resolveSharedMeshReferences } from '../converter/sharedMesh';
 import {
@@ -156,6 +157,7 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     // Step 2: Parse objects
     sendProgress('parse', 0, 'オブジェクトを解析中...');
     const parseResult = parseXmlFiles(extractedData.xmlFiles);
+    const imageAspectRatioMap = await buildImageAspectRatioMap(extractedData.imageFiles);
     sendProgress('parse', 100);
 
     // Step 3: Connect to ResoniteLink
@@ -207,7 +209,11 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       textureComponentMap.set(identifier, toTextureReference(componentId));
     }
 
-    const resoniteObjects = convertObjectsWithTextureMap(parseResult.objects, textureComponentMap);
+    const resoniteObjects = convertObjectsWithTextureMap(
+      parseResult.objects,
+      textureComponentMap,
+      imageAspectRatioMap
+    );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);
     resolveSharedMeshReferences(resoniteObjects, meshReferenceMap);

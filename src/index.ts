@@ -16,7 +16,8 @@ import * as path from 'path';
 
 import { extractZip } from './parser/ZipExtractor';
 import { parseXmlFiles } from './parser/XmlParser';
-import { convertObjects, convertObjectsWithTextureMap } from './converter/ObjectConverter';
+import { convertObjectsWithTextureMap } from './converter/ObjectConverter';
+import { buildImageAspectRatioMap } from './converter/imageAspectRatioMap';
 import { toTextureReference } from './converter/objectConverters/componentBuilders';
 import { prepareSharedMeshDefinitions, resolveSharedMeshReferences } from './converter/sharedMesh';
 import {
@@ -167,6 +168,7 @@ async function run(options: CLIOptions): Promise<void> {
   }
 
   parseSpinner.succeed(`[2/4] ${t('cli.parsed', { count: parseResult.objects.length })}`);
+  const imageAspectRatioMap = await buildImageAspectRatioMap(extractedData.imageFiles);
 
   if (options.verbose) {
     for (const [type, count] of typeCounts) {
@@ -193,7 +195,11 @@ async function run(options: CLIOptions): Promise<void> {
   // Dry run - stop here
   if (options.dryRun) {
     // Convert to Resonite objects (dry-run only)
-    const resoniteObjects = convertObjects(parseResult.objects);
+    const resoniteObjects = convertObjectsWithTextureMap(
+      parseResult.objects,
+      new Map<string, string>(),
+      imageAspectRatioMap
+    );
 
     console.log();
     console.log(chalk.yellow(t('cli.dryRunMode')));
@@ -295,7 +301,11 @@ async function run(options: CLIOptions): Promise<void> {
     }
 
     // Build objects after texture asset creation so materials reference shared StaticTexture2D components.
-    const resoniteObjects = convertObjectsWithTextureMap(parseResult.objects, textureComponentMap);
+    const resoniteObjects = convertObjectsWithTextureMap(
+      parseResult.objects,
+      textureComponentMap,
+      imageAspectRatioMap
+    );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);
     resolveSharedMeshReferences(resoniteObjects, meshReferenceMap);

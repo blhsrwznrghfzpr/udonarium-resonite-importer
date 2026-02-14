@@ -152,4 +152,21 @@ describe('applyCardConversion', () => {
       FilterMode: { $type: 'enum?', value: 'Point', enumType: 'TextureFilterMode' },
     });
   });
+
+  it('uses image aspect ratio map to determine card height', () => {
+    const udonObj = createBaseCard();
+    udonObj.size = 2;
+    const resoniteObj = createBaseResonite();
+    const imageAspectRatioMap = new Map<string, number>([['front.png', 2]]);
+
+    applyCardConversion(udonObj, resoniteObj, undefined, imageAspectRatioMap);
+
+    expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -2 });
+    const collider = resoniteObj.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
+    );
+    expect(collider?.fields).toEqual({
+      Size: { $type: 'float3', value: { x: 2, y: 0.01, z: 4 } },
+    });
+  });
 });

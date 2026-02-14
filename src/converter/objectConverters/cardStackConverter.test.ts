@@ -4,7 +4,7 @@ import { Card, CardStack, UdonariumObject } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 
 describe('applyCardStackConversion', () => {
-  it('子カードをchildrenへ展開し、高さオフセットを設定する', () => {
+  it('reverses card order and applies stack offsets', () => {
     const cardA: Card = {
       id: 'card-a',
       type: 'card',
@@ -79,5 +79,65 @@ describe('applyCardStackConversion', () => {
     expect(resoniteObj.children[1].name).toBe('A');
     expect(resoniteObj.children[0].position).toEqual({ x: 0, y: 0, z: 0 });
     expect(resoniteObj.children[1].position).toEqual({ x: 0, y: 0.0005, z: 0 });
+  });
+
+  it('uses image aspect ratio map to determine stack collider size', () => {
+    const card: Card = {
+      id: 'card-a',
+      type: 'card',
+      name: 'A',
+      position: { x: 0, y: 0, z: 0 },
+      images: [{ identifier: 'front.png', name: 'front' }],
+      properties: new Map(),
+      size: 2,
+      isFaceUp: true,
+      frontImage: { identifier: 'front.png', name: 'front' },
+      backImage: null,
+    };
+    const udonObj: CardStack = {
+      id: 'stack-2',
+      type: 'card-stack',
+      name: 'Stack',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      cards: [card],
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-stack-2',
+      name: 'Stack',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: [],
+      components: [],
+      children: [],
+    };
+    const convertObject = vi.fn(
+      (obj: UdonariumObject): ResoniteObject => ({
+        id: `slot-${obj.id}`,
+        name: obj.name,
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        textures: [],
+        components: [],
+        children: [],
+      })
+    );
+
+    applyCardStackConversion(
+      udonObj,
+      resoniteObj,
+      convertObject,
+      new Map<string, number>([['front.png', 2]])
+    );
+
+    expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -2 });
+    expect(resoniteObj.components[0]).toEqual({
+      id: 'slot-stack-2-collider',
+      type: '[FrooxEngine]FrooxEngine.BoxCollider',
+      fields: {
+        Size: { $type: 'float3', value: { x: 2, y: 0.05, z: 4 } },
+      },
+    });
   });
 });

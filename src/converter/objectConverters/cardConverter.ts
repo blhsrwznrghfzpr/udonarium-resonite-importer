@@ -8,6 +8,7 @@ import {
 
 const CARD_Y_OFFSET = 0.001;
 const CARD_FACE_SEPARATION = 0.0001;
+const DEFAULT_CARD_ASPECT_RATIO = 1.5;
 
 function resolveFrontTextureIdentifier(card: Card): string | undefined {
   return card.frontImage?.identifier ?? card.backImage?.identifier ?? card.images[0]?.identifier;
@@ -22,13 +23,33 @@ function resolveBackTextureIdentifier(card: Card): string | undefined {
   );
 }
 
+function resolveCardAspectRatio(card: Card, imageAspectRatioMap?: Map<string, number>): number {
+  if (!imageAspectRatioMap) {
+    return DEFAULT_CARD_ASPECT_RATIO;
+  }
+
+  const frontIdentifier = resolveFrontTextureIdentifier(card);
+  const backIdentifier = resolveBackTextureIdentifier(card);
+  const frontAspect = frontIdentifier ? imageAspectRatioMap.get(frontIdentifier) : undefined;
+  const backAspect = backIdentifier ? imageAspectRatioMap.get(backIdentifier) : undefined;
+
+  if (frontAspect && Number.isFinite(frontAspect) && frontAspect > 0) {
+    return frontAspect;
+  }
+  if (backAspect && Number.isFinite(backAspect) && backAspect > 0) {
+    return backAspect;
+  }
+  return DEFAULT_CARD_ASPECT_RATIO;
+}
+
 export function applyCardConversion(
   udonObj: Card,
   resoniteObj: ResoniteObject,
-  textureMap?: Map<string, string>
+  textureMap?: Map<string, string>,
+  imageAspectRatioMap?: Map<string, number>
 ): void {
   const cardWidth = udonObj.size ?? 1;
-  const cardHeight = cardWidth * 1.5;
+  const cardHeight = cardWidth * resolveCardAspectRatio(udonObj, imageAspectRatioMap);
   const frontTextureValue = resolveTextureValue(resolveFrontTextureIdentifier(udonObj), textureMap);
   const backTextureValue = resolveTextureValue(resolveBackTextureIdentifier(udonObj), textureMap);
 

@@ -3,14 +3,51 @@ import { ResoniteObject } from '../../domain/ResoniteObject';
 import { buildBoxColliderComponent } from './componentBuilders';
 
 const CARD_STACK_Y_OFFSET = 0.001;
+const DEFAULT_CARD_ASPECT_RATIO = 1.5;
+
+function resolveCardAspectRatio(
+  stack: CardStack,
+  imageAspectRatioMap?: Map<string, number>
+): number {
+  if (!imageAspectRatioMap) {
+    return DEFAULT_CARD_ASPECT_RATIO;
+  }
+
+  const sampleCard = stack.cards[0];
+  if (!sampleCard) {
+    return DEFAULT_CARD_ASPECT_RATIO;
+  }
+
+  const frontIdentifier =
+    sampleCard.frontImage?.identifier ??
+    sampleCard.backImage?.identifier ??
+    sampleCard.images[0]?.identifier;
+  const backIdentifier =
+    sampleCard.backImage?.identifier ??
+    sampleCard.frontImage?.identifier ??
+    sampleCard.images[1]?.identifier ??
+    sampleCard.images[0]?.identifier;
+
+  const frontAspect = frontIdentifier ? imageAspectRatioMap.get(frontIdentifier) : undefined;
+  const backAspect = backIdentifier ? imageAspectRatioMap.get(backIdentifier) : undefined;
+
+  if (frontAspect && Number.isFinite(frontAspect) && frontAspect > 0) {
+    return frontAspect;
+  }
+  if (backAspect && Number.isFinite(backAspect) && backAspect > 0) {
+    return backAspect;
+  }
+  return DEFAULT_CARD_ASPECT_RATIO;
+}
 
 export function applyCardStackConversion(
   udonObj: CardStack,
   resoniteObj: ResoniteObject,
-  convertObject: (obj: UdonariumObject) => ResoniteObject
+  convertObject: (obj: UdonariumObject) => ResoniteObject,
+  imageAspectRatioMap?: Map<string, number>
 ): void {
   const cardWidth = udonObj.cards[0]?.size ?? 1;
-  const cardHeight = cardWidth * 1.5;
+  const cardHeight = cardWidth * resolveCardAspectRatio(udonObj, imageAspectRatioMap);
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   resoniteObj.position.x += cardWidth / 2;
   resoniteObj.position.z -= cardHeight / 2;
