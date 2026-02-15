@@ -48,6 +48,7 @@ export interface GameCharacter extends BaseUdonariumObject {
 export interface DiceSymbol extends BaseUdonariumObject {
   type: 'dice-symbol';
   size: number;
+  faceImages: ImageRef[];
   face?: string;
   owner?: string;
   rotate?: number;

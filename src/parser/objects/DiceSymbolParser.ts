@@ -36,21 +36,24 @@ export function parseDiceSymbol(data: unknown, fileName: string): DiceSymbol {
   const rotate = getNumberValue(root['@_rotate']) ?? 0;
   const owner = (root['@_owner'] as string) || undefined;
 
-  const imageEntries = getImageEntries(imageData).filter(
-    (entry) => entry && typeof entry === 'object' && entry['@_type'] === 'image'
-  );
-  const faceEntry =
-    imageEntries.find((entry) => entry['@_name'] === face) ??
-    imageEntries.find((entry) => !!getTextValue(entry));
+  const faceImages: ImageRef[] = getImageEntries(imageData)
+    .filter((entry) => entry && typeof entry === 'object' && entry['@_type'] === 'image')
+    .map((entry) => {
+      const identifier = getTextValue(entry);
+      if (!identifier) {
+        return null;
+      }
+      return {
+        identifier,
+        name: entry['@_name'] || 'face',
+      };
+    })
+    .filter((entry): entry is ImageRef => entry !== null);
 
-  const images: ImageRef[] = [];
-  const imageIdentifier = faceEntry ? getTextValue(faceEntry) : undefined;
-  if (imageIdentifier) {
-    images.push({
-      identifier: imageIdentifier,
-      name: faceEntry?.['@_name'] || 'face',
-    });
-  }
+  const currentFaceImage = faceImages.find((image) => image.name === face) ?? faceImages[0] ?? null;
+  const images = currentFaceImage
+    ? [currentFaceImage, ...faceImages.filter((image) => image !== currentFaceImage)]
+    : [];
 
   return {
     id: (root['@_identifier'] as string) || fileName,
@@ -58,6 +61,7 @@ export function parseDiceSymbol(data: unknown, fileName: string): DiceSymbol {
     name,
     position: parsePosition(root),
     images,
+    faceImages,
     properties: new Map(),
     size,
     face,

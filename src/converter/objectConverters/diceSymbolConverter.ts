@@ -30,27 +30,40 @@ export function applyDiceSymbolConversion(
   imageAlphaMap?: Map<string, boolean>
 ): void {
   const size = convertSize(udonObj.size);
-  const textureIdentifier = udonObj.images[0]?.identifier;
-  const textureValue = resolveTextureValue(textureIdentifier, textureMap);
-  const blendMode = resolveBlendMode(textureIdentifier, imageAlphaMap);
+  const activeFaceName = udonObj.face ?? udonObj.faceImages[0]?.name;
 
-  resoniteObj.components = buildQuadMeshComponents(
-    resoniteObj.id,
-    textureValue,
-    true,
-    {
-      x: size.x,
-      y: size.y,
-    },
-    blendMode
-  );
-  resoniteObj.components.push(
+  // Keep only collider on parent; visual renderers live on face child slots.
+  resoniteObj.components = [
     buildBoxColliderComponent(resoniteObj.id, {
       x: size.x,
       y: size.y,
       z: 0.05,
-    })
-  );
+    }),
+  ];
+  resoniteObj.children = udonObj.faceImages.map((faceImage, index) => {
+    const childId = `${resoniteObj.id}-face-${index}`;
+    const childTextureValue = resolveTextureValue(faceImage.identifier, textureMap);
+    const childBlendMode = resolveBlendMode(faceImage.identifier, imageAlphaMap);
+    return {
+      id: childId,
+      name: `${resoniteObj.name}-face-${faceImage.name}`,
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      isActive: faceImage.name === activeFaceName,
+      textures: [faceImage.identifier],
+      components: buildQuadMeshComponents(
+        childId,
+        childTextureValue,
+        true,
+        {
+          x: size.x,
+          y: size.y,
+        },
+        childBlendMode
+      ),
+      children: [],
+    };
+  });
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   resoniteObj.position.x += size.x / 2;

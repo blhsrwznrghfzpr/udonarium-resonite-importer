@@ -99,6 +99,9 @@ describe('XmlParser', () => {
           expect(dice.size).toBe(1.5);
           expect(dice.face).toBe('6');
           expect(dice.images[0]?.identifier).toBe('dice-face-6');
+          expect(dice.faceImages).toHaveLength(2);
+          expect(dice.faceImages[0]).toEqual({ identifier: 'dice-face-1', name: '1' });
+          expect(dice.faceImages[1]).toEqual({ identifier: 'dice-face-6', name: '6' });
         }
       });
     });

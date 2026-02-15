@@ -115,7 +115,14 @@ describe('ObjectConverter', () => {
           type: 'dice-symbol',
           size: 2,
           face: '6',
-          images: [{ identifier: 'dice-face-6', name: '6' }],
+          images: [
+            { identifier: 'dice-face-6', name: '6' },
+            { identifier: 'dice-face-1', name: '1' },
+          ],
+          faceImages: [
+            { identifier: 'dice-face-1', name: '1' },
+            { identifier: 'dice-face-6', name: '6' },
+          ],
         };
 
         const result = convertObject(dice);
@@ -127,6 +134,11 @@ describe('ObjectConverter', () => {
           y: basePos.y + dice.size / 2,
           z: basePos.z - dice.size / 2,
         });
+        expect(result.children).toHaveLength(2);
+        expect(result.children.map((child) => child.isActive)).toEqual([false, true]);
+        expect(
+          result.components.some((c) => c.type === '[FrooxEngine]FrooxEngine.MeshRenderer')
+        ).toBe(false);
       });
     });
 
@@ -252,6 +264,7 @@ describe('ObjectConverter', () => {
           type: 'dice-symbol' as const,
           size: 1,
           face: '1',
+          faceImages: [{ identifier: 'img1', name: '1' }],
         },
         {
           ...createBaseObject(),
