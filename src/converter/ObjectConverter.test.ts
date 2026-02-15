@@ -3,6 +3,7 @@ import { convertPosition, convertSize, convertObject, convertObjects } from './O
 import { SCALE_FACTOR } from '../config/MappingConfig';
 import type {
   GameCharacter,
+  DiceSymbol,
   Card,
   CardStack,
   Terrain,
@@ -104,6 +105,28 @@ describe('ObjectConverter', () => {
         });
 
         expect(result.textures).toEqual(['img1']);
+      });
+    });
+
+    describe('dice-symbol conversion', () => {
+      it('should convert dice-symbol with size scaling', () => {
+        const dice: DiceSymbol = {
+          ...createBaseObject(),
+          type: 'dice-symbol',
+          size: 2,
+          face: '6',
+          images: [{ identifier: 'dice-face-6', name: '6' }],
+        };
+
+        const result = convertObject(dice);
+
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
+        const basePos = convertPosition(100, 200, 50);
+        expect(result.position).toEqual({
+          x: basePos.x + dice.size / 2,
+          y: basePos.y + dice.size / 2,
+          z: basePos.z - dice.size / 2,
+        });
       });
     });
 
@@ -226,6 +249,12 @@ describe('ObjectConverter', () => {
         },
         {
           ...createBaseObject(),
+          type: 'dice-symbol' as const,
+          size: 1,
+          face: '1',
+        },
+        {
+          ...createBaseObject(),
           type: 'terrain' as const,
           isLocked: false,
           mode: 3,
@@ -267,6 +296,7 @@ describe('ObjectConverter', () => {
       ];
       const expectedSizes = [
         { x: 1, y: 1, z: 0.05 }, // character -> converter-defined collider
+        { x: 1, y: 1, z: 0.05 }, // dice-symbol -> converter-defined collider
         { x: 1, y: 1, z: 1 }, // terrain -> converter-defined collider
         { x: 1, y: 1, z: 0 }, // table -> collider on -surface child slot
         { x: 1, y: 0.01, z: 1 }, // card -> converter-defined collider

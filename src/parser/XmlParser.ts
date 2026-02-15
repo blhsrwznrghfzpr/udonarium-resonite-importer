@@ -6,6 +6,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { UdonariumObject, GameTable, GameTableChild } from '../domain/UdonariumObject';
 import { SUPPORTED_TAGS } from '../config/MappingConfig';
 import { parseCharacter } from './objects/CharacterParser';
+import { parseDiceSymbol } from './objects/DiceSymbolParser';
 import { parseCard, parseCardStack } from './objects/CardParser';
 import { parseTerrain } from './objects/TerrainParser';
 import { parseTable, parseGameTable, parseTableMask } from './objects/TableParser';
@@ -135,6 +136,8 @@ function parseObjectByType(
     switch (type) {
       case 'character':
         return parseCharacter(data, fileName);
+      case 'dice-symbol':
+        return parseDiceSymbol(data, fileName);
       case 'card':
         return parseCard(data, fileName);
       case 'card-stack':

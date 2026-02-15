@@ -176,6 +176,7 @@ const enTranslations: Translations = {
   },
   objectTypes: {
     character: 'Character',
+    'dice-symbol': 'Dice Symbol',
     card: 'Card',
     'card-stack': 'Card Stack',
     terrain: 'Terrain',
@@ -250,6 +251,7 @@ const jaTranslations: Translations = {
   },
   objectTypes: {
     character: 'キャラクター',
+    'dice-symbol': 'ダイス',
     card: 'カード',
     'card-stack': 'カードの山',
     terrain: '地形',

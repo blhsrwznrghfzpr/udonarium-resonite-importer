@@ -4,6 +4,7 @@
 
 export type ObjectType =
   | 'character'
+  | 'dice-symbol'
   | 'card'
   | 'card-stack'
   | 'terrain'
@@ -44,6 +45,14 @@ export interface GameCharacter extends BaseUdonariumObject {
   resources: NumberResource[];
 }
 
+export interface DiceSymbol extends BaseUdonariumObject {
+  type: 'dice-symbol';
+  size: number;
+  face?: string;
+  owner?: string;
+  rotate?: number;
+}
+
 export interface Card extends BaseUdonariumObject {
   type: 'card';
   size?: number;
@@ -76,7 +85,14 @@ export interface Terrain extends BaseUdonariumObject {
  * Types that can be children of a GameTable.
  * Excludes GameTable itself to avoid circular type reference.
  */
-export type GameTableChild = GameCharacter | Card | CardStack | Terrain | TableMask | TextNote;
+export type GameTableChild =
+  | GameCharacter
+  | DiceSymbol
+  | Card
+  | CardStack
+  | Terrain
+  | TableMask
+  | TextNote;
 
 export interface GameTable extends BaseUdonariumObject {
   type: 'table';
@@ -102,6 +118,7 @@ export interface TextNote extends BaseUdonariumObject {
 
 export type UdonariumObject =
   | GameCharacter
+  | DiceSymbol
   | Card
   | CardStack
   | Terrain

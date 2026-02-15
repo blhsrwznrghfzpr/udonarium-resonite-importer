@@ -222,6 +222,7 @@ export const KNOWN_EXTERNAL_IMAGE_ALPHA_PREFIXES: ReadonlyArray<{
  */
 export const SUPPORTED_TAGS = [
   'character',
+  'dice-symbol',
   'card',
   'card-stack',
   'terrain',
@@ -238,6 +239,10 @@ export const OBJECT_MAPPING = {
   character: {
     meshType: 'Quad',
     description: 'Character token with standing image',
+  },
+  'dice-symbol': {
+    meshType: 'Quad',
+    description: 'Dice symbol token showing current face image',
   },
   card: {
     meshType: 'Quad',

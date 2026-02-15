@@ -1,0 +1,67 @@
+/**
+ * Parser for Udonarium DiceSymbol objects
+ */
+
+import { DiceSymbol, ImageRef } from '../../domain/UdonariumObject';
+import { findDataByName, getNumberValue, getTextValue, parsePosition } from './ParserUtils';
+
+type DataNode = {
+  '@_name'?: string;
+  '@_type'?: string;
+  '#text'?: string | number;
+  data?: DataNode | DataNode[];
+};
+
+function getImageEntries(imageData: unknown): DataNode[] {
+  if (!imageData || typeof imageData !== 'object') {
+    return [];
+  }
+  const entries = (imageData as DataNode).data;
+  if (Array.isArray(entries)) {
+    return entries;
+  }
+  return entries ? [entries] : [];
+}
+
+export function parseDiceSymbol(data: unknown, fileName: string): DiceSymbol {
+  const root = data as Record<string, unknown>;
+  const diceData = findDataByName(root.data, 'dice-symbol');
+
+  const commonData = findDataByName(diceData, 'common');
+  const imageData = findDataByName(diceData, 'image');
+  const face = (root['@_face'] as string) || undefined;
+
+  const name = getTextValue(findDataByName(commonData, 'name')) || fileName;
+  const size = getNumberValue(findDataByName(commonData, 'size')) ?? 1;
+  const rotate = getNumberValue(root['@_rotate']) ?? 0;
+  const owner = (root['@_owner'] as string) || undefined;
+
+  const imageEntries = getImageEntries(imageData).filter(
+    (entry) => entry && typeof entry === 'object' && entry['@_type'] === 'image'
+  );
+  const faceEntry =
+    imageEntries.find((entry) => entry['@_name'] === face) ??
+    imageEntries.find((entry) => !!getTextValue(entry));
+
+  const images: ImageRef[] = [];
+  const imageIdentifier = faceEntry ? getTextValue(faceEntry) : undefined;
+  if (imageIdentifier) {
+    images.push({
+      identifier: imageIdentifier,
+      name: faceEntry?.['@_name'] || 'face',
+    });
+  }
+
+  return {
+    id: (root['@_identifier'] as string) || fileName,
+    type: 'dice-symbol',
+    name,
+    position: parsePosition(root),
+    images,
+    properties: new Map(),
+    size,
+    face,
+    owner,
+    rotate,
+  };
+}

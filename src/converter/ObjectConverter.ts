@@ -7,6 +7,7 @@ import { UdonariumObject } from '../domain/UdonariumObject';
 import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SCALE_FACTOR } from '../config/MappingConfig';
 import { applyCharacterConversion } from './objectConverters/characterConverter';
+import { applyDiceSymbolConversion } from './objectConverters/diceSymbolConverter';
 import { applyCardConversion } from './objectConverters/cardConverter';
 import { applyCardStackConversion } from './objectConverters/cardStackConverter';
 import { applyTerrainConversion } from './objectConverters/terrainConverter';
@@ -71,6 +72,9 @@ function convertObjectWithTextures(
   switch (udonObj.type) {
     case 'character':
       applyCharacterConversion(udonObj, resoniteObj, convertSize, textureMap, imageAlphaMap);
+      break;
+    case 'dice-symbol':
+      applyDiceSymbolConversion(udonObj, resoniteObj, convertSize, textureMap, imageAlphaMap);
       break;
     case 'terrain':
       applyTerrainConversion(udonObj, resoniteObj, textureMap, imageAlphaMap);
