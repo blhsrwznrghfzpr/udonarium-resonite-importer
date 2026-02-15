@@ -58,4 +58,27 @@ describe('buildImageAspectRatioMap', () => {
     expect(result.get('./assets/images/trump/c01.gif')).toBe(1.5);
     expect(result.get('assets/images/trump/c01.gif')).toBe(1.5);
   });
+
+  it('prefers known ratio for known file path without probing file metadata', async () => {
+    const png = await sharp({
+      create: {
+        width: 100,
+        height: 100,
+        channels: 4,
+        background: { r: 255, g: 255, b: 255, alpha: 1 },
+      },
+    })
+      .png()
+      .toBuffer();
+
+    const result = await buildImageAspectRatioMap([
+      {
+        path: 'assets/images/BG10a_80.jpg',
+        name: 'BG10a_80',
+        data: png,
+      },
+    ]);
+
+    expect(result.get('assets/images/BG10a_80.jpg')).toBe(0.75);
+  });
 });

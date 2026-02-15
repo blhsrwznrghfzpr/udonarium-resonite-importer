@@ -31,6 +31,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest run --testNamePattern='Integration'",
+    "measure:known-image-ratios": "ts-node scripts/measure-known-image-aspect-ratios.ts",
     "collect:resonitelink": "ts-node scripts/collect-resonitelink-data.ts",
     "package": "run-s package:cli package:gui",
     "package:cli": "run-p package:cli:*",

@@ -68,6 +68,18 @@ function setRatioForIdentifier(
   }
 }
 
+function resolveKnownRatioForFile(file: ExtractedFile): number | undefined {
+  const normalizedPath = normalizeIdentifier(file.path);
+  const candidates = [file.name, file.path, normalizedPath, `./${normalizedPath}`];
+  for (const candidate of candidates) {
+    const ratio = resolveKnownRatio(candidate);
+    if (ratio && Number.isFinite(ratio) && ratio > 0) {
+      return ratio;
+    }
+  }
+  return undefined;
+}
+
 function resolveKnownRatio(identifier: string): number | undefined {
   const normalized = normalizeIdentifier(identifier);
   const knownImage = KNOWN_IMAGES.get(identifier);
@@ -196,6 +208,15 @@ export async function buildImageAspectRatioMap(
 
   await Promise.all(
     imageFiles.map(async (file) => {
+      const knownRatio = resolveKnownRatioForFile(file);
+      if (knownRatio) {
+        // Prefer curated known ratios when available and skip metadata probing.
+        const normalizedPath = normalizeIdentifier(file.path);
+        setRatioForIdentifier(map, file.name, knownRatio);
+        setRatioForIdentifier(map, file.path, knownRatio, normalizedPath);
+        return;
+      }
+
       try {
         const metadata = await sharp(file.data).metadata();
         const width = metadata.width;
@@ -215,7 +236,7 @@ export async function buildImageAspectRatioMap(
 
   for (const identifier of collectImageIdentifiers(objects)) {
     const knownRatio = resolveKnownRatio(identifier);
-    if (knownRatio) {
+    if (knownRatio && !lookupImageAspectRatio(map, identifier)) {
       setRatioForIdentifier(map, identifier, knownRatio);
     }
   }
