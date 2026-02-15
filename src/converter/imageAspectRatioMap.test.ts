@@ -3,6 +3,8 @@ import sharp from 'sharp';
 import { buildImageAspectRatioMap, buildImageBlendModeMap } from './imageAspectRatioMap';
 import { UdonariumObject } from '../domain/UdonariumObject';
 
+const SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI = process.env.CI === 'true';
+
 describe('buildImageAspectRatioMap', () => {
   it('maps identifier to height/width ratio', async () => {
     const png = await sharp({
@@ -104,38 +106,41 @@ describe('buildImageBlendModeMap', () => {
     expect(result.get('assets/images/dice/6_dice/6_dice[1].png')).toBe('Cutout');
   });
 
-  it('probes external absolute url metadata and sets blend mode', async () => {
-    const withAlpha = await sharp({
-      create: {
-        width: 8,
-        height: 8,
-        channels: 4,
-        background: { r: 255, g: 255, b: 255, alpha: 0.5 },
-      },
-    })
-      .png()
-      .toBuffer();
-    const fetchSpy = vi
-      .spyOn(globalThis, 'fetch')
-      .mockResolvedValue(new Response(new Uint8Array(withAlpha), { status: 200 }) as Response);
+  it.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
+    'probes external absolute url metadata and sets blend mode',
+    async () => {
+      const withAlpha = await sharp({
+        create: {
+          width: 8,
+          height: 8,
+          channels: 4,
+          background: { r: 255, g: 255, b: 255, alpha: 0.5 },
+        },
+      })
+        .png()
+        .toBuffer();
+      const fetchSpy = vi
+        .spyOn(globalThis, 'fetch')
+        .mockResolvedValue(new Response(new Uint8Array(withAlpha), { status: 200 }) as Response);
 
-    const objects: UdonariumObject[] = [
-      {
-        id: 'char-1',
-        type: 'character',
-        name: 'Char',
-        position: { x: 0, y: 0, z: 0 },
-        images: [{ identifier: 'https://example.com/some-image.png', name: 'main' }],
-        properties: new Map(),
-        size: 1,
-        resources: [],
-      },
-    ];
+      const objects: UdonariumObject[] = [
+        {
+          id: 'char-1',
+          type: 'character',
+          name: 'Char',
+          position: { x: 0, y: 0, z: 0 },
+          images: [{ identifier: 'https://example.com/some-image.png', name: 'main' }],
+          properties: new Map(),
+          size: 1,
+          resources: [],
+        },
+      ];
 
-    const result = await buildImageBlendModeMap([], objects);
+      const result = await buildImageBlendModeMap([], objects);
 
-    expect(result.get('https://example.com/some-image.png')).toBe('Alpha');
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    fetchSpy.mockRestore();
-  });
+      expect(result.get('https://example.com/some-image.png')).toBe('Alpha');
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      fetchSpy.mockRestore();
+    }
+  );
 });
