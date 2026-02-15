@@ -437,19 +437,3 @@ export async function buildImageBlendModeMap(
 
   return map;
 }
-
-export async function buildImageAlphaMap(
-  imageFiles: ExtractedFile[],
-  objects: UdonariumObject[] = []
-): Promise<Map<string, boolean>> {
-  const blendModeMap = await buildImageBlendModeMap(imageFiles, objects);
-  const alphaMap = new Map<string, boolean>();
-  for (const [identifier, blendMode] of blendModeMap) {
-    if (blendMode === 'Alpha') {
-      alphaMap.set(identifier, true);
-    } else if (blendMode === 'Opaque') {
-      alphaMap.set(identifier, false);
-    }
-  }
-  return alphaMap;
-}
