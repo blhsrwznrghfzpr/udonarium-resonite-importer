@@ -101,4 +101,26 @@ describe('ResoniteLinkClient', () => {
     });
     expect(mockLink.slotRemove).toHaveBeenCalledWith('slot-b');
   });
+
+  it('updateSlot converts Euler rotation to Resonite-compatible quaternion', async () => {
+    await client.connect();
+    mockLink.slotUpdate.mockResolvedValue({ success: true });
+
+    await client.updateSlot({
+      id: 'slot-rot',
+      rotation: { x: 0, y: -30, z: 180 },
+    });
+
+    expect(mockLink.slotUpdate).toHaveBeenCalledTimes(1);
+    const [slotId, payload] = mockLink.slotUpdate.mock.calls[0] as [
+      string,
+      { rotation?: { value: { x: number; y: number; z: number; w: number } } },
+    ];
+    expect(slotId).toBe('slot-rot');
+    expect(payload.rotation).toBeDefined();
+    expect(payload.rotation?.value.x).toBeCloseTo(-0.258819, 5);
+    expect(payload.rotation?.value.y).toBeCloseTo(0, 5);
+    expect(payload.rotation?.value.z).toBeCloseTo(0.965926, 5);
+    expect(payload.rotation?.value.w).toBeCloseTo(0, 5);
+  });
 });

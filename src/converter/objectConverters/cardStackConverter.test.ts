@@ -4,7 +4,7 @@ import { Card, CardStack, UdonariumObject } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 
 describe('applyCardStackConversion', () => {
-  it('子カードをchildrenへ展開し、高さオフセットを設定する', () => {
+  it('reverses card order and applies stack offsets', () => {
     const cardA: Card = {
       id: 'card-a',
       type: 'card',
@@ -12,6 +12,7 @@ describe('applyCardStackConversion', () => {
       position: { x: 1, y: 2, z: 0 },
       images: [],
       properties: new Map(),
+      size: 2,
       isFaceUp: true,
       frontImage: null,
       backImage: null,
@@ -25,6 +26,7 @@ describe('applyCardStackConversion', () => {
       id: 'stack-1',
       type: 'card-stack',
       name: 'Stack',
+      rotate: 45,
       position: { x: 0, y: 0, z: 0 },
       images: [],
       properties: new Map(),
@@ -54,18 +56,154 @@ describe('applyCardStackConversion', () => {
     applyCardStackConversion(udonObj, resoniteObj, convertObject);
 
     expect(convertObject).toHaveBeenCalledTimes(2);
+    expect(convertObject).toHaveBeenNthCalledWith(1, cardB);
+    expect(convertObject).toHaveBeenNthCalledWith(2, cardA);
     expect(resoniteObj.components).toEqual([
       {
         id: 'slot-stack-1-collider',
         type: '[FrooxEngine]FrooxEngine.BoxCollider',
         fields: {
-          Size: { $type: 'float3', value: { x: 0.6, y: 0.05, z: 0.9 } },
+          Size: { $type: 'float3', value: { x: 2, y: 0.05, z: 2 } },
         },
       },
+      {
+        id: 'slot-stack-1-grabbable',
+        type: '[FrooxEngine]FrooxEngine.Grabbable',
+        fields: {},
+      },
     ]);
-    expect(resoniteObj.position).toEqual({ x: 0.3, y: 0, z: -0.45 });
+    expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -1 });
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: 45, z: 0 });
     expect(resoniteObj.children).toHaveLength(2);
+    expect(resoniteObj.children[0].name).toBe('B');
+    expect(resoniteObj.children[1].name).toBe('A');
     expect(resoniteObj.children[0].position).toEqual({ x: 0, y: 0, z: 0 });
     expect(resoniteObj.children[1].position).toEqual({ x: 0, y: 0.0005, z: 0 });
+  });
+
+  it('uses image aspect ratio map to determine stack collider size', () => {
+    const card: Card = {
+      id: 'card-a',
+      type: 'card',
+      name: 'A',
+      position: { x: 0, y: 0, z: 0 },
+      images: [{ identifier: 'front.png', name: 'front' }],
+      properties: new Map(),
+      size: 2,
+      isFaceUp: true,
+      frontImage: { identifier: 'front.png', name: 'front' },
+      backImage: null,
+    };
+    const udonObj: CardStack = {
+      id: 'stack-2',
+      type: 'card-stack',
+      name: 'Stack',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      cards: [card],
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-stack-2',
+      name: 'Stack',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: [],
+      components: [],
+      children: [],
+    };
+    const convertObject = vi.fn(
+      (obj: UdonariumObject): ResoniteObject => ({
+        id: `slot-${obj.id}`,
+        name: obj.name,
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        textures: [],
+        components: [],
+        children: [],
+      })
+    );
+
+    applyCardStackConversion(
+      udonObj,
+      resoniteObj,
+      convertObject,
+      new Map<string, number>([['front.png', 2]])
+    );
+
+    expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -2 });
+    expect(resoniteObj.components[0]).toEqual({
+      id: 'slot-stack-2-collider',
+      type: '[FrooxEngine]FrooxEngine.BoxCollider',
+      fields: {
+        Size: { $type: 'float3', value: { x: 2, y: 0.05, z: 4 } },
+      },
+    });
+  });
+
+  it('uses back image aspect ratio for face-down top card', () => {
+    const card: Card = {
+      id: 'card-a',
+      type: 'card',
+      name: 'A',
+      position: { x: 0, y: 0, z: 0 },
+      images: [
+        { identifier: './assets/images/trump/c01.gif', name: 'front' },
+        { identifier: 'testCharacter_1_image', name: 'back' },
+      ],
+      properties: new Map(),
+      size: 2,
+      isFaceUp: false,
+      frontImage: { identifier: './assets/images/trump/c01.gif', name: 'front' },
+      backImage: { identifier: 'testCharacter_1_image', name: 'back' },
+    };
+    const udonObj: CardStack = {
+      id: 'stack-3',
+      type: 'card-stack',
+      name: 'Stack',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      cards: [card],
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-stack-3',
+      name: 'Stack',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: [],
+      components: [],
+      children: [],
+    };
+    const convertObject = vi.fn(
+      (obj: UdonariumObject): ResoniteObject => ({
+        id: `slot-${obj.id}`,
+        name: obj.name,
+        position: { x: 0, y: 0, z: 0 },
+        rotation: { x: 0, y: 0, z: 0 },
+        textures: [],
+        components: [],
+        children: [],
+      })
+    );
+
+    applyCardStackConversion(
+      udonObj,
+      resoniteObj,
+      convertObject,
+      new Map<string, number>([
+        ['./assets/images/trump/c01.gif', 1.5],
+        ['testCharacter_1_image', 1.2],
+      ])
+    );
+
+    expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -1.2 });
+    expect(resoniteObj.components[0]).toEqual({
+      id: 'slot-stack-3-collider',
+      type: '[FrooxEngine]FrooxEngine.BoxCollider',
+      fields: {
+        Size: { $type: 'float3', value: { x: 2, y: 0.05, z: 2.4 } },
+      },
+    });
   });
 });

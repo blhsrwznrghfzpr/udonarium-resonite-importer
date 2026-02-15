@@ -475,8 +475,8 @@ describe('SlotBuilder', () => {
     it('should create shared material slots under Assets/Materials', async () => {
       const result = await slotBuilder.createMaterialAssets([
         {
-          key: 'xiexe-toon:cutout',
-          name: 'XiexeToon_cutout',
+          key: 'xiexe-toon:#FFFFFFFF:Cutout',
+          name: 'XiexeToon_Cutout_FFFFFFFF',
           componentType: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
           fields: {
             BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
@@ -495,7 +495,7 @@ describe('SlotBuilder', () => {
       );
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
         3,
-        expect.objectContaining({ name: 'XiexeToon_cutout' })
+        expect.objectContaining({ name: 'XiexeToon_Cutout_FFFFFFFF' })
       );
 
       const firstComponentCall = mockClient.addComponent.mock.calls[0][0] as {
@@ -507,7 +507,7 @@ describe('SlotBuilder', () => {
         BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
       });
 
-      expect(result.get('xiexe-toon:cutout')).toMatch(/-material$/);
+      expect(result.get('xiexe-toon:#FFFFFFFF:Cutout')).toMatch(/-material$/);
     });
   });
 

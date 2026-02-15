@@ -43,6 +43,8 @@ describe('sharedMaterial', () => {
     const definitions = prepareSharedMaterialDefinitions(objects);
 
     expect(definitions).toHaveLength(1);
+    expect(definitions[0].key).toBe('xiexe-toon:#FFFFFFFF:Cutout');
+    expect(definitions[0].name).toBe('XiexeToon_Cutout_FFFFFFFF');
     expect(definitions[0].componentType).toBe('[FrooxEngine]FrooxEngine.XiexeToonMaterial');
     expect(
       objects

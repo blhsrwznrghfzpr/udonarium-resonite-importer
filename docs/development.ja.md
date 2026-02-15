@@ -82,6 +82,16 @@ npm run collect:resonitelink
 
 実際のAPIレスポンスを収集し、`src/__fixtures__/resonitelink/`に保存します。
 
+### 既知画像アスペクト比の計測
+
+`KNOWN_IMAGES` に定義した画像の比率を更新・確認するには以下を実行します。
+
+```bash
+npm run measure:known-image-ratios
+```
+
+各既知URLの画像を取得し、幅・高さ・比率（`height / width`）を出力します。
+
 ## パッケージング
 
 ### CLIスタンドアロン実行ファイル

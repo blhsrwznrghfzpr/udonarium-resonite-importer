@@ -82,6 +82,16 @@ npm run collect:resonitelink
 
 This collects actual API responses and saves them to `src/__fixtures__/resonitelink/`.
 
+### Known Image Aspect Ratio Measurement
+
+To update or validate aspect ratios for `KNOWN_IMAGES` entries:
+
+```bash
+npm run measure:known-image-ratios
+```
+
+This script downloads each known image URL, measures width/height, and prints the computed ratio (`height / width`).
+
 ## Packaging
 
 ### CLI Standalone Executables
