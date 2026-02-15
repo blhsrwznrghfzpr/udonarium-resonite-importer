@@ -71,6 +71,41 @@ describe('XmlParser', () => {
       });
     });
 
+    describe('dice-symbol parsing', () => {
+      it('should parse dice-symbol XML and pick current face image', () => {
+        const xml = `
+          <dice-symbol identifier="dice-001" face="6" owner="" rotate="30" location.x="120" location.y="220" posZ="10">
+            <data name="dice-symbol">
+              <data name="image">
+                <data type="image" name="1">dice-face-1</data>
+                <data type="image" name="6">dice-face-6</data>
+              </data>
+              <data name="common">
+                <data name="name">D6</data>
+                <data name="size">1.5</data>
+              </data>
+            </data>
+          </dice-symbol>
+        `;
+
+        const result = parseXml(xml, 'dice.xml');
+
+        expect(result.errors).toHaveLength(0);
+        expect(result.objects).toHaveLength(1);
+        const dice = result.objects[0];
+        expect(dice.type).toBe('dice-symbol');
+        expect(dice.position).toEqual({ x: 120, y: 220, z: 10 });
+        if (dice.type === 'dice-symbol') {
+          expect(dice.size).toBe(1.5);
+          expect(dice.face).toBe('6');
+          expect(dice.images[0]?.identifier).toBe('dice-face-6');
+          expect(dice.faceImages).toHaveLength(2);
+          expect(dice.faceImages[0]).toEqual({ identifier: 'dice-face-1', name: '1' });
+          expect(dice.faceImages[1]).toEqual({ identifier: 'dice-face-6', name: '6' });
+        }
+      });
+    });
+
     describe('card-stack parsing', () => {
       it('should parse card-stack XML', () => {
         const xml = `

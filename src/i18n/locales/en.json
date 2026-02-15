@@ -63,6 +63,7 @@
   },
   "objectTypes": {
     "character": "Character",
+    "dice-symbol": "Dice Symbol",
     "card": "Card",
     "card-stack": "Card Stack",
     "terrain": "Terrain",

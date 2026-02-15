@@ -1,8 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { convertPosition, convertSize, convertObject, convertObjects } from './ObjectConverter';
+import {
+  convertPosition,
+  convertSize,
+  convertObject,
+  convertObjects,
+  convertObjectsWithTextureMap,
+} from './ObjectConverter';
 import { SCALE_FACTOR } from '../config/MappingConfig';
 import type {
   GameCharacter,
+  DiceSymbol,
   Card,
   CardStack,
   Terrain,
@@ -104,6 +111,90 @@ describe('ObjectConverter', () => {
         });
 
         expect(result.textures).toEqual(['img1']);
+      });
+    });
+
+    describe('dice-symbol conversion', () => {
+      it('should convert dice-symbol with size scaling', () => {
+        const dice: DiceSymbol = {
+          ...createBaseObject(),
+          type: 'dice-symbol',
+          size: 2,
+          face: '6',
+          images: [
+            { identifier: 'dice-face-6', name: '6' },
+            { identifier: 'dice-face-1', name: '1' },
+          ],
+          faceImages: [
+            { identifier: 'dice-face-1', name: '1' },
+            { identifier: 'dice-face-6', name: '6' },
+          ],
+        };
+
+        const result = convertObject(dice);
+
+        expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
+        const basePos = convertPosition(100, 200, 50);
+        expect(result.position).toEqual({
+          x: basePos.x + dice.size / 2,
+          y: basePos.y + dice.size / 2,
+          z: basePos.z - dice.size / 2,
+        });
+        expect(result.children).toHaveLength(2);
+        expect(result.children.map((child) => child.isActive)).toEqual([false, true]);
+        expect(result.components.some((c) => c.type === '[FrooxEngine]FrooxEngine.Grabbable')).toBe(
+          true
+        );
+        expect(
+          result.components.some((c) => c.type === '[FrooxEngine]FrooxEngine.MeshRenderer')
+        ).toBe(false);
+      });
+
+      it('should size each face by image aspect ratio and bottom-align to largest face', () => {
+        const dice: DiceSymbol = {
+          ...createBaseObject(),
+          type: 'dice-symbol',
+          size: 2,
+          face: 'large',
+          images: [
+            { identifier: 'small-face', name: 'small' },
+            { identifier: 'large-face', name: 'large' },
+          ],
+          faceImages: [
+            { identifier: 'small-face', name: 'small' },
+            { identifier: 'large-face', name: 'large' },
+          ],
+        };
+        const imageAspectRatioMap = new Map<string, number>([
+          ['small-face', 1],
+          ['large-face', 2],
+        ]);
+
+        const [result] = convertObjectsWithTextureMap([dice], new Map(), imageAspectRatioMap);
+
+        const basePos = convertPosition(100, 200, 50);
+        expect(result.position).toEqual({
+          x: basePos.x + 1,
+          y: basePos.y + 2,
+          z: basePos.z - 1,
+        });
+        const collider = result.components.find(
+          (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
+        );
+        expect(collider?.fields).toEqual({
+          Size: { $type: 'float3', value: { x: 2, y: 4, z: 0.05 } },
+        });
+        expect(result.children[0].position.y).toBe(-1);
+        expect(result.children[1].position.y).toBeCloseTo(0);
+
+        const smallQuad = result.children[0].components.find(
+          (c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh'
+        );
+        const largeQuad = result.children[1].components.find(
+          (c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh'
+        );
+        expect(smallQuad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 2 } });
+        expect(largeQuad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 4 } });
       });
     });
 
@@ -226,6 +317,13 @@ describe('ObjectConverter', () => {
         },
         {
           ...createBaseObject(),
+          type: 'dice-symbol' as const,
+          size: 1,
+          face: '1',
+          faceImages: [{ identifier: 'img1', name: '1' }],
+        },
+        {
+          ...createBaseObject(),
           type: 'terrain' as const,
           isLocked: false,
           mode: 3,
@@ -267,6 +365,7 @@ describe('ObjectConverter', () => {
       ];
       const expectedSizes = [
         { x: 1, y: 1, z: 0.05 }, // character -> converter-defined collider
+        { x: 1, y: 1, z: 0.05 }, // dice-symbol -> converter-defined collider
         { x: 1, y: 1, z: 1 }, // terrain -> converter-defined collider
         { x: 1, y: 1, z: 0 }, // table -> collider on -surface child slot
         { x: 1, y: 0.01, z: 1 }, // card -> converter-defined collider
