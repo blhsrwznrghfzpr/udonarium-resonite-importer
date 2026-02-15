@@ -73,54 +73,126 @@ export const VERIFIED_RESONITE_LINK_VERSION = '0.7.0.0';
 export interface KnownImageDefinition {
   url: string;
   aspectRatio: number;
+  hasAlpha: boolean;
+}
+
+interface KnownExternalImageMetadata {
+  path: string;
+  aspectRatio: number;
+  hasAlpha: boolean;
+}
+
+interface KnownExternalImagePrefixMetadata {
+  prefix: string;
+  aspectRatio: number;
+  hasAlpha: boolean;
+}
+
+function extractPathname(urlOrPath: string): string {
+  try {
+    const url = new URL(urlOrPath);
+    return url.pathname.replace(/^\/+/, '');
+  } catch {
+    return urlOrPath.replace(/^\/+/, '');
+  }
+}
+
+function toAspectRatioMap<T extends { aspectRatio: number }>(
+  entries: readonly T[],
+  keySelector: (entry: T) => string
+): ReadonlyMap<string, number> {
+  return new Map(entries.map((entry) => [keySelector(entry), entry.aspectRatio]));
+}
+
+function toAlphaMap<T extends { hasAlpha: boolean }>(
+  entries: readonly T[],
+  keySelector: (entry: T) => string
+): ReadonlyMap<string, boolean> {
+  return new Map(entries.map((entry) => [keySelector(entry), entry.hasAlpha]));
 }
 
 /**
  * Known Udonarium image identifiers with external URL and aspect ratio metadata.
  * ratio = height / width
  */
-export const KNOWN_IMAGES: ReadonlyMap<string, KnownImageDefinition> = new Map([
+const KNOWN_IMAGE_ENTRIES: ReadonlyArray<readonly [string, KnownImageDefinition]> = [
   [
     'testTableBackgroundImage_image',
-    { url: 'https://udonarium.app/assets/images/BG10a_80.jpg', aspectRatio: 0.75 },
+    {
+      url: 'https://udonarium.app/assets/images/BG10a_80.jpg',
+      aspectRatio: 0.75,
+      hasAlpha: false,
+    },
   ],
   [
     'testCharacter_1_image',
-    { url: 'https://udonarium.app/assets/images/mon_052.gif', aspectRatio: 1.2 },
+    { url: 'https://udonarium.app/assets/images/mon_052.gif', aspectRatio: 1.2, hasAlpha: true },
   ],
   [
     'testCharacter_3_image',
-    { url: 'https://udonarium.app/assets/images/mon_128.gif', aspectRatio: 1.1 },
+    { url: 'https://udonarium.app/assets/images/mon_128.gif', aspectRatio: 1.1, hasAlpha: true },
   ],
   [
     'testCharacter_4_image',
-    { url: 'https://udonarium.app/assets/images/mon_150.gif', aspectRatio: 1.3 },
+    { url: 'https://udonarium.app/assets/images/mon_150.gif', aspectRatio: 1.3, hasAlpha: true },
   ],
   [
     'testCharacter_5_image',
-    { url: 'https://udonarium.app/assets/images/mon_211.gif', aspectRatio: 1.2 },
+    { url: 'https://udonarium.app/assets/images/mon_211.gif', aspectRatio: 1.2, hasAlpha: true },
   ],
   [
     'testCharacter_6_image',
-    { url: 'https://udonarium.app/assets/images/mon_135.gif', aspectRatio: 1 },
+    { url: 'https://udonarium.app/assets/images/mon_135.gif', aspectRatio: 1, hasAlpha: true },
   ],
   [
     'none_icon',
     {
       url: 'https://udonarium.app/assets/images/ic_account_circle_black_24dp_2x.png',
       aspectRatio: 1,
+      hasAlpha: true,
     },
   ],
-]);
+] as const;
+
+export const KNOWN_IMAGES: ReadonlyMap<string, KnownImageDefinition> = new Map(KNOWN_IMAGE_ENTRIES);
+
+const KNOWN_EXTERNAL_IMAGE_METADATA: ReadonlyArray<KnownExternalImageMetadata> = [
+  {
+    path: 'assets/images/trump/',
+    aspectRatio: 1.5,
+    hasAlpha: false,
+  },
+  ...KNOWN_IMAGE_ENTRIES.map(([, known]) => ({
+    path: extractPathname(known.url),
+    aspectRatio: known.aspectRatio,
+    hasAlpha: known.hasAlpha,
+  })),
+];
+
+const KNOWN_EXTERNAL_IMAGE_PREFIX_METADATA: ReadonlyArray<KnownExternalImagePrefixMetadata> = [
+  {
+    prefix: 'assets/images/trump/',
+    aspectRatio: 1.5,
+    hasAlpha: false,
+  },
+];
 
 /**
  * Known aspect ratios for external URL/path based identifiers.
  * ratio = height / width
  */
-export const KNOWN_EXTERNAL_IMAGE_ASPECT_RATIOS: ReadonlyMap<string, number> = new Map([
-  ['assets/images/ic_account_circle_black_24dp_2x.png', 1],
-  ['assets/images/BG10a_80.jpg', 0.75],
-]);
+export const KNOWN_EXTERNAL_IMAGE_ASPECT_RATIOS: ReadonlyMap<string, number> = toAspectRatioMap(
+  KNOWN_EXTERNAL_IMAGE_METADATA.filter((entry) => !entry.path.endsWith('/')),
+  (entry) => entry.path
+);
+
+/**
+ * Known alpha flags for external URL/path based identifiers.
+ */
+export const KNOWN_EXTERNAL_IMAGE_ALPHA_FLAGS: ReadonlyMap<string, boolean> = toAlphaMap(
+  KNOWN_EXTERNAL_IMAGE_METADATA.filter((entry) => !entry.path.endsWith('/')),
+  (entry) => entry.path
+);
 
 /**
  * Prefix-based known aspect ratios for external URL/path based identifiers.
@@ -129,7 +201,21 @@ export const KNOWN_EXTERNAL_IMAGE_ASPECT_RATIOS: ReadonlyMap<string, number> = n
 export const KNOWN_EXTERNAL_IMAGE_ASPECT_RATIO_PREFIXES: ReadonlyArray<{
   prefix: string;
   ratio: number;
-}> = [{ prefix: 'assets/images/trump/', ratio: 1.5 }];
+}> = KNOWN_EXTERNAL_IMAGE_PREFIX_METADATA.map((entry) => ({
+  prefix: entry.prefix,
+  ratio: entry.aspectRatio,
+}));
+
+/**
+ * Prefix-based alpha flags for external URL/path based identifiers.
+ */
+export const KNOWN_EXTERNAL_IMAGE_ALPHA_PREFIXES: ReadonlyArray<{
+  prefix: string;
+  hasAlpha: boolean;
+}> = KNOWN_EXTERNAL_IMAGE_PREFIX_METADATA.map((entry) => ({
+  prefix: entry.prefix,
+  hasAlpha: entry.hasAlpha,
+}));
 
 /**
  * Supported object type tags in Udonarium XML
