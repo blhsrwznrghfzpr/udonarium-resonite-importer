@@ -75,7 +75,14 @@ function convertObjectWithTextures(
       applyCharacterConversion(udonObj, resoniteObj, convertSize, textureMap, imageBlendModeMap);
       break;
     case 'dice-symbol':
-      applyDiceSymbolConversion(udonObj, resoniteObj, convertSize, textureMap, imageBlendModeMap);
+      applyDiceSymbolConversion(
+        udonObj,
+        resoniteObj,
+        convertSize,
+        textureMap,
+        imageAspectRatioMap,
+        imageBlendModeMap
+      );
       break;
     case 'terrain':
       applyTerrainConversion(udonObj, resoniteObj, textureMap, imageBlendModeMap);
