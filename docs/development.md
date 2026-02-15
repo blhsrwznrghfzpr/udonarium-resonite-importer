@@ -64,12 +64,19 @@ npm run test:integration
 
 ### Test Structure
 
-| Type | Description | Count |
-|------|-------------|-------|
-| Unit Tests | Fast tests with mocked dependencies | 217 |
-| Integration Tests | Tests against live ResoniteLink | 15 |
+| Scope | Location | Description |
+|------|----------|-------------|
+| Unit | `src/**/?(*.)test.ts` | Fast tests with explicit input data and mocked dependencies |
+| Integration (fixture-based) | `src/parser/integration.test.ts`, `src/converter/integration.test.ts` | End-to-end flow using fixture ZIP files (`extract -> parse -> convert`) |
+| Integration (live ResoniteLink) | `src/resonite/integration.test.ts` | Tests against a running Resonite + ResoniteLink environment |
 
-Integration tests are **skipped by default** and only run when `RESONITE_LINK_AVAILABLE=true` is set. This ensures CI pipelines work without requiring Resonite.
+Only live ResoniteLink integration tests are **skipped by default** and run when `RESONITE_LINK_AVAILABLE=true` is set. Fixture-based integration tests run in normal `npm run test`.
+
+Fixture-based converter integration currently covers:
+- `sample-dice.zip` (`dice-symbol`)
+- `sample-card.zip` (`card`, `card-stack`)
+- `sample-mapmask.zip` (`table-mask`)
+- `sample-terrain.zip` (`terrain`)
 
 ### ResoniteLink Mock Data Collection
 

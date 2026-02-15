@@ -64,12 +64,19 @@ npm run test:integration
 
 ### テスト構成
 
-| 種別 | 説明 | テスト数 |
-|------|------|---------|
-| ユニットテスト | モックを使用した高速テスト | 217 |
-| 統合テスト | 実際のResoniteLinkに接続するテスト | 15 |
+| スコープ | 配置 | 説明 |
+|------|------|------|
+| Unit | `src/**/?(*.)test.ts` | 明示的な入力データとモックを使う高速テスト |
+| Integration（fixtureベース） | `src/parser/integration.test.ts`, `src/converter/integration.test.ts` | fixture ZIPを使った `extract -> parse -> convert` の通し検証 |
+| Integration（ResoniteLink実接続） | `src/resonite/integration.test.ts` | Resonite + ResoniteLink 実行環境に対する検証 |
 
-統合テストは**デフォルトでスキップ**され、`RESONITE_LINK_AVAILABLE=true`が設定された場合のみ実行されます。これにより、Resoniteが不要なCI環境でも安全に動作します。
+デフォルトでスキップされるのは **ResoniteLink実接続の統合テストのみ** です。fixtureベース統合テストは `npm run test` で通常実行されます。
+
+converter の fixture ベース統合テストは現在以下を対象にしています。
+- `sample-dice.zip`（`dice-symbol`）
+- `sample-card.zip`（`card`, `card-stack`）
+- `sample-mapmask.zip`（`table-mask`）
+- `sample-terrain.zip`（`terrain`）
 
 ### ResoniteLinkモックデータ収集
 
