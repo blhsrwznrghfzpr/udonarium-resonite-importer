@@ -8,13 +8,13 @@
 
 - [Terrain](terrain.ja.md): Terrain の変換ルールとコンポーネント構成
 - [Card](card.ja.md): Card の変換ルール（表裏個別アスペクト比を含む）
+- [Card Stack](card-stack.ja.md): Card Stack の変換ルールと子カード積層挙動
 - [Table Mask](table-mask.ja.md): Table Mask の変換ルールとマテリアル挙動
 - [テクスチャプレースホルダー](texture-placeholders.ja.md): `texture://` / `texture-ref://` の使い分け
 
 ## 追加予定
 
 - `character.ja.md`
-- `card-stack.ja.md`
 - `table.ja.md`
 - `text-note.ja.md`
 
