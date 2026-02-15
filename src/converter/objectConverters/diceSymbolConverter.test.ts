@@ -1,17 +1,32 @@
-﻿import * as path from 'path';
-import { beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { DiceSymbol } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import { extractZip } from '../../parser/ZipExtractor';
-import { parseXmlFiles } from '../../parser/XmlParser';
 import { applyDiceSymbolConversion } from './diceSymbolConverter';
 
-const SAMPLE_DICE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-dice.zip');
+function createBaseDice(): DiceSymbol {
+  return {
+    id: 'dice-1',
+    type: 'dice-symbol',
+    name: 'D6',
+    position: { x: 0, y: 0, z: 0 },
+    images: [
+      { identifier: 'face-1.png', name: '1' },
+      { identifier: 'face-2.png', name: '2' },
+    ],
+    faceImages: [
+      { identifier: 'face-1.png', name: '1' },
+      { identifier: 'face-2.png', name: '2' },
+    ],
+    properties: new Map(),
+    size: 2,
+    face: '2',
+  };
+}
 
-function createBaseResonite(name: string): ResoniteObject {
+function createBaseResonite(): ResoniteObject {
   return {
     id: 'slot-dice-1',
-    name,
+    name: 'D6',
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
     textures: [],
@@ -21,90 +36,57 @@ function createBaseResonite(name: string): ResoniteObject {
 }
 
 describe('applyDiceSymbolConversion', () => {
-  let sampleDice: DiceSymbol;
+  it('adds parent collider + grabbable and enables only active face child', () => {
+    const udonObj = createBaseDice();
+    const resoniteObj = createBaseResonite();
 
-  beforeAll(() => {
-    const extracted = extractZip(SAMPLE_DICE_ZIP_PATH);
-    const parsed = parseXmlFiles(extracted.xmlFiles.map((f) => ({ name: f.name, data: f.data })));
-    const dice = parsed.objects.find((obj): obj is DiceSymbol => obj.type === 'dice-symbol');
-    expect(dice).toBeDefined();
-    sampleDice = dice as DiceSymbol;
-  });
-
-  it('converts dice from sample fixture and keeps only active face renderer', () => {
-    const resoniteObj = createBaseResonite(sampleDice.name);
-
-    applyDiceSymbolConversion(sampleDice, resoniteObj, (size) => ({ x: size, y: size, z: size }));
+    applyDiceSymbolConversion(udonObj, resoniteObj, (size) => ({ x: size, y: size, z: size }));
 
     expect(resoniteObj.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
       '[FrooxEngine]FrooxEngine.Grabbable',
     ]);
     expect(resoniteObj.components[0].fields).toEqual({
-      Size: { $type: 'float3', value: { x: sampleDice.size, y: sampleDice.size, z: 0.05 } },
+      Size: { $type: 'float3', value: { x: 2, y: 2, z: 0.05 } },
     });
-    expect(resoniteObj.children).toHaveLength(sampleDice.faceImages.length);
-
-    const activeChildren = resoniteObj.children.filter((child) => child.isActive);
-    expect(activeChildren).toHaveLength(1);
-    expect(activeChildren[0].name).toBe(`${resoniteObj.name}-face-${sampleDice.face}`);
-
-    for (const child of resoniteObj.children) {
-      const quad = child.components.find((c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh');
-      expect(quad?.fields.Size).toEqual({
-        $type: 'float2',
-        value: { x: sampleDice.size, y: sampleDice.size },
-      });
-    }
+    expect(resoniteObj.children).toHaveLength(2);
+    expect(resoniteObj.children.map((c) => c.isActive)).toEqual([false, true]);
+    expect(resoniteObj.position).toEqual({ x: 1, y: 1, z: -1 });
   });
 
-  it('sizes each face by ratio and bottom-aligns to the largest face', () => {
-    const resoniteObj = createBaseResonite(sampleDice.name);
-    const firstFace = sampleDice.faceImages[0];
-    const secondFace = sampleDice.faceImages[1] ?? sampleDice.faceImages[0];
+  it('uses per-face aspect ratio and bottom-aligns to the largest face', () => {
+    const udonObj = createBaseDice();
+    const resoniteObj = createBaseResonite();
     const imageAspectRatioMap = new Map<string, number>([
-      [firstFace.identifier, 1],
-      [secondFace.identifier, 2],
+      ['face-1.png', 1],
+      ['face-2.png', 2],
     ]);
 
     applyDiceSymbolConversion(
-      sampleDice,
+      udonObj,
       resoniteObj,
       (size) => ({ x: size, y: size, z: size }),
       undefined,
       imageAspectRatioMap
     );
 
-    const faceWidth = sampleDice.size;
-    const firstHeight = faceWidth * 1;
-    const secondHeight = faceWidth * 2;
-    const maxHeight = secondHeight;
-
     expect(resoniteObj.components[0].fields).toEqual({
-      Size: { $type: 'float3', value: { x: faceWidth, y: maxHeight, z: 0.05 } },
+      Size: { $type: 'float3', value: { x: 2, y: 4, z: 0.05 } },
     });
+    expect(resoniteObj.position).toEqual({ x: 1, y: 2, z: -1 });
 
-    const firstChild = resoniteObj.children[0];
-    const secondChild = resoniteObj.children[1];
-    const firstQuad = firstChild.components.find(
+    const firstQuad = resoniteObj.children[0].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh'
     );
-    const secondQuad = secondChild.components.find(
+    const secondQuad = resoniteObj.children[1].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh'
     );
+    expect(firstQuad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 2 } });
+    expect(secondQuad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 4 } });
 
-    expect(firstQuad?.fields.Size).toEqual({
-      $type: 'float2',
-      value: { x: faceWidth, y: firstHeight },
-    });
-    expect(secondQuad?.fields.Size).toEqual({
-      $type: 'float2',
-      value: { x: faceWidth, y: secondHeight },
-    });
-
-    const firstBottom = firstChild.position.y - firstHeight / 2;
-    const secondBottom = secondChild.position.y - secondHeight / 2;
-    expect(firstBottom).toBeCloseTo(-maxHeight / 2);
-    expect(secondBottom).toBeCloseTo(-maxHeight / 2);
+    const firstBottom = resoniteObj.children[0].position.y - 1;
+    const secondBottom = resoniteObj.children[1].position.y - 2;
+    expect(firstBottom).toBeCloseTo(-2);
+    expect(secondBottom).toBeCloseTo(-2);
   });
 });
