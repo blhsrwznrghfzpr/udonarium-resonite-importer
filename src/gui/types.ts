@@ -16,6 +16,7 @@ export interface ImportOptions {
   filePath: string;
   host: string;
   port: number;
+  rootScale: number;
 }
 
 export interface ImportResult {

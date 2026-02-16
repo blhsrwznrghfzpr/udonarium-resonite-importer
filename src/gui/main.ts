@@ -138,7 +138,7 @@ ipcMain.handle('analyze-zip', (_event: IpcMainInvokeEvent, ...args: unknown[]): 
 });
 
 async function handleImportToResonite(options: ImportOptions): Promise<ImportResult> {
-  const { filePath, host, port } = options;
+  const { filePath, host, port, rootScale } = options;
 
   const sendProgress = (step: string, progress: number, detail?: string) => {
     mainWindow?.webContents.send('import-progress', {
@@ -183,9 +183,13 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     registerExternalUrls(parseResult.objects, assetImporter);
     const previousImport = await client.captureTransformAndRemoveRootChildrenByTag(IMPORT_ROOT_TAG);
 
-    // Create import group
+    // Create import group with rootScale override
     const groupName = `Udonarium Import - ${path.basename(filePath, '.zip')}`;
-    await slotBuilder.createImportGroup(groupName, previousImport.transform);
+    const scaleVec = { x: rootScale, y: rootScale, z: rootScale };
+    const importTransform = previousImport.transform
+      ? { ...previousImport.transform, scale: scaleVec }
+      : undefined;
+    await slotBuilder.createImportGroup(groupName, importTransform, scaleVec);
 
     // Import images
     const totalImages = extractedData.imageFiles.length;
