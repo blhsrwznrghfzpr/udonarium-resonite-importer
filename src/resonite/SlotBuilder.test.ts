@@ -430,6 +430,36 @@ describe('SlotBuilder', () => {
       expect(results[2].success).toBe(true);
     });
 
+    it('should continue building when inventory location slot creation fails', async () => {
+      let callCount = 0;
+      mockClient.addSlot.mockImplementation(() => {
+        callCount += 1;
+        if (callCount === 5) {
+          return Promise.reject(new Error('Failed to create inventory location slot'));
+        }
+        return Promise.resolve('created-slot-id');
+      });
+
+      const objects = [
+        createResoniteObject({
+          id: 'char-1',
+          sourceType: 'character',
+          locationName: 'graveyard',
+        }),
+        createResoniteObject({
+          id: 'obj-2',
+          sourceType: 'text-note',
+        }),
+      ];
+
+      const results = await slotBuilder.buildSlots(objects);
+
+      expect(results).toHaveLength(2);
+      expect(results[0].success).toBe(false);
+      expect(results[0].error).toBe('Failed to create inventory location slot');
+      expect(results[1].success).toBe(true);
+    });
+
     it('should return empty array for empty input', async () => {
       const results = await slotBuilder.buildSlots([]);
 

@@ -133,18 +133,28 @@ export class SlotBuilder {
 
     const results: SlotBuildResult[] = [];
     const total = objects.length;
-    const { tablesSlotId, objectsSlotId, inventorySlotId } = await this.ensureTopLevelObjectSlots();
 
     for (let i = 0; i < objects.length; i++) {
       const object = objects[i];
-      const isTable = isTableRootObject(object) || object.sourceType === 'table';
-      const isInventoryObject = !isTable && object.sourceType === 'character';
-      const parentId = isTable
-        ? tablesSlotId
-        : isInventoryObject
-          ? await this.ensureInventoryLocationSlot(object.locationName, inventorySlotId)
-          : objectsSlotId;
-      const result = await this.buildSlot(object, parentId);
+      let result: SlotBuildResult;
+      try {
+        const { tablesSlotId, objectsSlotId, inventorySlotId } =
+          await this.ensureTopLevelObjectSlots();
+        const isTable = isTableRootObject(object) || object.sourceType === 'table';
+        const isInventoryObject = !isTable && object.sourceType === 'character';
+        const parentId = isTable
+          ? tablesSlotId
+          : isInventoryObject
+            ? await this.ensureInventoryLocationSlot(object.locationName, inventorySlotId)
+            : objectsSlotId;
+        result = await this.buildSlot(object, parentId);
+      } catch (error) {
+        result = {
+          slotId: object.id,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
       results.push(result);
 
       if (onProgress) {
