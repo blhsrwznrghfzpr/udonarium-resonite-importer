@@ -17,6 +17,12 @@ export const SCALE_FACTOR = 0.02;
 export const IMPORT_GROUP_SCALE = 1;
 
 /**
+ * Default Y-axis offset for the import root group slot.
+ * Keeps imported content slightly above origin for visibility.
+ */
+export const IMPORT_GROUP_Y_OFFSET = 0.001;
+
+/**
  * Tag applied to import root container slots.
  * Existing roots with this tag are deleted before each new import.
  */

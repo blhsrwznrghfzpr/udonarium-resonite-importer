@@ -122,6 +122,9 @@ describe('applyTableMaskConversion', () => {
     );
     expect(grabbable).toBeDefined();
     expect(grabbable?.id).toBe('slot-mask-unlocked-grabbable');
+    expect(grabbable?.fields).toEqual({
+      Scalable: { $type: 'bool', value: true },
+    });
   });
 
   it('does not add Grabbable component when isLock is true', () => {

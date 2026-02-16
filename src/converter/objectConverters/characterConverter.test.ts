@@ -13,6 +13,8 @@ describe('applyCharacterConversion', () => {
       images: [{ identifier: 'char.png', name: 'char.png' }],
       properties: new Map(),
       size: 3,
+      rotate: 30,
+      roll: 15,
       resources: [],
     };
     const resoniteObj: ResoniteObject = {
@@ -37,6 +39,7 @@ describe('applyCharacterConversion', () => {
       '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
       '[FrooxEngine]FrooxEngine.BoxCollider',
+      '[FrooxEngine]FrooxEngine.Grabbable',
     ]);
     expect(resoniteObj.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 0.3, y: 0.3 } },
@@ -45,6 +48,7 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.position.x).toBe(0.15);
     expect(resoniteObj.position.z).toBe(-0.15);
     expect(resoniteObj.position.y).toBe(0.15);
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: 30, z: 15 });
 
     const materialComponent = resoniteObj.components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
@@ -63,5 +67,72 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.components[5].fields).toEqual({
       Size: { $type: 'float3', value: { x: 0.3, y: 0.3, z: 0.05 } },
     });
+    expect(resoniteObj.components[6].fields).toEqual({
+      Scalable: { $type: 'bool', value: true },
+    });
+  });
+
+  it('does not generate mesh components when character has no image', () => {
+    const udonObj: GameCharacter = {
+      id: 'char-no-image',
+      type: 'character',
+      name: 'No Image Character',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      size: 2,
+      resources: [],
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-char-no-image',
+      name: 'No Image Character',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: [],
+      components: [],
+      children: [],
+    };
+    const convertSize = vi.fn().mockReturnValue({ x: 1, y: 1, z: 1 });
+
+    applyCharacterConversion(udonObj, resoniteObj, convertSize);
+
+    expect(resoniteObj.components.map((c) => c.type)).toEqual([
+      '[FrooxEngine]FrooxEngine.BoxCollider',
+      '[FrooxEngine]FrooxEngine.Grabbable',
+    ]);
+  });
+
+  it('generates image mesh using image aspect ratio while keeping width at size', () => {
+    const udonObj: GameCharacter = {
+      id: 'char-ratio',
+      type: 'character',
+      name: 'Ratio Character',
+      position: { x: 0, y: 0, z: 0 },
+      images: [{ identifier: 'char-ratio.png', name: 'char-ratio.png' }],
+      properties: new Map(),
+      size: 1,
+      resources: [],
+    };
+    const resoniteObj: ResoniteObject = {
+      id: 'slot-char-ratio',
+      name: 'Ratio Character',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      textures: ['char-ratio.png'],
+      components: [],
+      children: [],
+    };
+    const convertSize = vi.fn().mockReturnValue({ x: 1, y: 1, z: 1 });
+    const imageAspectRatioMap = new Map<string, number>([['char-ratio.png', 2]]);
+
+    applyCharacterConversion(udonObj, resoniteObj, convertSize, undefined, imageAspectRatioMap);
+
+    const quad = resoniteObj.components.find((c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh');
+    expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 1, y: 2 } });
+    const collider = resoniteObj.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
+    );
+    expect(collider?.fields.Size).toEqual({ $type: 'float3', value: { x: 1, y: 2, z: 0.05 } });
+    expect(resoniteObj.position).toEqual({ x: 0.5, y: 1, z: -0.5 });
   });
 });

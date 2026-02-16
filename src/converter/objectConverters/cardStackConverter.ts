@@ -61,7 +61,9 @@ export function applyCardStackConversion(
     {
       id: `${resoniteObj.id}-grabbable`,
       type: '[FrooxEngine]FrooxEngine.Grabbable',
-      fields: {},
+      fields: {
+        Scalable: { $type: 'bool', value: true },
+      },
     },
   ];
   resoniteObj.children = [...udonObj.cards].reverse().map((card, i) => {

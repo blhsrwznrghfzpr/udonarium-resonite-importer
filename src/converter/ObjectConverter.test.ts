@@ -112,6 +112,27 @@ describe('ObjectConverter', () => {
 
         expect(result.textures).toEqual(['img1']);
       });
+
+      it('should apply image aspect ratio to character mesh while keeping width equal to size', () => {
+        const character: GameCharacter = {
+          ...createBaseObject(),
+          type: 'character',
+          size: 2,
+          images: [{ identifier: 'char-aspect', name: 'char-aspect.png' }],
+          resources: [],
+        };
+        const imageAspectRatioMap = new Map<string, number>([['char-aspect', 1.5]]);
+
+        const [result] = convertObjectsWithTextureMap([character], new Map(), imageAspectRatioMap);
+
+        const quad = result.components.find((c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh');
+        expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
+        expect(result.position).toEqual({
+          x: 3,
+          y: 2.5,
+          z: -5,
+        });
+      });
     });
 
     describe('dice-symbol conversion', () => {
@@ -515,6 +536,43 @@ describe('ObjectConverter', () => {
       for (const r of result) {
         expect(r.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       }
+    });
+
+    it('shows only selected table when multiple tables exist', () => {
+      const createTable = (id: string, name: string, selected: boolean): GameTable => ({
+        id,
+        type: 'table',
+        name,
+        position: { x: 0, y: 0, z: 0 },
+        images: [],
+        properties: new Map(),
+        width: 20,
+        height: 15,
+        gridType: 'SQUARE',
+        gridColor: '#000000',
+        selected,
+        children: [],
+      });
+      const character: GameCharacter = {
+        id: 'char-1',
+        type: 'character',
+        name: 'Character 1',
+        position: { x: 0, y: 0, z: 0 },
+        images: [],
+        properties: new Map(),
+        size: 1,
+        resources: [],
+      };
+
+      const result = convertObjects([
+        createTable('table-1', 'Table 1', true),
+        createTable('table-2', 'Table 2', false),
+        character,
+      ]);
+
+      expect(result[0].isActive).toBe(true);
+      expect(result[1].isActive).toBe(false);
+      expect(result[2].isActive).toBeUndefined();
     });
   });
 });

@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { SlotBuilder } from './SlotBuilder';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ResoniteObject } from '../domain/ResoniteObject';
-import { IMPORT_GROUP_SCALE, IMPORT_ROOT_TAG } from '../config/MappingConfig';
+import {
+  IMPORT_GROUP_SCALE,
+  IMPORT_GROUP_Y_OFFSET,
+  IMPORT_ROOT_TAG,
+} from '../config/MappingConfig';
 
 // Mock ResoniteLinkClient
 vi.mock('./ResoniteLinkClient', () => {
@@ -251,7 +255,145 @@ describe('SlotBuilder', () => {
 
       expect(results).toHaveLength(3);
       expect(results.every((r) => r.success)).toBe(true);
-      expect(mockClient.addSlot).toHaveBeenCalledTimes(3);
+      expect(mockClient.addSlot).toHaveBeenCalledTimes(7);
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          parentId: 'Root',
+          name: 'Tables',
+        })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          parentId: 'Root',
+          name: 'Objects',
+        })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({
+          parentId: 'Root',
+          name: 'Inventory',
+        })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        4,
+        expect.objectContaining({
+          name: 'table',
+          isActive: true,
+        })
+      );
+      const objectsCallArgs = mockClient.addSlot.mock.calls[1][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        5,
+        expect.objectContaining({
+          parentId: objectsCallArgs.id,
+          id: 'obj-1',
+        })
+      );
+    });
+
+    it('should place tables under Tables and non-table objects under Objects', async () => {
+      const table = createResoniteObject({
+        id: 'table-1',
+        name: 'Table 1',
+        children: [
+          createResoniteObject({
+            id: 'table-1-surface',
+            name: 'Table 1-surface',
+          }),
+        ],
+      });
+      const character = createResoniteObject({
+        id: 'char-1',
+        name: 'Character 1',
+      });
+
+      await slotBuilder.buildSlots([table, character]);
+
+      const tablesSlotCall = mockClient.addSlot.mock.calls[0][0] as { id: string };
+      const objectsSlotCall = mockClient.addSlot.mock.calls[1][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        5,
+        expect.objectContaining({
+          id: 'table-1',
+          parentId: tablesSlotCall.id,
+        })
+      );
+      expect(
+        mockClient.addSlot.mock.calls.some((call) => {
+          const args = call[0] as { id?: string; parentId?: string };
+          return args.id === 'char-1' && args.parentId === objectsSlotCall.id;
+        })
+      ).toBe(true);
+    });
+
+    it('should place characters under Inventory grouped by location name', async () => {
+      const graveyardCharacter = createResoniteObject({
+        id: 'char-graveyard',
+        name: 'Character Graveyard',
+        sourceType: 'character',
+        locationName: 'graveyard',
+      });
+      const commonCharacter = createResoniteObject({
+        id: 'char-common',
+        name: 'Character Common',
+        sourceType: 'character',
+        locationName: 'common',
+      });
+      const anotherGraveyardCharacter = createResoniteObject({
+        id: 'char-graveyard-2',
+        name: 'Character Graveyard 2',
+        sourceType: 'character',
+        locationName: 'graveyard',
+      });
+
+      await slotBuilder.buildSlots([
+        graveyardCharacter,
+        commonCharacter,
+        anotherGraveyardCharacter,
+      ]);
+
+      const inventorySlotCall = mockClient.addSlot.mock.calls[2][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        4,
+        expect.objectContaining({
+          parentId: inventorySlotCall.id,
+          name: 'table',
+          isActive: true,
+        })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        5,
+        expect.objectContaining({
+          parentId: inventorySlotCall.id,
+          name: 'graveyard',
+          isActive: false,
+        })
+      );
+      const graveyardSlotCall = mockClient.addSlot.mock.calls[4][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        7,
+        expect.objectContaining({
+          parentId: inventorySlotCall.id,
+          name: 'common',
+          isActive: false,
+        })
+      );
+      const commonSlotCall = mockClient.addSlot.mock.calls[6][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        6,
+        expect.objectContaining({ id: 'char-graveyard', parentId: graveyardSlotCall.id })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        8,
+        expect.objectContaining({ id: 'char-common', parentId: commonSlotCall.id })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        9,
+        expect.objectContaining({ id: 'char-graveyard-2', parentId: graveyardSlotCall.id })
+      );
     });
 
     it('should call progress callback for each object', async () => {
@@ -269,10 +411,14 @@ describe('SlotBuilder', () => {
     });
 
     it('should continue building even if one slot fails', async () => {
-      mockClient.addSlot
-        .mockResolvedValueOnce('slot-1')
-        .mockRejectedValueOnce(new Error('Failed'))
-        .mockResolvedValueOnce('slot-3');
+      let callCount = 0;
+      mockClient.addSlot.mockImplementation(() => {
+        callCount += 1;
+        if (callCount === 6) {
+          return Promise.reject(new Error('Failed'));
+        }
+        return Promise.resolve('created-slot-id');
+      });
 
       const objects = [
         createResoniteObject({ id: 'obj-1' }),
@@ -286,6 +432,36 @@ describe('SlotBuilder', () => {
       expect(results[0].success).toBe(true);
       expect(results[1].success).toBe(false);
       expect(results[2].success).toBe(true);
+    });
+
+    it('should continue building when inventory location slot creation fails', async () => {
+      let callCount = 0;
+      mockClient.addSlot.mockImplementation(() => {
+        callCount += 1;
+        if (callCount === 5) {
+          return Promise.reject(new Error('Failed to create inventory location slot'));
+        }
+        return Promise.resolve('created-slot-id');
+      });
+
+      const objects = [
+        createResoniteObject({
+          id: 'char-1',
+          sourceType: 'character',
+          locationName: 'graveyard',
+        }),
+        createResoniteObject({
+          id: 'obj-2',
+          sourceType: 'text-note',
+        }),
+      ];
+
+      const results = await slotBuilder.buildSlots(objects);
+
+      expect(results).toHaveLength(2);
+      expect(results[0].success).toBe(false);
+      expect(results[0].error).toBe('Failed to create inventory location slot');
+      expect(results[1].success).toBe(true);
     });
 
     it('should return empty array for empty input', async () => {
@@ -302,6 +478,22 @@ describe('SlotBuilder', () => {
 
       expect(results).toHaveLength(1);
       expect(results[0].success).toBe(true);
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({ name: 'Tables', parentId: 'Root' })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({ name: 'Objects', parentId: 'Root' })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        3,
+        expect.objectContaining({ name: 'Inventory', parentId: 'Root' })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        4,
+        expect.objectContaining({ name: 'table', isActive: true })
+      );
     });
   });
 
@@ -519,7 +711,7 @@ describe('SlotBuilder', () => {
         expect.objectContaining({
           parentId: 'Root',
           name: 'My Import',
-          position: { x: 0, y: 0, z: 0 },
+          position: { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 },
           scale: { x: IMPORT_GROUP_SCALE, y: IMPORT_GROUP_SCALE, z: IMPORT_GROUP_SCALE },
           tag: IMPORT_ROOT_TAG,
         })

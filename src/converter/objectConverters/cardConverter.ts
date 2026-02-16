@@ -122,7 +122,9 @@ export function applyCardConversion(
     {
       id: `${resoniteObj.id}-grabbable`,
       type: '[FrooxEngine]FrooxEngine.Grabbable',
-      fields: {},
+      fields: {
+        Scalable: { $type: 'bool', value: true },
+      },
     },
   ];
   resoniteObj.children = [

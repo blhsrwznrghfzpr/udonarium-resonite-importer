@@ -57,7 +57,9 @@ export function applyDiceSymbolConversion(
     {
       id: `${resoniteObj.id}-grabbable`,
       type: '[FrooxEngine]FrooxEngine.Grabbable',
-      fields: {},
+      fields: {
+        Scalable: { $type: 'bool', value: true },
+      },
     },
   ];
   resoniteObj.children = udonObj.faceImages.map((faceImage, index) => {

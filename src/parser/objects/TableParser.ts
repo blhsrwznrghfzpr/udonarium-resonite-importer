@@ -24,6 +24,7 @@ export function parseGameTable(data: unknown, fileName: string): GameTable {
   const gridType = (root['@_gridType'] as string) || 'SQUARE';
   const gridColor = (root['@_gridColor'] as string) || '#000000';
   const imageIdentifier = root['@_imageIdentifier'] as string;
+  const selected = getBooleanValue(root['@_selected']);
 
   const images: ImageRef[] = [];
   if (imageIdentifier) {
@@ -42,6 +43,7 @@ export function parseGameTable(data: unknown, fileName: string): GameTable {
     height,
     gridType,
     gridColor,
+    selected,
     images,
     properties: new Map(),
     children: [],

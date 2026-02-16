@@ -129,6 +129,7 @@ describe('TableParser', () => {
         '@_gridType': 'HEX_V',
         '@_gridColor': '#00FF00',
         '@_imageIdentifier': 'map-texture-001',
+        '@_selected': 'true',
       };
 
       const result = parseGameTable(data, 'test.xml');
@@ -140,6 +141,7 @@ describe('TableParser', () => {
       expect(result.height).toBe(18);
       expect(result.gridType).toBe('HEX_V');
       expect(result.gridColor).toBe('#00FF00');
+      expect(result.selected).toBe(true);
     });
 
     it('should use fileName as fallback for name and id', () => {

@@ -6,7 +6,11 @@ import { randomUUID } from 'crypto';
 import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SharedMeshDefinition } from '../converter/sharedMesh';
 import { SharedMaterialDefinition } from '../converter/sharedMaterial';
-import { IMPORT_GROUP_SCALE, IMPORT_ROOT_TAG } from '../config/MappingConfig';
+import {
+  IMPORT_GROUP_SCALE,
+  IMPORT_GROUP_Y_OFFSET,
+  IMPORT_ROOT_TAG,
+} from '../config/MappingConfig';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
 
 const SLOT_ID_PREFIX = 'udon-imp';
@@ -38,6 +42,10 @@ function splitListFields(fields: Record<string, unknown>): {
   return { creationFields, listFields };
 }
 
+function isTableRootObject(obj: ResoniteObject): boolean {
+  return obj.children.some((child) => child.id.endsWith('-surface'));
+}
+
 export interface SlotBuildResult {
   slotId: string;
   success: boolean;
@@ -47,6 +55,10 @@ export interface SlotBuildResult {
 export class SlotBuilder {
   private client: ResoniteLinkClient;
   private rootSlotId: string;
+  private tablesSlotId?: string;
+  private objectsSlotId?: string;
+  private inventorySlotId?: string;
+  private inventoryLocationSlotIds = new Map<string, string>();
   private assetsSlotId?: string;
   private texturesSlotId?: string;
   private meshesSlotId?: string;
@@ -81,7 +93,7 @@ export class SlotBuilder {
       // Attach components in the order they are defined.
       // SyncList fields (e.g. Materials) require a 2-step update protocol:
       //  1. addComponent with non-list fields only
-      //  2. updateListFields: add elements → fetch element IDs → set references
+      //  2. updateListFields: add elements, fetch element IDs, set references
       for (const component of obj.components) {
         const { creationFields, listFields } = splitListFields(component.fields);
 
@@ -119,11 +131,34 @@ export class SlotBuilder {
     objects: ResoniteObject[],
     onProgress?: (current: number, total: number) => void
   ): Promise<SlotBuildResult[]> {
+    if (objects.length === 0) {
+      return [];
+    }
+
     const results: SlotBuildResult[] = [];
     const total = objects.length;
 
     for (let i = 0; i < objects.length; i++) {
-      const result = await this.buildSlot(objects[i]);
+      const object = objects[i];
+      let result: SlotBuildResult;
+      try {
+        const { tablesSlotId, objectsSlotId, inventorySlotId } =
+          await this.ensureTopLevelObjectSlots();
+        const isTable = isTableRootObject(object) || object.sourceType === 'table';
+        const isInventoryObject = !isTable && object.sourceType === 'character';
+        const parentId = isTable
+          ? tablesSlotId
+          : isInventoryObject
+            ? await this.ensureInventoryLocationSlot(object.locationName, inventorySlotId)
+            : objectsSlotId;
+        result = await this.buildSlot(object, parentId);
+      } catch (error) {
+        result = {
+          slotId: object.id,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        };
+      }
       results.push(result);
 
       if (onProgress) {
@@ -143,7 +178,7 @@ export class SlotBuilder {
     defaultScale?: Vector3
   ): Promise<string> {
     const groupId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
-    const position: Vector3 = transform?.position ?? { x: 0, y: 0, z: 0 };
+    const position: Vector3 = transform?.position ?? { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 };
     const fallbackScale: Vector3 = defaultScale ?? {
       x: IMPORT_GROUP_SCALE,
       y: IMPORT_GROUP_SCALE,
@@ -162,6 +197,14 @@ export class SlotBuilder {
     });
 
     this.rootSlotId = groupId;
+    this.tablesSlotId = undefined;
+    this.objectsSlotId = undefined;
+    this.inventorySlotId = undefined;
+    this.inventoryLocationSlotIds.clear();
+    this.assetsSlotId = undefined;
+    this.texturesSlotId = undefined;
+    this.meshesSlotId = undefined;
+    this.materialsSlotId = undefined;
     return groupId;
   }
 
@@ -300,6 +343,72 @@ export class SlotBuilder {
       position: { x: 0, y: 0, z: 0 },
     });
     return this.assetsSlotId;
+  }
+
+  private async ensureTopLevelObjectSlots(): Promise<{
+    tablesSlotId: string;
+    objectsSlotId: string;
+    inventorySlotId: string;
+  }> {
+    if (!this.tablesSlotId) {
+      this.tablesSlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
+      await this.client.addSlot({
+        id: this.tablesSlotId,
+        parentId: this.rootSlotId,
+        name: 'Tables',
+        position: { x: 0, y: 0, z: 0 },
+      });
+    }
+
+    if (!this.objectsSlotId) {
+      this.objectsSlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
+      await this.client.addSlot({
+        id: this.objectsSlotId,
+        parentId: this.rootSlotId,
+        name: 'Objects',
+        position: { x: 0, y: 0, z: 0 },
+      });
+    }
+
+    if (!this.inventorySlotId) {
+      this.inventorySlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
+      await this.client.addSlot({
+        id: this.inventorySlotId,
+        parentId: this.rootSlotId,
+        name: 'Inventory',
+        position: { x: 0, y: 0, z: 0 },
+      });
+    }
+    // "table" inventory location is always present and should remain visible.
+    await this.ensureInventoryLocationSlot('table', this.inventorySlotId);
+
+    return {
+      tablesSlotId: this.tablesSlotId,
+      objectsSlotId: this.objectsSlotId,
+      inventorySlotId: this.inventorySlotId,
+    };
+  }
+
+  private async ensureInventoryLocationSlot(
+    locationName: string | undefined,
+    inventorySlotId: string
+  ): Promise<string> {
+    const normalizedLocationName = locationName?.trim() || 'Unknown';
+    const existingSlotId = this.inventoryLocationSlotIds.get(normalizedLocationName);
+    if (existingSlotId) {
+      return existingSlotId;
+    }
+
+    const slotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
+    await this.client.addSlot({
+      id: slotId,
+      parentId: inventorySlotId,
+      name: normalizedLocationName,
+      position: { x: 0, y: 0, z: 0 },
+      isActive: normalizedLocationName === 'table',
+    });
+    this.inventoryLocationSlotIds.set(normalizedLocationName, slotId);
+    return slotId;
   }
 
   private async ensureTexturesSlot(): Promise<string> {

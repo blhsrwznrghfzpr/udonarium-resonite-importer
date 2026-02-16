@@ -69,7 +69,9 @@ describe('applyCardStackConversion', () => {
       {
         id: 'slot-stack-1-grabbable',
         type: '[FrooxEngine]FrooxEngine.Grabbable',
-        fields: {},
+        fields: {
+          Scalable: { $type: 'bool', value: true },
+        },
       },
     ]);
     expect(resoniteObj.position).toEqual({ x: 1, y: 0.001, z: -1 });

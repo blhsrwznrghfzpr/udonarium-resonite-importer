@@ -25,6 +25,8 @@ export function parseCharacter(data: unknown, fileName: string): GameCharacter {
   const commonData = findDataByName(characterData, 'common');
   const name = getTextValue(findDataByName(commonData, 'name')) || fileName;
   const size = getNumberValue(findDataByName(commonData, 'size')) ?? 1;
+  const rotate = getNumberValue(root['@_rotate']);
+  const roll = getNumberValue(root['@_roll']);
 
   // Parse resources
   const resources: NumberResource[] = [];
@@ -35,13 +37,18 @@ export function parseCharacter(data: unknown, fileName: string): GameCharacter {
 
   // Parse position (if available)
   const position = parsePosition(root);
+  const locationName =
+    typeof root['@_location.name'] === 'string' ? root['@_location.name'] : undefined;
 
   return {
     id: (root['@_identifier'] as string) || fileName,
     type: 'character',
     name,
     position,
+    locationName,
     size,
+    rotate,
+    roll,
     images,
     properties: new Map(),
     resources,

@@ -41,7 +41,10 @@ export interface BaseUdonariumObject {
 
 export interface GameCharacter extends BaseUdonariumObject {
   type: 'character';
+  locationName?: string;
   size: number;
+  rotate?: number;
+  roll?: number;
   resources: NumberResource[];
 }
 
@@ -101,6 +104,7 @@ export interface GameTable extends BaseUdonariumObject {
   height: number;
   gridType: string;
   gridColor: string;
+  selected?: boolean;
   children: GameTableChild[];
 }
 
