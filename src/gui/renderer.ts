@@ -18,6 +18,8 @@ initI18n();
 const filePathInput = document.getElementById('file-path') as HTMLInputElement;
 const selectFileBtn = document.getElementById('select-file-btn') as HTMLButtonElement;
 const fileDropArea = document.getElementById('file-drop-area') as HTMLElement;
+const portHelpBtn = document.getElementById('port-help-btn') as HTMLButtonElement;
+const portHelpPanel = document.getElementById('port-help-panel') as HTMLElement;
 const hostInput = document.getElementById('host') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
 const rootScaleInput = document.getElementById('root-scale') as HTMLInputElement;
@@ -72,6 +74,11 @@ function setSelectedFilePath(filePath: string): void {
   currentFilePath = filePath;
   filePathInput.value = filePath;
   updateImportButtonState();
+}
+
+function setPortHelpPanelVisible(visible: boolean): void {
+  portHelpPanel.style.display = visible ? 'block' : 'none';
+  portHelpBtn.setAttribute('aria-expanded', visible ? 'true' : 'false');
 }
 
 // Apply translations to UI
@@ -160,6 +167,22 @@ fileDropArea.addEventListener('drop', (event) => {
   }
 
   setSelectedFilePath(droppedPath);
+});
+
+portHelpBtn.addEventListener('click', () => {
+  const isOpen = portHelpPanel.style.display === 'block';
+  setPortHelpPanelVisible(!isOpen);
+});
+
+document.addEventListener('click', (event) => {
+  const target = event.target as Node | null;
+  if (!target) {
+    return;
+  }
+
+  if (!portHelpPanel.contains(target) && !portHelpBtn.contains(target)) {
+    setPortHelpPanelVisible(false);
+  }
 });
 
 // Import to Resonite

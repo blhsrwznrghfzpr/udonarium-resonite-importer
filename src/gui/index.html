@@ -23,12 +23,27 @@
               <input type="text" id="file-path" readonly placeholder="ファイルを選択してください...">
               <button id="select-file-btn" class="btn btn-primary">参照...</button>
             </div>
-            <p class="drop-hint">ここにZIPファイルをドラッグ&ドロップ可能</p>
           </div>
-          <div class="control-group port-control">
-            <label for="port" data-i18n="gui.port">ポート</label>
-            <input type="number" id="port" min="1" max="65535">
-          </div>
+        </div>
+        <div class="control-group port-control port-inline">
+          <label for="port">ResoniteLinkポート</label>
+          <input type="number" id="port" min="1" max="65535">
+          <button
+            type="button"
+            id="port-help-btn"
+            class="help-icon"
+            aria-label="ResoniteLinkポートのヘルプ"
+            aria-expanded="false"
+            >?</button
+          >
+        </div>
+        <div id="port-help-panel" class="help-panel" style="display: none;">
+          <strong>ResoniteLinkの設定方法</strong>
+          <ol>
+            <li>自分がホストのワールドを開く</li>
+            <li>セッションタブで「ResoniteLinkを有効化」</li>
+            <li>ResoniteLinkのポート番号を入力</li>
+          </ol>
         </div>
         <div id="import-controls">
           <button id="import-btn" class="btn btn-success btn-large" disabled>Resoniteにインポート</button>

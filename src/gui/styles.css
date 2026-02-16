@@ -71,17 +71,71 @@ header .subtitle {
 }
 
 .port-control {
-  width: 120px;
+  margin-bottom: 16px;
+}
+
+.port-inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.port-inline label {
+  margin-bottom: 0;
+  white-space: nowrap;
 }
 
 .port-control input {
-  width: 100%;
+  width: min(220px, 100%);
   padding: 12px 14px;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   color: #e0e0e0;
   font-size: 0.9rem;
+}
+
+.port-inline input {
+  flex: 0 0 auto;
+}
+
+.help-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #9ec9d6;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: help;
+  user-select: none;
+  margin-left: 2px;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.help-panel {
+  margin-top: -8px;
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  background: rgba(0, 212, 255, 0.1);
+  color: #cde8f0;
+  font-size: 0.88rem;
+}
+
+.help-panel strong {
+  display: block;
+  margin-bottom: 6px;
+  color: #dff6ff;
+}
+
+.help-panel ol {
+  margin: 0;
+  padding-left: 18px;
 }
 
 .port-control input:focus {
@@ -119,12 +173,6 @@ header .subtitle {
 .file-select.drag-over {
   border-color: #00d4ff;
   background: rgba(0, 212, 255, 0.08);
-}
-
-.drop-hint {
-  margin-top: 6px;
-  font-size: 0.8rem;
-  color: #666;
 }
 
 /* Buttons */
