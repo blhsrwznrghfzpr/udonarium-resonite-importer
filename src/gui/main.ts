@@ -191,13 +191,16 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     registerExternalUrls(parseResult.objects, assetImporter);
     const previousImport = await client.captureTransformAndRemoveRootChildrenByTag(IMPORT_ROOT_TAG);
 
-    // Create import group with rootScale override
+    // Create import group
+    // When a previous import root exists, preserve its captured transform (including scale).
+    // rootScale from the UI is only used as the default for fresh imports.
     const groupName = `Udonarium Import - ${path.basename(filePath, '.zip')}`;
-    const scaleVec = { x: rootScale, y: rootScale, z: rootScale };
-    const importTransform = previousImport.transform
-      ? { ...previousImport.transform, scale: scaleVec }
-      : undefined;
-    await slotBuilder.createImportGroup(groupName, importTransform, scaleVec);
+    const defaultScale = { x: rootScale, y: rootScale, z: rootScale };
+    await slotBuilder.createImportGroup(
+      groupName,
+      previousImport.transform ?? undefined,
+      defaultScale
+    );
 
     // Import images
     const totalImages = extractedData.imageFiles.length;
