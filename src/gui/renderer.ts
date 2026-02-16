@@ -2,7 +2,7 @@
  * Renderer Process Script
  */
 
-import { AnalyzeResult, ImportOptions, ImportResult, ProgressInfo, ElectronAPI } from './types';
+import { ImportOptions, ImportResult, ProgressInfo, ElectronAPI } from './types';
 import { t, initI18n } from './i18n';
 
 declare global {
@@ -17,16 +17,14 @@ initI18n();
 // Elements
 const filePathInput = document.getElementById('file-path') as HTMLInputElement;
 const selectFileBtn = document.getElementById('select-file-btn') as HTMLButtonElement;
-const analysisSection = document.getElementById('analysis-section') as HTMLElement;
-const xmlCountEl = document.getElementById('xml-count') as HTMLElement;
-const imageCountEl = document.getElementById('image-count') as HTMLElement;
-const objectCountEl = document.getElementById('object-count') as HTMLElement;
-const typeBreakdownEl = document.getElementById('type-breakdown') as HTMLElement;
-const analysisErrorsEl = document.getElementById('analysis-errors') as HTMLElement;
+const fileDropArea = document.getElementById('file-drop-area') as HTMLElement;
+const portHelpBtn = document.getElementById('port-help-btn') as HTMLButtonElement;
+const portHelpPanel = document.getElementById('port-help-panel') as HTMLElement;
 const hostInput = document.getElementById('host') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
 const rootScaleInput = document.getElementById('root-scale') as HTMLInputElement;
 const importBtn = document.getElementById('import-btn') as HTMLButtonElement;
+const importLog = document.getElementById('import-log') as HTMLElement;
 const progressArea = document.getElementById('progress-area') as HTMLElement;
 const progressFill = document.getElementById('progress-fill') as HTMLElement;
 const progressText = document.getElementById('progress-text') as HTMLElement;
@@ -35,7 +33,54 @@ const advancedToggle = document.getElementById('advanced-toggle') as HTMLElement
 const advancedContent = document.getElementById('advanced-content') as HTMLElement;
 const toggleIcon = document.getElementById('toggle-icon') as HTMLElement;
 
+const LAST_PORT_STORAGE_KEY = 'udonarium_resonite_importer_last_port';
+const DEFAULT_PORT = 7869;
+
 let currentFilePath: string | null = null;
+let isImporting = false;
+
+function parsePortOrNull(value: string): number | null {
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed) || parsed < 1 || parsed > 65535) {
+    return null;
+  }
+  return parsed;
+}
+
+function loadLastPort(): number | null {
+  try {
+    return parsePortOrNull(localStorage.getItem(LAST_PORT_STORAGE_KEY) ?? '');
+  } catch {
+    return null;
+  }
+}
+
+function saveLastPort(port: number): void {
+  try {
+    localStorage.setItem(LAST_PORT_STORAGE_KEY, String(port));
+  } catch {
+    // Ignore storage failures and continue import flow.
+  }
+}
+
+function canImport(): boolean {
+  return !isImporting && !!currentFilePath && parsePortOrNull(portInput.value) !== null;
+}
+
+function updateImportButtonState(): void {
+  importBtn.disabled = !canImport();
+}
+
+function setSelectedFilePath(filePath: string): void {
+  currentFilePath = filePath;
+  filePathInput.value = filePath;
+  updateImportButtonState();
+}
+
+function setPortHelpPanelVisible(visible: boolean): void {
+  portHelpPanel.style.display = visible ? 'block' : 'none';
+  portHelpBtn.setAttribute('aria-expanded', visible ? 'true' : 'false');
+}
 
 // Apply translations to UI
 function applyTranslations(): void {
@@ -49,6 +94,8 @@ function applyTranslations(): void {
   filePathInput.placeholder = t('gui.selectFilePlaceholder');
   selectFileBtn.textContent = t('gui.browse');
   importBtn.textContent = t('gui.importToResonite');
+  portHelpBtn.title = t('gui.portHelpTooltip');
+  portHelpBtn.setAttribute('aria-label', t('gui.portHelpAriaLabel'));
 
   // Labels via data-i18n attributes
   document.querySelectorAll('[data-i18n]').forEach((el) => {
@@ -57,16 +104,18 @@ function applyTranslations(): void {
       el.textContent = t(key);
     }
   });
-
-  // Stat labels
-  const statLabels = document.querySelectorAll('.stat-label');
-  if (statLabels[0]) statLabels[0].textContent = t('gui.xmlFiles');
-  if (statLabels[1]) statLabels[1].textContent = t('gui.imageFiles');
-  if (statLabels[2]) statLabels[2].textContent = t('gui.objects');
 }
 
 // Initialize translations on load
 applyTranslations();
+
+const lastPort = loadLastPort();
+portInput.value = lastPort ? String(lastPort) : '';
+updateImportButtonState();
+
+portInput.addEventListener('input', () => {
+  updateImportButtonState();
+});
 
 // Load default config and set initial values
 void window.electronAPI.getDefaultConfig().then((config) => {
@@ -85,60 +134,68 @@ selectFileBtn.addEventListener('click', () => {
   void (async () => {
     const filePath = await window.electronAPI.selectFile();
     if (filePath) {
-      currentFilePath = filePath;
-      filePathInput.value = filePath;
-      importBtn.disabled = false;
-      await analyzeFile(filePath);
+      setSelectedFilePath(filePath);
     }
   })();
 });
 
-// Analyze file
-async function analyzeFile(filePath: string): Promise<void> {
-  const result: AnalyzeResult = await window.electronAPI.analyzeZip(filePath);
+for (const eventName of ['dragenter', 'dragover']) {
+  fileDropArea.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    fileDropArea.classList.add('drag-over');
+  });
+}
 
-  if (!result.success) {
-    analysisSection.style.display = 'block';
-    analysisErrorsEl.textContent = `${t('gui.error')}: ${result.error ?? 'Unknown error'}`;
-    xmlCountEl.textContent = '0';
-    imageCountEl.textContent = '0';
-    objectCountEl.textContent = '0';
-    typeBreakdownEl.innerHTML = '';
+for (const eventName of ['dragleave', 'drop']) {
+  fileDropArea.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    fileDropArea.classList.remove('drag-over');
+  });
+}
+
+fileDropArea.addEventListener('drop', (event) => {
+  const droppedFiles = event.dataTransfer?.files;
+  if (!droppedFiles || droppedFiles.length === 0) {
     return;
   }
 
-  // Show stats
-  xmlCountEl.textContent = String(result.xmlCount);
-  imageCountEl.textContent = String(result.imageCount);
-  objectCountEl.textContent = String(result.objectCount);
-
-  // Type breakdown
-  typeBreakdownEl.innerHTML = '';
-  for (const [type, count] of Object.entries(result.typeCounts)) {
-    const badge = document.createElement('span');
-    badge.className = 'type-badge';
-    const typeName = t(`objectTypes.${type}`);
-    badge.innerHTML = `${typeName}: <span class="count">${String(count)}</span>`;
-    typeBreakdownEl.appendChild(badge);
+  const droppedFile = droppedFiles[0] as File & { path?: string };
+  const droppedPath = droppedFile.path;
+  if (!droppedPath || !droppedPath.toLowerCase().endsWith('.zip')) {
+    importLog.style.display = 'block';
+    importResult.style.display = 'block';
+    importResult.className = 'error';
+    importResult.innerHTML = `<strong>${t('gui.errorOccurred')}</strong><br>${t('gui.dropZipOnly')}`;
+    return;
   }
 
-  // Errors
-  if (result.errors.length > 0) {
-    analysisErrorsEl.innerHTML = result.errors.map((e: string) => `<div>${e}</div>`).join('');
-  } else {
-    analysisErrorsEl.innerHTML = '';
+  setSelectedFilePath(droppedPath);
+});
+
+portHelpBtn.addEventListener('click', () => {
+  const isOpen = portHelpPanel.style.display === 'block';
+  setPortHelpPanelVisible(!isOpen);
+});
+
+document.addEventListener('click', (event) => {
+  const target = event.target as Node | null;
+  if (!target) {
+    return;
   }
 
-  // Show analysis section
-  analysisSection.style.display = 'block';
-}
+  if (!portHelpPanel.contains(target) && !portHelpBtn.contains(target)) {
+    setPortHelpPanelVisible(false);
+  }
+});
 
 // Import to Resonite
 importBtn.addEventListener('click', () => {
   void (async () => {
     if (!currentFilePath) return;
 
-    importBtn.disabled = true;
+    isImporting = true;
+    updateImportButtonState();
+    importLog.style.display = 'block';
     progressArea.style.display = 'block';
     importResult.style.display = 'none';
     progressFill.style.width = '0%';
@@ -147,34 +204,37 @@ importBtn.addEventListener('click', () => {
     const options: ImportOptions = {
       filePath: currentFilePath,
       host: hostInput.value || 'localhost',
-      port: parseInt(portInput.value, 10) || 7869,
+      port: parsePortOrNull(portInput.value) ?? DEFAULT_PORT,
       rootScale: parseFloat(rootScaleInput.value) || 1,
     };
+    saveLastPort(options.port);
 
-    const result: ImportResult = await window.electronAPI.importToResonite(options);
+    try {
+      const result: ImportResult = await window.electronAPI.importToResonite(options);
 
-    progressArea.style.display = 'none';
-    importResult.style.display = 'block';
+      progressArea.style.display = 'none';
+      importResult.style.display = 'block';
 
-    if (result.success) {
-      importResult.className = 'success';
-      importResult.innerHTML = `
-        <strong>${t('gui.importComplete')}</strong><br>
-        ${t('gui.images', { imported: result.importedImages, total: result.totalImages })}<br>
-        ${t('gui.objectsResult', { imported: result.importedObjects, total: result.totalObjects })}<br>
-        <small>${t('gui.checkResonite')}</small>
-      `;
-    } else {
-      importResult.className = 'error';
-      importResult.innerHTML = `
-        <strong>${t('gui.errorOccurred')}</strong><br>
-        ${result.error ?? 'Unknown error'}<br>
-        <small>${t('gui.ensureResonite')}</small>
-      `;
+      if (result.success) {
+        importResult.className = 'success';
+        importResult.innerHTML = `
+          <strong>${t('gui.importComplete')}</strong><br>
+          ${t('gui.images', { imported: result.importedImages, total: result.totalImages })}<br>
+          ${t('gui.objectsResult', { imported: result.importedObjects, total: result.totalObjects })}<br>
+          <small>${t('gui.checkResonite')}</small>
+        `;
+      } else {
+        importResult.className = 'error';
+        importResult.innerHTML = `
+          <strong>${t('gui.errorOccurred')}</strong><br>
+          ${result.error ?? 'Unknown error'}<br>
+          <small>${t('gui.ensureResonite')}</small>
+        `;
+      }
+    } finally {
+      isImporting = false;
+      updateImportButtonState();
     }
-
-    // Always re-enable the import button so the same file can be re-imported
-    importBtn.disabled = false;
   })();
 });
 
