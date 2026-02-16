@@ -10,13 +10,13 @@
 - [Card](card.ja.md): Card の変換ルール（表裏面ごとのアスペクト比を含む）
 - [Card Stack](card-stack.ja.md): Card Stack の変換ルールと子カード積層挙動
 - [Dice Symbol](dice-symbol.ja.md): Dice Symbol の変換ルール（面サイズとアクティブ面制御）
+- [Table](table.ja.md): Table の変換ルール（天板構造と selected による表示制御）
 - [Table Mask](table-mask.ja.md): Table Mask の変換ルールとマテリアル挙動
 - [テクスチャプレースホルダー](texture-placeholders.ja.md): `texture://` / `texture-ref://` の使い分け
 
 ## 今後追加予定
 
 - `character.ja.md`
-- `table.ja.md`
 - `text-note.ja.md`
 
 各仕様書には、以下を記載します。

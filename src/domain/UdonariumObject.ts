@@ -101,6 +101,7 @@ export interface GameTable extends BaseUdonariumObject {
   height: number;
   gridType: string;
   gridColor: string;
+  selected?: boolean;
   children: GameTableChild[];
 }
 

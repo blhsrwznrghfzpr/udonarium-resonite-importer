@@ -516,5 +516,42 @@ describe('ObjectConverter', () => {
         expect(r.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       }
     });
+
+    it('shows only selected table when multiple tables exist', () => {
+      const createTable = (id: string, name: string, selected: boolean): GameTable => ({
+        id,
+        type: 'table',
+        name,
+        position: { x: 0, y: 0, z: 0 },
+        images: [],
+        properties: new Map(),
+        width: 20,
+        height: 15,
+        gridType: 'SQUARE',
+        gridColor: '#000000',
+        selected,
+        children: [],
+      });
+      const character: GameCharacter = {
+        id: 'char-1',
+        type: 'character',
+        name: 'Character 1',
+        position: { x: 0, y: 0, z: 0 },
+        images: [],
+        properties: new Map(),
+        size: 1,
+        resources: [],
+      };
+
+      const result = convertObjects([
+        createTable('table-1', 'Table 1', true),
+        createTable('table-2', 'Table 2', false),
+        character,
+      ]);
+
+      expect(result[0].isActive).toBe(true);
+      expect(result[1].isActive).toBe(false);
+      expect(result[2].isActive).toBeUndefined();
+    });
   });
 });

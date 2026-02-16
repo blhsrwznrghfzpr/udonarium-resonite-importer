@@ -21,6 +21,7 @@ const SAMPLE_TERRAIN_ZIP_PATH = path.join(
   '__fixtures__',
   'sample-terrain.zip'
 );
+const SAMPLE_TABLE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-table.zip');
 const CONVERTER_INTEGRATION_TIMEOUT = 30000;
 
 async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> {
@@ -167,6 +168,28 @@ describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
             terrain.components.some((c) => c.type === '[FrooxEngine]FrooxEngine.Grabbable')
           )
         ).toBe(true);
+      },
+      CONVERTER_INTEGRATION_TIMEOUT
+    );
+  }
+);
+
+describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
+  'Converter integration (sample-table.zip)',
+  () => {
+    it(
+      'shows only selected table when multiple tables are present',
+      async () => {
+        const converted = await loadConvertedFromZip(SAMPLE_TABLE_ZIP_PATH);
+        const tables = converted.filter((obj) =>
+          obj.children.some((child) => child.id.endsWith('-surface'))
+        );
+
+        expect(tables).toHaveLength(2);
+        expect(tables.filter((table) => table.isActive === true)).toHaveLength(1);
+        expect(tables.filter((table) => table.isActive === false)).toHaveLength(1);
+        expect(tables.find((table) => table.name === '最初のテーブル')?.isActive).toBe(true);
+        expect(tables.find((table) => table.name === '白紙のテーブル')?.isActive).toBe(false);
       },
       CONVERTER_INTEGRATION_TIMEOUT
     );

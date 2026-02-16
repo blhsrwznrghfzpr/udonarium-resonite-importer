@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'crypto';
-import { UdonariumObject } from '../domain/UdonariumObject';
+import { GameTable, UdonariumObject } from '../domain/UdonariumObject';
 import { ImageBlendMode } from '../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SCALE_FACTOR } from '../config/MappingConfig';
@@ -120,11 +120,39 @@ function convertObjectWithTextures(
   return resoniteObj;
 }
 
+function applyGameTableVisibility(
+  convertedObjects: ResoniteObject[],
+  udonObjects: UdonariumObject[]
+): ResoniteObject[] {
+  const tableIndices: number[] = [];
+  for (let i = 0; i < udonObjects.length; i += 1) {
+    if (udonObjects[i].type === 'table') {
+      tableIndices.push(i);
+    }
+  }
+
+  if (tableIndices.length <= 1) {
+    return convertedObjects;
+  }
+
+  const selectedTables = tableIndices.filter((index) => (udonObjects[index] as GameTable).selected);
+  if (selectedTables.length === 0) {
+    return convertedObjects;
+  }
+
+  for (const index of tableIndices) {
+    convertedObjects[index].isActive = selectedTables.includes(index);
+  }
+
+  return convertedObjects;
+}
+
 /**
  * Convert multiple Udonarium objects to Resonite objects
  */
 export function convertObjects(udonObjects: UdonariumObject[]): ResoniteObject[] {
-  return udonObjects.map((obj) => convertObjectWithTextures(obj));
+  const converted = udonObjects.map((obj) => convertObjectWithTextures(obj));
+  return applyGameTableVisibility(converted, udonObjects);
 }
 
 /**
@@ -136,9 +164,10 @@ export function convertObjectsWithTextureMap(
   imageAspectRatioMap?: Map<string, number>,
   imageBlendModeMap?: Map<string, ImageBlendMode>
 ): ResoniteObject[] {
-  return udonObjects.map((obj) =>
+  const converted = udonObjects.map((obj) =>
     convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap)
   );
+  return applyGameTableVisibility(converted, udonObjects);
 }
 
 /**
