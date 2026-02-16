@@ -13,6 +13,8 @@ describe('applyCharacterConversion', () => {
       images: [{ identifier: 'char.png', name: 'char.png' }],
       properties: new Map(),
       size: 3,
+      rotate: 30,
+      roll: 15,
       resources: [],
     };
     const resoniteObj: ResoniteObject = {
@@ -45,6 +47,7 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.position.x).toBe(0.15);
     expect(resoniteObj.position.z).toBe(-0.15);
     expect(resoniteObj.position.y).toBe(0.15);
+    expect(resoniteObj.rotation).toEqual({ x: 0, y: 30, z: 15 });
 
     const materialComponent = resoniteObj.components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'

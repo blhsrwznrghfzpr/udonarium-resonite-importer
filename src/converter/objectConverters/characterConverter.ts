@@ -51,4 +51,9 @@ export function applyCharacterConversion(
   resoniteObj.position.x += size.x / 2;
   resoniteObj.position.z -= size.x / 2;
   resoniteObj.position.y += size.y / 2;
+  resoniteObj.rotation = {
+    x: 0,
+    y: udonObj.rotate ?? 0,
+    z: udonObj.roll ?? 0,
+  };
 }

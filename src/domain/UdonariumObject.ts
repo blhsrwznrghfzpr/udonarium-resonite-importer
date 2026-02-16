@@ -42,6 +42,8 @@ export interface BaseUdonariumObject {
 export interface GameCharacter extends BaseUdonariumObject {
   type: 'character';
   size: number;
+  rotate?: number;
+  roll?: number;
   resources: NumberResource[];
 }
 

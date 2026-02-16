@@ -22,6 +22,12 @@ const SAMPLE_TERRAIN_ZIP_PATH = path.join(
   'sample-terrain.zip'
 );
 const SAMPLE_TABLE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-table.zip');
+const SAMPLE_CHARACTER_ZIP_PATH = path.join(
+  process.cwd(),
+  'src',
+  '__fixtures__',
+  'sample-character.zip'
+);
 const CONVERTER_INTEGRATION_TIMEOUT = 30000;
 
 async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> {
@@ -190,6 +196,25 @@ describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
         expect(tables.filter((table) => table.isActive === false)).toHaveLength(1);
         expect(tables.find((table) => table.name === '最初のテーブル')?.isActive).toBe(true);
         expect(tables.find((table) => table.name === '白紙のテーブル')?.isActive).toBe(false);
+      },
+      CONVERTER_INTEGRATION_TIMEOUT
+    );
+  }
+);
+
+describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
+  'Converter integration (sample-character.zip)',
+  () => {
+    it(
+      'applies character rotate/roll to slot rotation',
+      async () => {
+        const converted = await loadConvertedFromZip(SAMPLE_CHARACTER_ZIP_PATH);
+
+        const rotated = converted.find((obj) => obj.rotation.y === 30);
+        const rolled = converted.find((obj) => obj.rotation.z === 60);
+
+        expect(rotated).toBeDefined();
+        expect(rolled).toBeDefined();
       },
       CONVERTER_INTEGRATION_TIMEOUT
     );
