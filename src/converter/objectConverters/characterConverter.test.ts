@@ -39,6 +39,7 @@ describe('applyCharacterConversion', () => {
       '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
       '[FrooxEngine]FrooxEngine.BoxCollider',
+      '[FrooxEngine]FrooxEngine.Grabbable',
     ]);
     expect(resoniteObj.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 0.3, y: 0.3 } },
@@ -66,6 +67,7 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.components[5].fields).toEqual({
       Size: { $type: 'float3', value: { x: 0.3, y: 0.3, z: 0.05 } },
     });
+    expect(resoniteObj.components[6].fields).toEqual({});
   });
 
   it('does not generate mesh components when character has no image', () => {
@@ -94,6 +96,7 @@ describe('applyCharacterConversion', () => {
 
     expect(resoniteObj.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
+      '[FrooxEngine]FrooxEngine.Grabbable',
     ]);
   });
 
