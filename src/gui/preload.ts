@@ -28,3 +28,11 @@ const api: ElectronAPI = {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', api);
+// renderer.ts is executed from preload context, so provide the same API there too.
+(window as unknown as { electronAPI: ElectronAPI }).electronAPI = api;
+
+// Renderer script is compiled as CommonJS. Load it from preload after DOM is ready
+// so browser context does not execute CommonJS output directly.
+window.addEventListener('DOMContentLoaded', () => {
+  void import('./renderer.js');
+});
