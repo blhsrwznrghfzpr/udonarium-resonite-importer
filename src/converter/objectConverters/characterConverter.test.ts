@@ -67,7 +67,9 @@ describe('applyCharacterConversion', () => {
     expect(resoniteObj.components[5].fields).toEqual({
       Size: { $type: 'float3', value: { x: 0.3, y: 0.3, z: 0.05 } },
     });
-    expect(resoniteObj.components[6].fields).toEqual({});
+    expect(resoniteObj.components[6].fields).toEqual({
+      Scalable: { $type: 'bool', value: true },
+    });
   });
 
   it('does not generate mesh components when character has no image', () => {

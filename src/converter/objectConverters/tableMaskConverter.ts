@@ -50,7 +50,9 @@ export function applyTableMaskConversion(
     resoniteObj.components.push({
       id: `${resoniteObj.id}-grabbable`,
       type: '[FrooxEngine]FrooxEngine.Grabbable',
-      fields: {},
+      fields: {
+        Scalable: { $type: 'bool', value: true },
+      },
     });
   }
 

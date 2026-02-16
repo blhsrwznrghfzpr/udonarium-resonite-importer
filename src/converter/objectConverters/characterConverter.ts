@@ -61,7 +61,9 @@ export function applyCharacterConversion(
           {
             id: `${resoniteObj.id}-grabbable`,
             type: '[FrooxEngine]FrooxEngine.Grabbable',
-            fields: {},
+            fields: {
+              Scalable: { $type: 'bool', value: true },
+            },
           },
         ];
       })()
@@ -74,7 +76,9 @@ export function applyCharacterConversion(
         {
           id: `${resoniteObj.id}-grabbable`,
           type: '[FrooxEngine]FrooxEngine.Grabbable',
-          fields: {},
+          fields: {
+            Scalable: { $type: 'bool', value: true },
+          },
         },
       ];
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
