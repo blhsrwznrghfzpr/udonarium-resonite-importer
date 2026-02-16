@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { SlotBuilder } from './SlotBuilder';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ResoniteObject } from '../domain/ResoniteObject';
-import { IMPORT_GROUP_SCALE, IMPORT_ROOT_TAG } from '../config/MappingConfig';
+import {
+  IMPORT_GROUP_SCALE,
+  IMPORT_GROUP_Y_OFFSET,
+  IMPORT_ROOT_TAG,
+} from '../config/MappingConfig';
 
 // Mock ResoniteLinkClient
 vi.mock('./ResoniteLinkClient', () => {
@@ -707,7 +711,7 @@ describe('SlotBuilder', () => {
         expect.objectContaining({
           parentId: 'Root',
           name: 'My Import',
-          position: { x: 0, y: 0, z: 0 },
+          position: { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 },
           scale: { x: IMPORT_GROUP_SCALE, y: IMPORT_GROUP_SCALE, z: IMPORT_GROUP_SCALE },
           tag: IMPORT_ROOT_TAG,
         })

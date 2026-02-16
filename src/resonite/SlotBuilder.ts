@@ -6,7 +6,11 @@ import { randomUUID } from 'crypto';
 import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SharedMeshDefinition } from '../converter/sharedMesh';
 import { SharedMaterialDefinition } from '../converter/sharedMaterial';
-import { IMPORT_GROUP_SCALE, IMPORT_ROOT_TAG } from '../config/MappingConfig';
+import {
+  IMPORT_GROUP_SCALE,
+  IMPORT_GROUP_Y_OFFSET,
+  IMPORT_ROOT_TAG,
+} from '../config/MappingConfig';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
 
 const SLOT_ID_PREFIX = 'udon-imp';
@@ -89,7 +93,7 @@ export class SlotBuilder {
       // Attach components in the order they are defined.
       // SyncList fields (e.g. Materials) require a 2-step update protocol:
       //  1. addComponent with non-list fields only
-      //  2. updateListFields: add elements → fetch element IDs → set references
+      //  2. updateListFields: add elements, fetch element IDs, set references
       for (const component of obj.components) {
         const { creationFields, listFields } = splitListFields(component.fields);
 
@@ -174,7 +178,7 @@ export class SlotBuilder {
     defaultScale?: Vector3
   ): Promise<string> {
     const groupId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
-    const position: Vector3 = transform?.position ?? { x: 0, y: 0, z: 0 };
+    const position: Vector3 = transform?.position ?? { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 };
     const fallbackScale: Vector3 = defaultScale ?? {
       x: IMPORT_GROUP_SCALE,
       y: IMPORT_GROUP_SCALE,
