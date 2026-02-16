@@ -10,6 +10,7 @@ describe('CharacterParser', () => {
     it('should parse basic character with name and size', () => {
       const data = {
         '@_identifier': 'char-001',
+        '@_location.name': 'graveyard',
         '@_rotate': '30',
         '@_roll': '60',
         data: [
@@ -34,6 +35,7 @@ describe('CharacterParser', () => {
       expect(result.type).toBe('character');
       expect(result.name).toBe('Hero');
       expect(result.size).toBe(2);
+      expect(result.locationName).toBe('graveyard');
       expect(result.rotate).toBe(30);
       expect(result.roll).toBe(60);
     });

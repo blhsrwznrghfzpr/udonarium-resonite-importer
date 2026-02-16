@@ -64,6 +64,10 @@ function convertObjectWithTextures(
     name: udonObj.name,
     position,
     rotation: { x: 0, y: 0, z: 0 },
+    sourceType: udonObj.type,
+    ...(udonObj.type === 'character' && udonObj.locationName
+      ? { locationName: udonObj.locationName }
+      : {}),
     textures: udonObj.images.map((img) => img.identifier),
     components: [],
     children: [],

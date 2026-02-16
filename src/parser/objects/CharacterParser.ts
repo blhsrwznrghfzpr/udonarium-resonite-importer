@@ -37,12 +37,15 @@ export function parseCharacter(data: unknown, fileName: string): GameCharacter {
 
   // Parse position (if available)
   const position = parsePosition(root);
+  const locationName =
+    typeof root['@_location.name'] === 'string' ? root['@_location.name'] : undefined;
 
   return {
     id: (root['@_identifier'] as string) || fileName,
     type: 'character',
     name,
     position,
+    locationName,
     size,
     rotate,
     roll,
