@@ -1,3 +1,21 @@
+/*
+ * Udonarium Resonite Importer - White Theme
+ * Color palette: Resonite PlatformColorPalette
+ * https://wiki.resonite.com/Branding
+ *
+ * Neutrals:
+ *   Dark       #11151d
+ *   Mid        #2b2f35
+ *   Dark-Light #4a4a4d
+ *   Mid-Light  #86888b
+ *   Light      #e1e1e0
+ *
+ * Hero:   Cyan #61d1fa  Green #59eb5c  Red #ff7676  Purple #ba64f2  Yellow #f8f770  Orange #e69e50
+ * Mid-Light: Cyan #458fab  Green #3f9e44  Red #ae5458  Purple #824aab
+ * Sub:    Cyan #284c5d  Green #24512c  Red #5d323a  Purple #492f64
+ * Dark:   Cyan #1a2a36  Green #192d24  Red #1a1318  Purple #241e35
+ */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,8 +24,8 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  color: #e0e0e0;
+  background: #f4f4f3;
+  color: #11151d;
   min-height: 100vh;
   line-height: 1.6;
 }
@@ -25,29 +43,30 @@ header {
 
 header h1 {
   font-size: 1.8rem;
-  color: #00d4ff;
+  color: #284c5d;
   margin-bottom: 8px;
 }
 
 header .subtitle {
-  color: #888;
+  color: #86888b;
   font-size: 0.95rem;
 }
 
 .card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid #e1e1e0;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(17, 21, 29, 0.06);
 }
 
 .card h2 {
   font-size: 1.1rem;
-  color: #00d4ff;
+  color: #284c5d;
   margin-bottom: 16px;
   padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #e1e1e0;
 }
 
 /* Main Controls Grid */
@@ -63,7 +82,7 @@ header .subtitle {
   display: block;
   margin-bottom: 6px;
   font-size: 0.9rem;
-  color: #888;
+  color: #4a4a4d;
 }
 
 .file-control {
@@ -88,10 +107,10 @@ header .subtitle {
 .port-control input {
   width: min(220px, 100%);
   padding: 12px 14px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  border: 1px solid #e1e1e0;
   border-radius: 8px;
-  color: #e0e0e0;
+  color: #11151d;
   font-size: 0.9rem;
 }
 
@@ -106,14 +125,14 @@ header .subtitle {
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  color: #9ec9d6;
+  border: 1px solid #e1e1e0;
+  color: #458fab;
   font-size: 0.75rem;
   line-height: 1;
   cursor: help;
   user-select: none;
   margin-left: 2px;
-  background: rgba(0, 0, 0, 0.25);
+  background: #ffffff;
 }
 
 .help-panel {
@@ -121,16 +140,16 @@ header .subtitle {
   margin-bottom: 16px;
   padding: 12px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(0, 212, 255, 0.35);
-  background: rgba(0, 212, 255, 0.1);
-  color: #cde8f0;
+  border: 1px solid #61d1fa;
+  background: rgba(97, 209, 250, 0.08);
+  color: #2b2f35;
   font-size: 0.88rem;
 }
 
 .help-panel strong {
   display: block;
   margin-bottom: 6px;
-  color: #dff6ff;
+  color: #284c5d;
 }
 
 .help-panel ol {
@@ -140,7 +159,8 @@ header .subtitle {
 
 .port-control input:focus {
   outline: none;
-  border-color: #00d4ff;
+  border-color: #61d1fa;
+  box-shadow: 0 0 0 3px rgba(97, 209, 250, 0.15);
 }
 
 /* File Selection */
@@ -158,21 +178,21 @@ header .subtitle {
 .file-select input {
   flex: 1;
   padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  border: 1px solid #e1e1e0;
   border-radius: 8px;
-  color: #e0e0e0;
+  color: #11151d;
   font-size: 0.9rem;
   min-width: 0;
 }
 
 .file-select input::placeholder {
-  color: #666;
+  color: #86888b;
 }
 
 .file-select.drag-over {
-  border-color: #00d4ff;
-  background: rgba(0, 212, 255, 0.08);
+  border-color: #61d1fa;
+  background: rgba(97, 209, 250, 0.06);
 }
 
 /* Buttons */
@@ -201,21 +221,23 @@ header .subtitle {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
-  color: #000;
+  background: #61d1fa;
+  color: #11151d;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #33ddff 0%, #00aadd 100%);
+  background: #458fab;
+  color: #ffffff;
 }
 
 .btn-success {
-  background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
-  color: #000;
+  background: #59eb5c;
+  color: #11151d;
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #33ff99 0%, #00dd77 100%);
+  background: #3f9e44;
+  color: #ffffff;
 }
 
 .btn-large {
@@ -235,20 +257,21 @@ header .subtitle {
 .stat-item {
   text-align: center;
   padding: 16px;
-  background: rgba(0, 212, 255, 0.1);
+  background: rgba(97, 209, 250, 0.08);
   border-radius: 8px;
+  border: 1px solid rgba(97, 209, 250, 0.15);
 }
 
 .stat-value {
   display: block;
   font-size: 2rem;
   font-weight: bold;
-  color: #00d4ff;
+  color: #458fab;
 }
 
 .stat-label {
   font-size: 0.85rem;
-  color: #888;
+  color: #86888b;
 }
 
 /* Type Breakdown */
@@ -261,13 +284,14 @@ header .subtitle {
 
 .type-badge {
   padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: #f4f4f3;
+  border: 1px solid #e1e1e0;
   border-radius: 20px;
   font-size: 0.85rem;
 }
 
 .type-badge .count {
-  color: #00d4ff;
+  color: #458fab;
   font-weight: bold;
 }
 
@@ -283,22 +307,23 @@ header .subtitle {
   display: block;
   margin-bottom: 6px;
   font-size: 0.9rem;
-  color: #888;
+  color: #4a4a4d;
 }
 
 .setting-item input {
   width: 100%;
   padding: 10px 14px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #ffffff;
+  border: 1px solid #e1e1e0;
   border-radius: 8px;
-  color: #e0e0e0;
+  color: #11151d;
   font-size: 0.9rem;
 }
 
 .setting-item input:focus {
   outline: none;
-  border-color: #00d4ff;
+  border-color: #61d1fa;
+  box-shadow: 0 0 0 3px rgba(97, 209, 250, 0.15);
 }
 
 /* Advanced Options Toggle */
@@ -309,12 +334,12 @@ header .subtitle {
   align-items: center;
   gap: 8px;
   font-size: 0.95rem;
-  color: #888;
+  color: #4a4a4d;
   transition: color 0.2s ease;
 }
 
 .advanced-toggle:hover {
-  color: #00d4ff;
+  color: #458fab;
 }
 
 .toggle-icon {
@@ -329,7 +354,7 @@ header .subtitle {
 
 .hint {
   font-size: 0.85rem;
-  color: #666;
+  color: #86888b;
   margin-top: 8px;
 }
 
@@ -337,7 +362,7 @@ header .subtitle {
 .progress-bar {
   width: 100%;
   height: 8px;
-  background: rgba(0, 0, 0, 0.3);
+  background: #e1e1e0;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 12px;
@@ -345,7 +370,7 @@ header .subtitle {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #00d4ff 0%, #00ff88 100%);
+  background: linear-gradient(90deg, #61d1fa 0%, #59eb5c 100%);
   border-radius: 4px;
   transition: width 0.3s ease;
   width: 0%;
@@ -353,7 +378,7 @@ header .subtitle {
 
 #progress-text {
   text-align: center;
-  color: #888;
+  color: #4a4a4d;
   font-size: 0.9rem;
 }
 
@@ -361,11 +386,11 @@ header .subtitle {
 .errors {
   margin-top: 12px;
   padding: 12px;
-  background: rgba(255, 100, 100, 0.1);
-  border: 1px solid rgba(255, 100, 100, 0.3);
+  background: rgba(255, 118, 118, 0.08);
+  border: 1px solid rgba(255, 118, 118, 0.3);
   border-radius: 8px;
   font-size: 0.85rem;
-  color: #ff8888;
+  color: #ae5458;
 }
 
 .errors:empty {
@@ -381,21 +406,21 @@ header .subtitle {
 }
 
 #import-result.success {
-  background: rgba(0, 255, 136, 0.1);
-  border: 1px solid rgba(0, 255, 136, 0.3);
-  color: #00ff88;
+  background: rgba(89, 235, 92, 0.08);
+  border: 1px solid rgba(89, 235, 92, 0.3);
+  color: #3f9e44;
 }
 
 #import-result.error {
-  background: rgba(255, 100, 100, 0.1);
-  border: 1px solid rgba(255, 100, 100, 0.3);
-  color: #ff8888;
+  background: rgba(255, 118, 118, 0.08);
+  border: 1px solid rgba(255, 118, 118, 0.3);
+  color: #ae5458;
 }
 
 /* Footer */
 footer {
   text-align: center;
   padding: 20px 0;
-  color: #444;
+  color: #86888b;
   font-size: 0.85rem;
 }
