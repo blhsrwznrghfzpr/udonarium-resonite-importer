@@ -69,13 +69,9 @@ header .subtitle {
   padding: 16px;
 }
 
-/* Main Controls Grid */
-.main-controls-grid {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 16px;
-  align-items: end;
-  margin-bottom: 16px;
+/* Control Groups */
+.control-group {
+  margin-bottom: 12px;
 }
 
 .control-group label {
@@ -89,45 +85,41 @@ header .subtitle {
   min-width: 0;
 }
 
-.port-control {
-  margin-bottom: 16px;
-}
-
 .port-inline {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  justify-content: flex-end;
   gap: 10px;
 }
 
 .port-inline label {
+  display: flex;
+  align-items: center;
   margin-bottom: 0;
   white-space: nowrap;
 }
 
-.port-control input {
+.port-inline input {
   width: min(220px, 100%);
+  flex: 0 0 auto;
   padding: 8px 10px;
   background: #FFF;
-  border: none;
+  border: solid 1px #CCC;
   border-radius: 2px;
   color: #444;
   font-size: 0.9rem;
   font-family: inherit;
 }
 
-.port-control input:focus {
+.port-inline input:focus {
   outline: none;
-}
-
-.port-inline input {
-  flex: 0 0 auto;
 }
 
 .help-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.35em 0.7em;
+  padding: 8px 12px;
   border-radius: 4px;
   border: solid 1px #CCC;
   color: #444;
@@ -164,10 +156,10 @@ header .subtitle {
 /* File Selection */
 .file-select {
   display: flex;
+  align-items: stretch;
   gap: 10px;
   border: 1px dashed transparent;
   border-radius: 4px;
-  padding: 6px;
   transition:
     border-color 0.2s ease,
     background-color 0.2s ease;
@@ -177,7 +169,7 @@ header .subtitle {
   flex: 1;
   padding: 8px 10px;
   background: #FFF;
-  border: none;
+  border: solid 1px #CCC;
   border-radius: 2px;
   color: #444;
   font-size: 0.9rem;
@@ -187,6 +179,11 @@ header .subtitle {
 
 .file-select input:focus {
   outline: none;
+}
+
+.file-select .btn {
+  padding: 8px 24px;
+  white-space: nowrap;
 }
 
 .file-select input::placeholder {
@@ -200,7 +197,7 @@ header .subtitle {
 
 /* Buttons */
 .btn {
-  padding: 0.35em 0.7em;
+  padding: 8px 12px;
   border: solid 1px #CCC;
   border-radius: 4px;
   font-size: 0.9rem;
@@ -222,8 +219,10 @@ header .subtitle {
 
 .btn:disabled {
   background: #eee;
-  color: #aaa;
+  color: #bbb;
+  border-color: #ddd;
   cursor: auto;
+  opacity: 0.6;
 }
 
 .btn-primary {
@@ -320,7 +319,7 @@ header .subtitle {
   width: 100%;
   padding: 8px 10px;
   background: #FFF;
-  border: none;
+  border: solid 1px #CCC;
   border-radius: 2px;
   color: #444;
   font-size: 0.9rem;

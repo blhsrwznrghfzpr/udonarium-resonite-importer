@@ -18,16 +18,13 @@
       <section class="card" id="main-controls">
         <h2 data-i18n="gui.mainControlsTitle">インポート設定</h2>
         <div class="card-body">
-        <div class="main-controls-grid">
-          <div class="control-group file-control">
-            <label for="file-path" data-i18n="gui.selectFile">ZIPファイルを選択</label>
-            <div class="file-select" id="file-drop-area">
-              <input type="text" id="file-path" readonly placeholder="ファイルを選択してください...">
-              <button id="select-file-btn" class="btn btn-primary">参照...</button>
-            </div>
+        <div class="control-group file-control">
+          <div class="file-select" id="file-drop-area">
+            <input type="text" id="file-path" placeholder="ファイルを選択してください...">
+            <button id="select-file-btn" class="btn btn-primary">参照...</button>
           </div>
         </div>
-        <div class="control-group port-control port-inline">
+        <div class="control-group port-inline">
           <label for="port" data-i18n="gui.resoniteLinkPort">ResoniteLinkポート</label>
           <input type="number" id="port" min="1" max="65535">
           <button
@@ -47,7 +44,7 @@
             <li data-i18n="gui.portHelpStep3">ResoniteLinkのポート番号を入力</li>
           </ol>
         </div>
-        <div id="import-controls">
+        <div class="control-group" id="import-controls">
           <button id="import-btn" class="btn btn-success btn-large" disabled>Resoniteにインポート</button>
         </div>
         <p class="hint" data-i18n="gui.settingsHint">Resoniteを起動し、ResoniteLinkを有効にしてください。</p>
