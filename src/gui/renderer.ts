@@ -171,6 +171,12 @@ fileDropArea.addEventListener('drop', (event) => {
   setSelectedFilePath(droppedPath);
 });
 
+filePathInput.addEventListener('input', () => {
+  const manualPath = filePathInput.value.trim();
+  currentFilePath = manualPath || null;
+  updateImportButtonState();
+});
+
 portHelpBtn.addEventListener('click', () => {
   const isOpen = portHelpPanel.style.display === 'block';
   setPortHelpPanelVisible(!isOpen);
