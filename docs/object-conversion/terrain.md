@@ -83,6 +83,7 @@ Wall texture:
 Terrain root:
 
 - `BoxCollider` with size `(width, height, depth)`
+- `CharacterCollider = true` on `BoxCollider` when `isLocked == true`
 - `Grabbable` only when `isLocked == false`
 
 Visual slots:
@@ -118,5 +119,6 @@ Recommended checks:
 2. Correct center offset placement
 3. `rotate` reflected on Y-axis
 4. Wall visibility toggle by `mode`
-5. `isLocked=false` adds `Grabbable`
-6. Top/wall texture fallback order works as expected
+5. `isLocked=true` enables `CharacterCollider` on `BoxCollider`
+6. `isLocked=false` adds `Grabbable`
+7. Top/wall texture fallback order works as expected

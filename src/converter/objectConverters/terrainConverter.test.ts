@@ -98,7 +98,7 @@ describe('applyTerrainConversion', () => {
     });
   });
 
-  it('terrain (locked) does not add Grabbable', () => {
+  it('terrain (locked) does not add Grabbable and enables CharacterCollider', () => {
     const udonObj: Terrain = {
       id: 'terrain-2',
       type: 'terrain',
@@ -131,6 +131,20 @@ describe('applyTerrainConversion', () => {
     expect(resoniteObj.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
     ]);
+    expect(resoniteObj.components[0].fields).toEqual({
+      Size: {
+        $type: 'float3',
+        value: {
+          x: 2,
+          y: 2,
+          z: 2,
+        },
+      },
+      CharacterCollider: {
+        $type: 'bool',
+        value: true,
+      },
+    });
   });
 
   it('terrain mode=1 creates walls slot and deactivates it', () => {
