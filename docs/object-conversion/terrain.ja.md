@@ -41,6 +41,7 @@ Udonarium（端基準）から Resonite（中心基準）への補正:
 ## 5. スロット構成
 terrain ルート:
 - `BoxCollider`
+- `isLocked == true` の場合、`BoxCollider.CharacterCollider = true`
 - `isLocked == false` の場合のみ `Grabbable`
 - 子に `-top` と `-walls` を持つ
 

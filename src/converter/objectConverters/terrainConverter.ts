@@ -39,13 +39,15 @@ export function applyTerrainConversion(
   const topBlendMode = resolveBlendMode(topTextureIdentifier, imageBlendModeMap);
   const sideBlendMode = resolveBlendMode(sideTextureIdentifier, imageBlendModeMap);
   // Axis mapping: width -> X, height -> Y, depth -> Z
-  resoniteObj.components = [
-    buildBoxColliderComponent(resoniteObj.id, {
-      x: udonObj.width,
-      y: udonObj.height,
-      z: udonObj.depth,
-    }),
-  ];
+  const colliderComponent = buildBoxColliderComponent(resoniteObj.id, {
+    x: udonObj.width,
+    y: udonObj.height,
+    z: udonObj.depth,
+  });
+  if (udonObj.isLocked) {
+    colliderComponent.fields.CharacterCollider = { $type: 'bool', value: true };
+  }
+  resoniteObj.components = [colliderComponent];
   if (!udonObj.isLocked) {
     resoniteObj.components.push({
       id: `${resoniteObj.id}-grabbable`,
