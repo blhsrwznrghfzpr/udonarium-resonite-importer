@@ -1,14 +1,9 @@
 import { Terrain } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
-import { ResoniteObject } from '../../domain/ResoniteObject';
-import {
-  buildBoxColliderComponent,
-  buildGrabbableComponent,
-  buildQuadMeshComponents,
-  BlendModeValue,
-  resolveTextureValue,
-} from './componentBuilders';
+import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
+import { BlendModeValue, resolveTextureValue } from './componentBuilders';
 import { lookupImageBlendMode } from '../imageAspectRatioMap';
+import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 
 function resolveBlendMode(
   identifier: string | undefined,
@@ -18,6 +13,20 @@ function resolveBlendMode(
     return 'Opaque';
   }
   return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Opaque';
+}
+
+function buildWallSlot(
+  id: string,
+  name: string,
+  position: Vector3,
+  rotation: Vector3,
+  size: { x: number; y: number },
+  textureValue: string | undefined,
+  blendMode: BlendModeValue
+): ResoniteObject {
+  return new ResoniteObjectBuilder({ id, name, position, rotation })
+    .addQuadMesh(textureValue, false, size, blendMode)
+    .build();
 }
 
 export function convertTerrain(
@@ -38,19 +47,6 @@ export function convertTerrain(
   const sideTextureValue = resolveTextureValue(sideTextureIdentifier, textureMap);
   const topBlendMode = resolveBlendMode(topTextureIdentifier, imageBlendModeMap);
   const sideBlendMode = resolveBlendMode(sideTextureIdentifier, imageBlendModeMap);
-  // Axis mapping: width -> X, height -> Y, depth -> Z
-  const colliderComponent = buildBoxColliderComponent(baseObj.id, {
-    x: udonObj.width,
-    y: udonObj.height,
-    z: udonObj.depth,
-  });
-  if (udonObj.isLocked) {
-    colliderComponent.fields.CharacterCollider = { $type: 'bool', value: true };
-  }
-  const components = [
-    colliderComponent,
-    ...(udonObj.isLocked ? [] : [buildGrabbableComponent(baseObj.id)]),
-  ];
 
   const topId = `${baseObj.id}-top`;
   const wallsId = `${baseObj.id}-walls`;
@@ -60,108 +56,71 @@ export function convertTerrain(
   const rightId = `${wallsId}-right`;
   const hideWalls = udonObj.mode === 1;
 
-  const topSurface: ResoniteObject = {
+  const topSurface = new ResoniteObjectBuilder({
     id: topId,
     name: `${baseObj.name}-top`,
     position: { x: 0, y: udonObj.height / 2, z: 0 },
     rotation: { x: 90, y: 0, z: 0 },
-    components: buildQuadMeshComponents(
-      topId,
-      topTextureValue,
-      false,
-      {
-        x: udonObj.width,
-        y: udonObj.depth,
-      },
-      topBlendMode
-    ),
-    children: [],
-  };
-  const wallsContainer: ResoniteObject = {
+  })
+    .addQuadMesh(topTextureValue, false, { x: udonObj.width, y: udonObj.depth }, topBlendMode)
+    .build();
+
+  const wallsContainer = new ResoniteObjectBuilder({
     id: wallsId,
     name: `${baseObj.name}-walls`,
     position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
     isActive: !hideWalls,
-    components: [],
-    children: [
-      {
-        id: frontId,
-        name: `${baseObj.name}-front`,
-        position: { x: 0, y: 0, z: -udonObj.depth / 2 },
-        rotation: { x: 0, y: 0, z: 0 },
-        textures: [],
-        components: buildQuadMeshComponents(
-          frontId,
-          sideTextureValue,
-          false,
-          {
-            x: udonObj.width,
-            y: udonObj.height,
-          },
-          sideBlendMode
-        ),
-        children: [],
-      },
-      {
-        id: backId,
-        name: `${baseObj.name}-back`,
-        position: { x: 0, y: 0, z: udonObj.depth / 2 },
-        rotation: { x: 0, y: 180, z: 0 },
-        textures: [],
-        components: buildQuadMeshComponents(
-          backId,
-          sideTextureValue,
-          false,
-          {
-            x: udonObj.width,
-            y: udonObj.height,
-          },
-          sideBlendMode
-        ),
-        children: [],
-      },
-      {
-        id: leftId,
-        name: `${baseObj.name}-left`,
-        position: { x: -udonObj.width / 2, y: 0, z: 0 },
-        rotation: { x: 0, y: 90, z: 0 },
-        textures: [],
-        components: buildQuadMeshComponents(
-          leftId,
-          sideTextureValue,
-          false,
-          {
-            x: udonObj.depth,
-            y: udonObj.height,
-          },
-          sideBlendMode
-        ),
-        children: [],
-      },
-      {
-        id: rightId,
-        name: `${baseObj.name}-right`,
-        position: { x: udonObj.width / 2, y: 0, z: 0 },
-        rotation: { x: 0, y: -90, z: 0 },
-        textures: [],
-        components: buildQuadMeshComponents(
-          rightId,
-          sideTextureValue,
-          false,
-          {
-            x: udonObj.depth,
-            y: udonObj.height,
-          },
-          sideBlendMode
-        ),
-        children: [],
-      },
-    ],
-  };
+  })
+    .addChild(
+      buildWallSlot(
+        frontId,
+        `${baseObj.name}-front`,
+        { x: 0, y: 0, z: -udonObj.depth / 2 },
+        { x: 0, y: 0, z: 0 },
+        { x: udonObj.width, y: udonObj.height },
+        sideTextureValue,
+        sideBlendMode
+      )
+    )
+    .addChild(
+      buildWallSlot(
+        backId,
+        `${baseObj.name}-back`,
+        { x: 0, y: 0, z: udonObj.depth / 2 },
+        { x: 0, y: 180, z: 0 },
+        { x: udonObj.width, y: udonObj.height },
+        sideTextureValue,
+        sideBlendMode
+      )
+    )
+    .addChild(
+      buildWallSlot(
+        leftId,
+        `${baseObj.name}-left`,
+        { x: -udonObj.width / 2, y: 0, z: 0 },
+        { x: 0, y: 90, z: 0 },
+        { x: udonObj.depth, y: udonObj.height },
+        sideTextureValue,
+        sideBlendMode
+      )
+    )
+    .addChild(
+      buildWallSlot(
+        rightId,
+        `${baseObj.name}-right`,
+        { x: udonObj.width / 2, y: 0, z: 0 },
+        { x: 0, y: -90, z: 0 },
+        { x: udonObj.depth, y: udonObj.height },
+        sideTextureValue,
+        sideBlendMode
+      )
+    )
+    .build();
 
+  // Axis mapping: width -> X, height -> Y, depth -> Z
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  return {
+  const mainBuilder = new ResoniteObjectBuilder({
     ...baseObj,
     rotation: { x: 0, y: udonObj.rotate, z: 0 },
     position: {
@@ -169,7 +128,14 @@ export function convertTerrain(
       y: baseObj.position.y + udonObj.height / 2,
       z: baseObj.position.z - udonObj.depth / 2,
     },
-    components,
-    children: [{ ...topSurface }, wallsContainer],
-  };
+  }).addBoxCollider(
+    { x: udonObj.width, y: udonObj.height, z: udonObj.depth },
+    { characterCollider: udonObj.isLocked }
+  );
+
+  if (!udonObj.isLocked) {
+    mainBuilder.addGrabbable();
+  }
+
+  return mainBuilder.addChild(topSurface).addChild(wallsContainer).build();
 }

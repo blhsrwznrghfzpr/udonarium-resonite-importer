@@ -1,14 +1,9 @@
 import { Card } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import {
-  buildBoxColliderComponent,
-  buildGrabbableComponent,
-  buildQuadMeshComponents,
-  BlendModeValue,
-  resolveTextureValue,
-} from './componentBuilders';
+import { BlendModeValue, resolveTextureValue } from './componentBuilders';
 import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
+import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 
 const CARD_Y_OFFSET = 0.001;
 const CARD_FACE_SEPARATION = 0.0001;
@@ -109,60 +104,45 @@ export function convertCard(
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   // Slight Y offset so cards don't z-fight with the table surface.
   // Keep parent slot rotation on table plane; lay-flat rotation is applied on child faces.
-  return {
-    ...baseObj,
-    position: {
-      x: baseObj.position.x + cardWidth / 2,
-      y: baseObj.position.y + CARD_Y_OFFSET,
-      z: baseObj.position.z - parentHeight / 2,
-    },
-    rotation: {
-      x: 0,
-      y: udonObj.rotate ?? 0,
-      z: udonObj.isFaceUp ? 0 : 180,
-    },
-    components: [
+  const frontSlot = new ResoniteObjectBuilder({
+    id: `${baseObj.id}-front`,
+    name: `${baseObj.name}-front`,
+    // Align top edges when front/back heights differ.
+    position: { x: 0, y: CARD_FACE_SEPARATION, z: frontZOffset },
+    rotation: { x: 90, y: 0, z: 0 },
+  })
+    .addQuadMesh(frontTextureValue, false, { x: cardWidth, y: frontHeight }, frontBlendMode)
+    .build();
+
+  const backSlot = new ResoniteObjectBuilder({
+    id: `${baseObj.id}-back`,
+    name: `${baseObj.name}-back`,
+    // Align top edges when front/back heights differ.
+    position: { x: 0, y: -CARD_FACE_SEPARATION, z: backZOffset },
+    rotation: { x: -90, y: 180, z: 0 },
+  })
+    .addQuadMesh(backTextureValue, false, { x: cardWidth, y: backHeight }, backBlendMode)
+    .build();
+
+  return (
+    new ResoniteObjectBuilder({
+      ...baseObj,
+      position: {
+        x: baseObj.position.x + cardWidth / 2,
+        y: baseObj.position.y + CARD_Y_OFFSET,
+        z: baseObj.position.z - parentHeight / 2,
+      },
+      rotation: {
+        x: 0,
+        y: udonObj.rotate ?? 0,
+        z: udonObj.isFaceUp ? 0 : 180,
+      },
+    })
       // Parent slot rotates only on Y, so make collider thin on local Y.
-      buildBoxColliderComponent(baseObj.id, { x: cardWidth, y: 0.01, z: parentHeight }),
-      buildGrabbableComponent(baseObj.id),
-    ],
-    children: [
-      {
-        id: `${baseObj.id}-front`,
-        name: `${baseObj.name}-front`,
-        // Align top edges when front/back heights differ.
-        position: { x: 0, y: CARD_FACE_SEPARATION, z: frontZOffset },
-        rotation: { x: 90, y: 0, z: 0 },
-        components: buildQuadMeshComponents(
-          `${baseObj.id}-front`,
-          frontTextureValue,
-          false,
-          {
-            x: cardWidth,
-            y: frontHeight,
-          },
-          frontBlendMode
-        ),
-        children: [],
-      },
-      {
-        id: `${baseObj.id}-back`,
-        name: `${baseObj.name}-back`,
-        // Align top edges when front/back heights differ.
-        position: { x: 0, y: -CARD_FACE_SEPARATION, z: backZOffset },
-        rotation: { x: -90, y: 180, z: 0 },
-        components: buildQuadMeshComponents(
-          `${baseObj.id}-back`,
-          backTextureValue,
-          false,
-          {
-            x: cardWidth,
-            y: backHeight,
-          },
-          backBlendMode
-        ),
-        children: [],
-      },
-    ],
-  };
+      .addBoxCollider({ x: cardWidth, y: 0.01, z: parentHeight })
+      .addGrabbable()
+      .addChild(frontSlot)
+      .addChild(backSlot)
+      .build()
+  );
 }

@@ -1,13 +1,9 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import {
-  buildBoxColliderComponent,
-  buildQuadMeshComponents,
-  BlendModeValue,
-  resolveTextureValue,
-} from './componentBuilders';
+import { BlendModeValue, resolveTextureValue } from './componentBuilders';
 import { lookupImageBlendMode } from '../imageAspectRatioMap';
+import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 
 function resolveBlendMode(
   identifier: string | undefined,
@@ -30,30 +26,15 @@ export function convertTable(
   const textureIdentifier = udonObj.images[0]?.identifier;
   const textureValue = resolveTextureValue(textureIdentifier, textureMap);
   const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
-  const tableVisual: ResoniteObject = {
+  const tableVisual = new ResoniteObjectBuilder({
     id: surfaceId,
     name: `${baseObj.name}-surface`,
     position: { x: udonObj.width / 2, y: 0, z: -udonObj.height / 2 },
     rotation: { x: 90, y: 0, z: 0 },
-    components: [
-      ...buildQuadMeshComponents(
-        surfaceId,
-        textureValue,
-        false,
-        {
-          x: udonObj.width,
-          y: udonObj.height,
-        },
-        blendMode
-      ),
-      buildBoxColliderComponent(surfaceId, {
-        x: udonObj.width,
-        y: udonObj.height,
-        z: 0,
-      }),
-    ],
-    children: [],
-  };
+  })
+    .addQuadMesh(textureValue, false, { x: udonObj.width, y: udonObj.height }, blendMode)
+    .addBoxCollider({ x: udonObj.width, y: udonObj.height, z: 0 })
+    .build();
 
   const convertedChildren =
     convertObject && udonObj.children.length > 0
@@ -61,10 +42,10 @@ export function convertTable(
       : [];
 
   // Keep table container unrotated so child object positions stay stable.
-  return {
+  return new ResoniteObjectBuilder({
     ...baseObj,
     rotation: { x: 0, y: 0, z: 0 },
-    components: [],
-    children: [tableVisual, ...convertedChildren],
-  };
+  })
+    .addChildren([tableVisual, ...convertedChildren])
+    .build();
 }

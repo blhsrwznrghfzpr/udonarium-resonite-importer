@@ -1,0 +1,304 @@
+import { describe, expect, it } from 'vitest';
+import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
+
+function makeSpec(id = 'slot-abc') {
+  return {
+    id,
+    name: 'Test',
+    position: { x: 0, y: 0, z: 0 },
+    rotation: { x: 0, y: 0, z: 0 },
+  };
+}
+
+describe('ResoniteObjectBuilder', () => {
+  describe('build()', () => {
+    it('returns a ResoniteObject with the given spec', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('my-slot')).build();
+
+      expect(result.id).toBe('my-slot');
+      expect(result.name).toBe('Test');
+      expect(result.position).toEqual({ x: 0, y: 0, z: 0 });
+      expect(result.rotation).toEqual({ x: 0, y: 0, z: 0 });
+    });
+
+    it('starts with empty components and children', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).build();
+
+      expect(result.components).toEqual([]);
+      expect(result.children).toEqual([]);
+    });
+
+    it('returns a shallow copy so further mutations do not affect prior build results', () => {
+      const builder = new ResoniteObjectBuilder(makeSpec());
+      const first = builder.build();
+      builder.addGrabbable();
+      const second = builder.build();
+
+      expect(first.components).toHaveLength(0);
+      expect(second.components).toHaveLength(1);
+    });
+  });
+
+  describe('addQuadMesh()', () => {
+    it('derives all component IDs from the slot ID', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('s1'))
+        .addQuadMesh('texture://img.png')
+        .build();
+
+      for (const c of result.components) {
+        expect(c.id).toMatch(/^s1-/);
+      }
+    });
+
+    it('adds QuadMesh, StaticTexture2D, XiexeToonMaterial, MainTexturePropertyBlock, MeshRenderer when texture is given', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).addQuadMesh('texture://img.png').build();
+
+      expect(result.components.map((c) => c.type)).toEqual([
+        '[FrooxEngine]FrooxEngine.QuadMesh',
+        '[FrooxEngine]FrooxEngine.StaticTexture2D',
+        '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
+        '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
+        '[FrooxEngine]FrooxEngine.MeshRenderer',
+      ]);
+    });
+
+    it('adds DualSided field when dualSided=true', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).addQuadMesh(undefined, true).build();
+
+      const quad = result.components.find((c) => c.type.endsWith('QuadMesh'));
+      expect(quad?.fields).toMatchObject({ DualSided: { $type: 'bool', value: true } });
+    });
+
+    it('applies the given size to the QuadMesh', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addQuadMesh(undefined, false, { x: 2, y: 3 })
+        .build();
+
+      const quad = result.components.find((c) => c.type.endsWith('QuadMesh'));
+      expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
+    });
+
+    it('applies the given blendMode to the material', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
+        .build();
+
+      const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(mat?.fields.BlendMode).toEqual({
+        $type: 'enum',
+        value: 'Alpha',
+        enumType: 'BlendMode',
+      });
+    });
+
+    it('returns this for chaining', () => {
+      const builder = new ResoniteObjectBuilder(makeSpec());
+      expect(builder.addQuadMesh()).toBe(builder);
+    });
+  });
+
+  describe('addBoxCollider()', () => {
+    it('derives the component ID from the slot ID', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('s2'))
+        .addBoxCollider({ x: 1, y: 1, z: 1 })
+        .build();
+
+      const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
+      expect(collider?.id).toBe('s2-collider');
+    });
+
+    it('sets the Size field', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addBoxCollider({ x: 2, y: 3, z: 4 })
+        .build();
+
+      const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
+      expect(collider?.fields.Size).toEqual({ $type: 'float3', value: { x: 2, y: 3, z: 4 } });
+    });
+
+    it('adds CharacterCollider field when option is set', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addBoxCollider({ x: 1, y: 1, z: 1 }, { characterCollider: true })
+        .build();
+
+      const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
+      expect(collider?.fields.CharacterCollider).toEqual({ $type: 'bool', value: true });
+    });
+
+    it('does not add CharacterCollider when option is not set', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addBoxCollider({ x: 1, y: 1, z: 1 })
+        .build();
+
+      const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
+      expect(collider?.fields.CharacterCollider).toBeUndefined();
+    });
+
+    it('returns this for chaining', () => {
+      const builder = new ResoniteObjectBuilder(makeSpec());
+      expect(builder.addBoxCollider({ x: 1, y: 1, z: 1 })).toBe(builder);
+    });
+  });
+
+  describe('addGrabbable()', () => {
+    it('derives the component ID from the slot ID', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('s3')).addGrabbable().build();
+
+      const grabbable = result.components.find((c) => c.type.endsWith('Grabbable'));
+      expect(grabbable?.id).toBe('s3-grabbable');
+    });
+
+    it('sets Scalable: true', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).addGrabbable().build();
+
+      const grabbable = result.components.find((c) => c.type.endsWith('Grabbable'));
+      expect(grabbable?.fields).toEqual({ Scalable: { $type: 'bool', value: true } });
+    });
+
+    it('returns this for chaining', () => {
+      const builder = new ResoniteObjectBuilder(makeSpec());
+      expect(builder.addGrabbable()).toBe(builder);
+    });
+  });
+
+  describe('addTextComponent()', () => {
+    it('derives the component ID from the slot ID', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('s4'))
+        .addTextComponent('Hello', 16)
+        .build();
+
+      const text = result.components.find((c) => c.type.endsWith('UIX.Text'));
+      expect(text?.id).toBe('s4-text');
+    });
+
+    it('sets Content and Size fields', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).addTextComponent('Hello', 16).build();
+
+      const text = result.components.find((c) => c.type.endsWith('UIX.Text'));
+      expect(text?.fields).toEqual({
+        Content: { $type: 'string', value: 'Hello' },
+        Size: { $type: 'float', value: 16 },
+      });
+    });
+  });
+
+  describe('setMaterialColor()', () => {
+    it('adds a Color field to the XiexeToonMaterial', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
+        .setMaterialColor({ r: 0.5, g: 0.5, b: 0.5, a: 0.8, profile: 'Linear' })
+        .build();
+
+      const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(mat?.fields.Color).toEqual({
+        $type: 'colorX',
+        value: { r: 0.5, g: 0.5, b: 0.5, a: 0.8, profile: 'Linear' },
+      });
+    });
+
+    it('preserves existing material fields when setting color', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
+        .setMaterialColor({ r: 0, g: 0, b: 0, a: 1, profile: 'Linear' })
+        .build();
+
+      const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(mat?.fields.BlendMode).toEqual({
+        $type: 'enum',
+        value: 'Alpha',
+        enumType: 'BlendMode',
+      });
+    });
+
+    it('is a no-op when no material component exists', () => {
+      const result = new ResoniteObjectBuilder(makeSpec())
+        .addBoxCollider({ x: 1, y: 1, z: 1 })
+        .setMaterialColor({ r: 1, g: 1, b: 1, a: 1, profile: 'Linear' })
+        .build();
+
+      expect(result.components).toHaveLength(1);
+    });
+  });
+
+  describe('addChild() / addChildren()', () => {
+    const childA = {
+      id: 'child-a',
+      name: 'A',
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      components: [],
+      children: [],
+    };
+    const childB = { ...childA, id: 'child-b', name: 'B' };
+
+    it('addChild appends one child', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).addChild(childA).build();
+
+      expect(result.children).toHaveLength(1);
+      expect(result.children[0].id).toBe('child-a');
+    });
+
+    it('addChildren appends multiple children in order', () => {
+      const result = new ResoniteObjectBuilder(makeSpec()).addChildren([childA, childB]).build();
+
+      expect(result.children.map((c) => c.id)).toEqual(['child-a', 'child-b']);
+    });
+
+    it('addChild returns this for chaining', () => {
+      const builder = new ResoniteObjectBuilder(makeSpec());
+      expect(builder.addChild(childA)).toBe(builder);
+    });
+
+    it('addChildren returns this for chaining', () => {
+      const builder = new ResoniteObjectBuilder(makeSpec());
+      expect(builder.addChildren([childA])).toBe(builder);
+    });
+  });
+
+  describe('method chaining', () => {
+    it('produces the correct component order when chaining multiple add methods', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('s5'))
+        .addQuadMesh('texture://img.png', true, { x: 2, y: 3 }, 'Opaque')
+        .addBoxCollider({ x: 2, y: 3, z: 0.05 })
+        .addGrabbable()
+        .build();
+
+      expect(result.components.map((c) => c.type)).toEqual([
+        '[FrooxEngine]FrooxEngine.QuadMesh',
+        '[FrooxEngine]FrooxEngine.StaticTexture2D',
+        '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
+        '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
+        '[FrooxEngine]FrooxEngine.MeshRenderer',
+        '[FrooxEngine]FrooxEngine.BoxCollider',
+        '[FrooxEngine]FrooxEngine.Grabbable',
+      ]);
+    });
+
+    it('all component IDs are derived from the same slot ID', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('my-id'))
+        .addQuadMesh('texture://img.png')
+        .addBoxCollider({ x: 1, y: 1, z: 1 })
+        .addGrabbable()
+        .build();
+
+      for (const c of result.components) {
+        expect(c.id).toMatch(/^my-id-/);
+      }
+    });
+  });
+
+  describe('optional ResoniteObject fields', () => {
+    it('preserves sourceType, locationName, isActive from spec', () => {
+      const result = new ResoniteObjectBuilder({
+        ...makeSpec(),
+        sourceType: 'character',
+        locationName: 'table',
+        isActive: false,
+      }).build();
+
+      expect(result.sourceType).toBe('character');
+      expect(result.locationName).toBe('table');
+      expect(result.isActive).toBe(false);
+    });
+  });
+});

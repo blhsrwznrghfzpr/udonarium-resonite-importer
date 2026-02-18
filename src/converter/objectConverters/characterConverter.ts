@@ -1,14 +1,9 @@
 import { GameCharacter } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import {
-  buildBoxColliderComponent,
-  buildGrabbableComponent,
-  buildQuadMeshComponents,
-  BlendModeValue,
-  resolveTextureValue,
-} from './componentBuilders';
+import { BlendModeValue, resolveTextureValue } from './componentBuilders';
 import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
+import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 
 const DEFAULT_CHARACTER_ASPECT_RATIO = 1;
 
@@ -39,46 +34,27 @@ export function convertCharacter(
     : DEFAULT_CHARACTER_ASPECT_RATIO;
   const meshHeight = meshWidth * meshAspectRatio;
   const hasCharacterImage = !!textureIdentifier;
-  const components = hasCharacterImage
-    ? (() => {
-        const textureValue = resolveTextureValue(textureIdentifier, textureMap);
-        const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
-        return [
-          ...buildQuadMeshComponents(
-            baseObj.id,
-            textureValue,
-            true,
-            {
-              x: meshWidth,
-              y: meshHeight,
-            },
-            blendMode
-          ),
-          buildBoxColliderComponent(baseObj.id, {
-            x: meshWidth,
-            y: meshHeight,
-            z: 0.05,
-          }),
-          buildGrabbableComponent(baseObj.id),
-        ];
-      })()
-    : [
-        buildBoxColliderComponent(baseObj.id, {
-          x: meshWidth,
-          y: size.y,
-          z: 0.05,
-        }),
-        buildGrabbableComponent(baseObj.id),
-      ];
+
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  return {
+  const builder = new ResoniteObjectBuilder({
     ...baseObj,
-    components,
     position: {
       x: baseObj.position.x + meshWidth / 2,
       y: baseObj.position.y + (hasCharacterImage ? meshHeight : size.y) / 2,
       z: baseObj.position.z - meshWidth / 2,
     },
     rotation: { x: 0, y: udonObj.rotate ?? 0, z: udonObj.roll ?? 0 },
-  };
+  });
+
+  if (hasCharacterImage) {
+    const textureValue = resolveTextureValue(textureIdentifier, textureMap);
+    const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
+    builder
+      .addQuadMesh(textureValue, true, { x: meshWidth, y: meshHeight }, blendMode)
+      .addBoxCollider({ x: meshWidth, y: meshHeight, z: 0.05 });
+  } else {
+    builder.addBoxCollider({ x: meshWidth, y: size.y, z: 0.05 });
+  }
+
+  return builder.addGrabbable().build();
 }

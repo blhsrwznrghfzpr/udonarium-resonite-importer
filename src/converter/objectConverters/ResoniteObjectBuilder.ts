@@ -1,0 +1,104 @@
+import { ResoniteObject } from '../../domain/ResoniteObject';
+import {
+  BlendModeValue,
+  buildBoxColliderComponent,
+  buildGrabbableComponent,
+  buildQuadMeshComponents,
+} from './componentBuilders';
+
+type QuadSize = { x: number; y: number };
+type BoxSize = { x: number; y: number; z: number };
+type ColorXValue = { r: number; g: number; b: number; a: number; profile: string };
+
+type ResoniteObjectSpec = Omit<ResoniteObject, 'components' | 'children'>;
+
+/**
+ * Fluent builder for ResoniteObject.
+ *
+ * Component IDs are always derived from the slot's own ID, eliminating the
+ * possibility of accidentally passing a mismatched slotId to buildXXX functions.
+ */
+export class ResoniteObjectBuilder {
+  private readonly obj: ResoniteObject;
+
+  constructor(spec: ResoniteObjectSpec) {
+    this.obj = {
+      ...spec,
+      components: [],
+      children: [],
+    };
+  }
+
+  addQuadMesh(
+    textureValue?: string,
+    dualSided = false,
+    size: QuadSize = { x: 1, y: 1 },
+    blendMode: BlendModeValue = 'Cutout'
+  ): this {
+    this.obj.components.push(
+      ...buildQuadMeshComponents(this.obj.id, textureValue, dualSided, size, blendMode)
+    );
+    return this;
+  }
+
+  addBoxCollider(size: BoxSize, options?: { characterCollider?: boolean }): this {
+    const collider = buildBoxColliderComponent(this.obj.id, size);
+    if (options?.characterCollider) {
+      collider.fields.CharacterCollider = { $type: 'bool', value: true };
+    }
+    this.obj.components.push(collider);
+    return this;
+  }
+
+  addGrabbable(): this {
+    this.obj.components.push(buildGrabbableComponent(this.obj.id));
+    return this;
+  }
+
+  addTextComponent(content: string, size: number): this {
+    this.obj.components.push({
+      id: `${this.obj.id}-text`,
+      type: '[FrooxEngine]FrooxEngine.UIX.Text',
+      fields: {
+        Content: { $type: 'string', value: content },
+        Size: { $type: 'float', value: size },
+      },
+    });
+    return this;
+  }
+
+  /**
+   * Modifies the Color field on the most recently added XiexeToonMaterial component.
+   * Must be called after addQuadMesh().
+   */
+  setMaterialColor(color: ColorXValue): this {
+    const material = this.obj.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
+    );
+    if (material) {
+      material.fields = {
+        ...material.fields,
+        Color: { $type: 'colorX', value: color },
+      };
+    }
+    return this;
+  }
+
+  addChild(child: ResoniteObject): this {
+    this.obj.children.push(child);
+    return this;
+  }
+
+  addChildren(children: ResoniteObject[]): this {
+    this.obj.children.push(...children);
+    return this;
+  }
+
+  build(): ResoniteObject {
+    return {
+      ...this.obj,
+      components: [...this.obj.components],
+      children: [...this.obj.children],
+    };
+  }
+}
