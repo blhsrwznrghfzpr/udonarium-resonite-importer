@@ -1,7 +1,7 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from './componentBuilders';
+import { BlendModeValue, resolveTextureValue } from './textureUtils';
 import { lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 

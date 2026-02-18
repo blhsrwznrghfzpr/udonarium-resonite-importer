@@ -1,7 +1,7 @@
 import { GameCharacter } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from './componentBuilders';
+import { BlendModeValue, resolveTextureValue } from './textureUtils';
 import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 

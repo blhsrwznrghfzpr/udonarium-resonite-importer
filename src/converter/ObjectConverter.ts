@@ -15,7 +15,7 @@ import { convertTerrain } from './objectConverters/terrainConverter';
 import { convertTable } from './objectConverters/tableConverter';
 import { convertTableMask } from './objectConverters/tableMaskConverter';
 import { convertTextNote } from './objectConverters/textNoteConverter';
-import { replaceTexturesInValue } from './objectConverters/componentBuilders';
+import { replaceTexturesInValue } from './objectConverters/textureUtils';
 
 const SLOT_ID_PREFIX = 'udon-imp';
 

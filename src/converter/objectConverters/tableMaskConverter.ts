@@ -1,6 +1,6 @@
 import { TableMask } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import { resolveTextureValue } from './componentBuilders';
+import { resolveTextureValue } from './textureUtils';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 
 const TABLE_MASK_Y_OFFSET = 0.002;

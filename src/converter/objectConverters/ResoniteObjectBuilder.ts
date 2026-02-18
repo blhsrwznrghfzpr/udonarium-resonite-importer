@@ -1,5 +1,5 @@
 import { ResoniteComponent, ResoniteObject } from '../../domain/ResoniteObject';
-import { BlendModeValue, ColorXValue } from './componentBuilders';
+import { BlendModeValue, ColorXValue } from './textureUtils';
 
 // ---- private constants ----
 const TEXTURE_REFERENCE_PREFIX = 'texture-ref://';

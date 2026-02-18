@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
-import { toTextureReference } from './componentBuilders';
+import { toTextureReference } from './textureUtils';
 
 function makeSpec(id = 'slot-abc') {
   return {
