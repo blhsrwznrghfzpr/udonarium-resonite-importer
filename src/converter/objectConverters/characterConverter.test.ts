@@ -51,7 +51,6 @@ describe('convertCharacter', () => {
     ]);
     expect(result.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 0.3, y: 0.3 } },
-      DualSided: { $type: 'bool', value: true },
     });
     expect(result.position.x).toBe(0.15);
     expect(result.position.z).toBe(-0.15);
@@ -67,6 +66,7 @@ describe('convertCharacter', () => {
       BlendMode: { $type: 'enum', value: 'Opaque', enumType: 'BlendMode' },
       ShadowRamp: { $type: 'reference', targetId: null },
       ShadowSharpness: { $type: 'float', value: 0 },
+      Culling: { $type: 'enum', value: 'Off', enumType: 'Culling' },
     });
     const textureBlockComponent = result.components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock'

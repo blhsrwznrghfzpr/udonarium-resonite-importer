@@ -19,18 +19,27 @@ function buildMaterialKey(component: ResoniteComponent): string | undefined {
 
   const colorHex = extractColorHexWithAlpha(component.fields) ?? '#FFFFFFFF';
   const blendMode = extractBlendMode(component.fields) ?? 'Unknown';
-  return `xiexe-toon:${colorHex}:${blendMode}`;
+  const culling = extractCulling(component.fields) ?? 'Default';
+  return `xiexe-toon:${colorHex}:${blendMode}:${culling}`;
 }
 
 function buildMaterialName(key: string): string {
-  const [, colorHex = '#FFFFFFFF', blendMode = 'Unknown'] = key.split(':');
-  return `XiexeToon_${blendMode}_${colorHex.slice(1)}`;
+  const [, colorHex = '#FFFFFFFF', blendMode = 'Unknown', culling = 'Default'] = key.split(':');
+  return `XiexeToon_${blendMode}_${culling}_${colorHex.slice(1)}`;
 }
 
 function extractBlendMode(fields: Record<string, unknown>): string | undefined {
   const blendModeField = fields.BlendMode as { value?: unknown } | undefined;
   if (typeof blendModeField?.value === 'string' && blendModeField.value.length > 0) {
     return blendModeField.value;
+  }
+  return undefined;
+}
+
+function extractCulling(fields: Record<string, unknown>): string | undefined {
+  const cullingField = fields.Culling as { value?: unknown } | undefined;
+  if (typeof cullingField?.value === 'string' && cullingField.value.length > 0) {
+    return cullingField.value;
   }
   return undefined;
 }
