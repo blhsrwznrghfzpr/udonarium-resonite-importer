@@ -1,5 +1,8 @@
 const TEXTURE_PLACEHOLDER_PREFIX = 'texture://';
 const TEXTURE_REFERENCE_PREFIX = 'texture-ref://';
+const GIF_EXTENSION_PATTERN = /\.gif(?:$|[?#])/i;
+const SHARED_TEXTURE_COMPONENT_SUFFIX = '-static-texture';
+const SHARED_TEXTURE_PROPERTY_BLOCK_SUFFIX = '-main-texture-property-block';
 
 export type BlendModeValue = 'Cutout' | 'Opaque' | 'Alpha';
 export type ColorXValue = { r: number; g: number; b: number; a: number; profile: string };
@@ -48,4 +51,31 @@ export function replaceTexturesInValue(value: unknown, textureMap: Map<string, s
     replaced[key] = replaceTexturesInValue(item, textureMap);
   }
   return replaced;
+}
+
+export function isGifTexture(textureValue: string): boolean {
+  if (textureValue.startsWith(TEXTURE_REFERENCE_PREFIX)) {
+    return false;
+  }
+  if (textureValue.startsWith(TEXTURE_PLACEHOLDER_PREFIX)) {
+    return GIF_EXTENSION_PATTERN.test(textureValue.slice(TEXTURE_PLACEHOLDER_PREFIX.length));
+  }
+  return GIF_EXTENSION_PATTERN.test(textureValue);
+}
+
+export function parseTextureReferenceId(textureValue?: string): string | undefined {
+  if (!textureValue || !textureValue.startsWith(TEXTURE_REFERENCE_PREFIX)) {
+    return undefined;
+  }
+  return textureValue.slice(TEXTURE_REFERENCE_PREFIX.length);
+}
+
+export function toSharedTexturePropertyBlockId(textureComponentId: string): string {
+  if (textureComponentId.endsWith(SHARED_TEXTURE_COMPONENT_SUFFIX)) {
+    return (
+      textureComponentId.slice(0, -SHARED_TEXTURE_COMPONENT_SUFFIX.length) +
+      SHARED_TEXTURE_PROPERTY_BLOCK_SUFFIX
+    );
+  }
+  return `${textureComponentId}${SHARED_TEXTURE_PROPERTY_BLOCK_SUFFIX}`;
 }

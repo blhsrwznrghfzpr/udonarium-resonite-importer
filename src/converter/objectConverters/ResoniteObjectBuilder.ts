@@ -1,12 +1,11 @@
 import { ResoniteComponent, ResoniteObject } from '../../domain/ResoniteObject';
-import { BlendModeValue, ColorXValue } from './textureUtils';
-
-// ---- private constants ----
-const TEXTURE_REFERENCE_PREFIX = 'texture-ref://';
-const TEXTURE_PLACEHOLDER_PREFIX = 'texture://';
-const GIF_EXTENSION_PATTERN = /\.gif(?:$|[?#])/i;
-const SHARED_TEXTURE_COMPONENT_SUFFIX = '-static-texture';
-const SHARED_TEXTURE_PROPERTY_BLOCK_SUFFIX = '-main-texture-property-block';
+import {
+  BlendModeValue,
+  ColorXValue,
+  isGifTexture,
+  parseTextureReferenceId,
+  toSharedTexturePropertyBlockId,
+} from './textureUtils';
 
 // ---- private types ----
 type QuadSize = { x: number; y: number };
@@ -51,16 +50,6 @@ function buildXiexeToonMaterialFields(
   };
 }
 
-function isGifTexture(textureValue: string): boolean {
-  if (textureValue.startsWith(TEXTURE_REFERENCE_PREFIX)) {
-    return false;
-  }
-  if (textureValue.startsWith(TEXTURE_PLACEHOLDER_PREFIX)) {
-    return GIF_EXTENSION_PATTERN.test(textureValue.slice(TEXTURE_PLACEHOLDER_PREFIX.length));
-  }
-  return GIF_EXTENSION_PATTERN.test(textureValue);
-}
-
 function buildStaticTexture2DFields(textureValue: string): StaticTexture2DFields {
   const fields: StaticTexture2DFields = {
     URL: { $type: 'Uri', value: textureValue },
@@ -71,23 +60,6 @@ function buildStaticTexture2DFields(textureValue: string): StaticTexture2DFields
     fields.FilterMode = { $type: 'enum?', value: 'Point', enumType: 'TextureFilterMode' };
   }
   return fields;
-}
-
-function parseTextureReferenceId(textureValue?: string): string | undefined {
-  if (!textureValue || !textureValue.startsWith(TEXTURE_REFERENCE_PREFIX)) {
-    return undefined;
-  }
-  return textureValue.slice(TEXTURE_REFERENCE_PREFIX.length);
-}
-
-function toSharedTexturePropertyBlockId(textureComponentId: string): string {
-  if (textureComponentId.endsWith(SHARED_TEXTURE_COMPONENT_SUFFIX)) {
-    return (
-      textureComponentId.slice(0, -SHARED_TEXTURE_COMPONENT_SUFFIX.length) +
-      SHARED_TEXTURE_PROPERTY_BLOCK_SUFFIX
-    );
-  }
-  return `${textureComponentId}${SHARED_TEXTURE_PROPERTY_BLOCK_SUFFIX}`;
 }
 
 function buildQuadMeshComponents(
