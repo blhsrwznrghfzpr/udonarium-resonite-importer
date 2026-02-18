@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
+import { toTextureReference } from './componentBuilders';
 
 function makeSpec(id = 'slot-abc') {
   return {
@@ -294,6 +295,40 @@ describe('ResoniteObjectBuilder', () => {
       for (const c of result.components) {
         expect(c.id).toMatch(/^my-id-/);
       }
+    });
+  });
+
+  describe('addQuadMesh() with shared texture reference', () => {
+    it('uses shared StaticTexture2D references without creating local texture components', () => {
+      const result = new ResoniteObjectBuilder(makeSpec('slot-1'))
+        .addQuadMesh(toTextureReference('shared-texture-id'))
+        .build();
+
+      expect(result.components.find((c) => c.type.endsWith('StaticTexture2D'))).toBeUndefined();
+
+      const material = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(material?.fields).toEqual({
+        BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
+        ShadowRamp: { $type: 'reference', targetId: null },
+        ShadowSharpness: { $type: 'float', value: 0 },
+      });
+
+      expect(
+        result.components.find((c) => c.type.endsWith('MainTexturePropertyBlock'))
+      ).toBeUndefined();
+
+      const renderer = result.components.find((c) => c.type.endsWith('MeshRenderer'));
+      expect(renderer?.fields.MaterialPropertyBlocks).toEqual({
+        $type: 'list',
+        elements: [
+          {
+            $type: 'reference',
+            targetId: 'shared-texture-id-main-texture-property-block',
+          },
+        ],
+      });
+
+      expect(material).toBeDefined();
     });
   });
 
