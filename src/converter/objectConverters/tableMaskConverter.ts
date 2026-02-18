@@ -38,8 +38,7 @@ export function convertTableMask(
       z: baseObj.position.z - udonObj.height / 2,
     },
   })
-    .addQuadMesh(textureValue, true, { x: udonObj.width, y: udonObj.height }, 'Alpha')
-    .setMaterialColor({
+    .addQuadMesh(textureValue, true, { x: udonObj.width, y: udonObj.height }, 'Alpha', {
       r: colorValue,
       g: colorValue,
       b: colorValue,

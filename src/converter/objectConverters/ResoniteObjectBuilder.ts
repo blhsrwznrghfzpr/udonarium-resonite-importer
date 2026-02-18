@@ -33,11 +33,20 @@ export class ResoniteObjectBuilder {
     textureValue?: string,
     dualSided = false,
     size: QuadSize = { x: 1, y: 1 },
-    blendMode: BlendModeValue = 'Cutout'
+    blendMode: BlendModeValue = 'Cutout',
+    color?: ColorXValue
   ): this {
     this.obj.components.push(
       ...buildQuadMeshComponents(this.obj.id, textureValue, dualSided, size, blendMode)
     );
+    if (color !== undefined) {
+      const material = this.obj.components.find(
+        (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
+      );
+      if (material) {
+        material.fields = { ...material.fields, Color: { $type: 'colorX', value: color } };
+      }
+    }
     return this;
   }
 
@@ -64,23 +73,6 @@ export class ResoniteObjectBuilder {
         Size: { $type: 'float', value: size },
       },
     });
-    return this;
-  }
-
-  /**
-   * Modifies the Color field on the most recently added XiexeToonMaterial component.
-   * Must be called after addQuadMesh().
-   */
-  setMaterialColor(color: ColorXValue): this {
-    const material = this.obj.components.find(
-      (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
-    );
-    if (material) {
-      material.fields = {
-        ...material.fields,
-        Color: { $type: 'colorX', value: color },
-      };
-    }
     return this;
   }
 

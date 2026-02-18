@@ -182,11 +182,16 @@ describe('ResoniteObjectBuilder', () => {
     });
   });
 
-  describe('setMaterialColor()', () => {
-    it('adds a Color field to the XiexeToonMaterial', () => {
+  describe('addQuadMesh() color option', () => {
+    it('adds a Color field to the XiexeToonMaterial when color is given', () => {
       const result = new ResoniteObjectBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
-        .setMaterialColor({ r: 0.5, g: 0.5, b: 0.5, a: 0.8, profile: 'Linear' })
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha', {
+          r: 0.5,
+          g: 0.5,
+          b: 0.5,
+          a: 0.8,
+          profile: 'Linear',
+        })
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -196,10 +201,15 @@ describe('ResoniteObjectBuilder', () => {
       });
     });
 
-    it('preserves existing material fields when setting color', () => {
+    it('preserves existing material fields (e.g. BlendMode) alongside color', () => {
       const result = new ResoniteObjectBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
-        .setMaterialColor({ r: 0, g: 0, b: 0, a: 1, profile: 'Linear' })
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha', {
+          r: 0,
+          g: 0,
+          b: 0,
+          a: 1,
+          profile: 'Linear',
+        })
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -210,13 +220,13 @@ describe('ResoniteObjectBuilder', () => {
       });
     });
 
-    it('is a no-op when no material component exists', () => {
+    it('does not add Color field when color is not given', () => {
       const result = new ResoniteObjectBuilder(makeSpec())
-        .addBoxCollider({ x: 1, y: 1, z: 1 })
-        .setMaterialColor({ r: 1, g: 1, b: 1, a: 1, profile: 'Linear' })
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
         .build();
 
-      expect(result.components).toHaveLength(1);
+      const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(mat?.fields.Color).toBeUndefined();
     });
   });
 
