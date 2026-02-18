@@ -45,6 +45,9 @@ const portHelpPanel = document.getElementById('port-help-panel') as HTMLElement;
 const hostInput = document.getElementById('host') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
 const rootScaleInput = document.getElementById('root-scale') as HTMLInputElement;
+const lockedTerrainCharacterColliderInput = document.getElementById(
+  'locked-terrain-character-collider'
+) as HTMLInputElement;
 const importBtn = document.getElementById('import-btn') as HTMLButtonElement;
 const importLog = document.getElementById('import-log') as HTMLElement;
 const progressArea = document.getElementById('progress-area') as HTMLElement;
@@ -253,6 +256,7 @@ importBtn.addEventListener('click', () => {
       host: hostInput.value || 'localhost',
       port: parsePortOrNull(portInput.value) ?? DEFAULT_PORT,
       rootScale: parseFloat(rootScaleInput.value) || 1,
+      enableCharacterColliderOnLockedTerrain: lockedTerrainCharacterColliderInput.checked,
     };
     saveLastPort(options.port);
 

@@ -153,6 +153,46 @@ describe('convertTerrain', () => {
     });
   });
 
+  it('terrain (locked) does not add CharacterCollider when option is disabled', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-2-no-character-collider',
+      type: 'terrain',
+      isLocked: true,
+      mode: 3,
+      rotate: 0,
+      name: 'Locked Terrain',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      properties: new Map(),
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      undefined,
+      undefined,
+      'slot-terrain-2-no-character-collider',
+      { enableCharacterColliderOnLockedTerrain: false }
+    );
+
+    expect(result.components.map((c) => c.type)).toEqual(['[FrooxEngine]FrooxEngine.BoxCollider']);
+    expect(result.components[0].fields).toEqual({
+      Size: {
+        $type: 'float3',
+        value: {
+          x: 2,
+          y: 2,
+          z: 2,
+        },
+      },
+    });
+  });
+
   it('terrain mode=1 creates walls slot and deactivates it', () => {
     const udonObj: Terrain = {
       id: 'terrain-3',

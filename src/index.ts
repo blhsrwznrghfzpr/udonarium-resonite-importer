@@ -47,6 +47,7 @@ interface CLIOptions {
   dryRun: boolean;
   verbose: boolean;
   lang?: string;
+  enableCharacterColliderOnLockedTerrain: boolean;
 }
 
 const program = new Command();
@@ -62,6 +63,11 @@ program
     'ResoniteLink host (default: localhost, or set RESONITELINK_HOST env var)'
   )
   .option('-s, --scale <number>', 'Scale factor', String(SCALE_FACTOR))
+  .option(
+    '--enable-character-collider-on-locked-terrain',
+    'Enable CharacterCollider on locked Terrain and table visual collider',
+    false
+  )
   .option('-d, --dry-run', 'Analyze only, do not connect to Resonite', false)
   .option('-v, --verbose', 'Verbose output', false)
   .option('-l, --lang <locale>', 'Language (en, ja)', undefined)
@@ -206,7 +212,10 @@ async function run(options: CLIOptions): Promise<void> {
       parseResult.objects,
       new Map<string, string>(),
       imageAspectRatioMap,
-      imageBlendModeMap
+      imageBlendModeMap,
+      {
+        enableCharacterColliderOnLockedTerrain: options.enableCharacterColliderOnLockedTerrain,
+      }
     );
 
     console.log();
@@ -313,7 +322,10 @@ async function run(options: CLIOptions): Promise<void> {
       parseResult.objects,
       textureComponentMap,
       imageAspectRatioMap,
-      imageBlendModeMap
+      imageBlendModeMap,
+      {
+        enableCharacterColliderOnLockedTerrain: options.enableCharacterColliderOnLockedTerrain,
+      }
     );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);

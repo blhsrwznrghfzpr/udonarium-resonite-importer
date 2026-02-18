@@ -17,6 +17,7 @@ export interface ImportOptions {
   host: string;
   port: number;
   rootScale: number;
+  enableCharacterColliderOnLockedTerrain: boolean;
 }
 
 export interface ImportResult {

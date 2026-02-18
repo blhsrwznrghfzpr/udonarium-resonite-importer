@@ -236,6 +236,36 @@ describe('ObjectConverter', () => {
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       });
+
+      it('should disable CharacterCollider on locked terrain when option is false', () => {
+        const terrain: Terrain = {
+          ...createBaseObject(),
+          type: 'terrain',
+          isLocked: true,
+          mode: 3,
+          rotate: 0,
+          width: 10,
+          height: 5,
+          depth: 3,
+          wallImage: null,
+          floorImage: null,
+        };
+
+        const [result] = convertObjectsWithTextureMap([terrain], new Map(), undefined, undefined, {
+          enableCharacterColliderOnLockedTerrain: false,
+        });
+        const collider = result.components.find(
+          (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
+        );
+
+        expect(collider).toBeDefined();
+        expect(collider?.fields).toEqual({
+          Size: {
+            $type: 'float3',
+            value: { x: 10, y: 5, z: 3 },
+          },
+        });
+      });
     });
 
     describe('table conversion', () => {
@@ -255,6 +285,32 @@ describe('ObjectConverter', () => {
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
 
         expect(result.position.y).toBe(1);
+      });
+
+      it('should enable CharacterCollider on table visual collider when option is true', () => {
+        const table: GameTable = {
+          ...createBaseObject(),
+          type: 'table',
+          width: 20,
+          height: 20,
+          gridType: 'square',
+          gridColor: '#000000',
+          children: [],
+        };
+
+        const [result] = convertObjectsWithTextureMap([table], new Map(), undefined, undefined, {
+          enableCharacterColliderOnLockedTerrain: true,
+        });
+        const visual = result.children[0];
+        const collider = visual.components.find(
+          (c) => c.type === '[FrooxEngine]FrooxEngine.BoxCollider'
+        );
+
+        expect(collider).toBeDefined();
+        expect(collider?.fields).toEqual({
+          Size: { $type: 'float3', value: { x: 20, y: 20, z: 0 } },
+          CharacterCollider: { $type: 'bool', value: true },
+        });
       });
     });
 

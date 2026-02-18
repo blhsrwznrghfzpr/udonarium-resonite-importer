@@ -149,7 +149,7 @@ ipcMain.handle('analyze-zip', (_event: IpcMainInvokeEvent, ...args: unknown[]): 
 });
 
 async function handleImportToResonite(options: ImportOptions): Promise<ImportResult> {
-  const { filePath, host, port, rootScale } = options;
+  const { filePath, host, port, rootScale, enableCharacterColliderOnLockedTerrain } = options;
 
   const sendProgress = (step: string, progress: number, detail?: string) => {
     mainWindow?.webContents.send('import-progress', {
@@ -238,7 +238,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       parseResult.objects,
       textureComponentMap,
       imageAspectRatioMap,
-      imageBlendModeMap
+      imageBlendModeMap,
+      { enableCharacterColliderOnLockedTerrain }
     );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);

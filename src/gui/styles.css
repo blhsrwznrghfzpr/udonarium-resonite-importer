@@ -386,6 +386,21 @@ header .subtitle {
   outline: none;
 }
 
+.setting-item-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-item-checkbox label {
+  margin-bottom: 0;
+}
+
+.setting-item-checkbox input[type='checkbox'] {
+  width: auto;
+  padding: 0;
+}
+
 .hint {
   font-size: 0.85rem;
   color: #888;

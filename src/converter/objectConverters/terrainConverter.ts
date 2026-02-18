@@ -36,7 +36,8 @@ export function convertTerrain(
   basePosition: Vector3,
   textureMap?: Map<string, string>,
   imageBlendModeMap?: Map<string, ImageBlendMode>,
-  slotId?: string
+  slotId?: string,
+  options?: { enableCharacterColliderOnLockedTerrain?: boolean }
 ): ResoniteObject {
   const topTextureIdentifier =
     udonObj.floorImage?.identifier ??
@@ -137,7 +138,10 @@ export function convertTerrain(
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   mainBuilder.addBoxCollider(
     { x: udonObj.width, y: udonObj.height, z: udonObj.depth },
-    { characterCollider: udonObj.isLocked }
+    {
+      characterCollider:
+        udonObj.isLocked && (options?.enableCharacterColliderOnLockedTerrain ?? true),
+    }
   );
 
   if (!udonObj.isLocked) {
