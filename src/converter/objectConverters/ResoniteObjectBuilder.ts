@@ -1,6 +1,7 @@
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import {
   BlendModeValue,
+  ColorXValue,
   buildBoxColliderComponent,
   buildGrabbableComponent,
   buildQuadMeshComponents,
@@ -8,7 +9,6 @@ import {
 
 type QuadSize = { x: number; y: number };
 type BoxSize = { x: number; y: number; z: number };
-type ColorXValue = { r: number; g: number; b: number; a: number; profile: string };
 
 type ResoniteObjectSpec = Omit<ResoniteObject, 'components' | 'children'>;
 
@@ -37,16 +37,8 @@ export class ResoniteObjectBuilder {
     color?: ColorXValue
   ): this {
     this.obj.components.push(
-      ...buildQuadMeshComponents(this.obj.id, textureValue, dualSided, size, blendMode)
+      ...buildQuadMeshComponents(this.obj.id, textureValue, dualSided, size, blendMode, color)
     );
-    if (color !== undefined) {
-      const material = this.obj.components.find(
-        (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
-      );
-      if (material) {
-        material.fields = { ...material.fields, Color: { $type: 'colorX', value: color } };
-      }
-    }
     return this;
   }
 

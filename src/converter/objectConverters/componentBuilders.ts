@@ -16,6 +16,7 @@ type QuadSize = { x: number; y: number };
 type BoxSize = { x: number; y: number; z: number };
 
 export type BlendModeValue = 'Cutout' | 'Opaque' | 'Alpha';
+export type ColorXValue = { r: number; g: number; b: number; a: number; profile: string };
 type BlendModeField = { $type: 'enum'; value: BlendModeValue; enumType: 'BlendMode' };
 type MainTexturePropertyBlockFields = {
   Texture: { $type: 'reference'; targetId: string };
@@ -24,6 +25,7 @@ type XiexeToonMaterialFields = {
   BlendMode: BlendModeField;
   ShadowRamp: { $type: 'reference'; targetId: null };
   ShadowSharpness: { $type: 'float'; value: 0 };
+  Color?: { $type: 'colorX'; value: ColorXValue };
 };
 
 function createBlendModeField(blendMode: BlendModeValue): BlendModeField {
@@ -35,12 +37,14 @@ function createBlendModeField(blendMode: BlendModeValue): BlendModeField {
 }
 
 function buildXiexeToonMaterialFields(
-  blendMode: BlendModeValue = 'Cutout'
+  blendMode: BlendModeValue = 'Cutout',
+  color?: ColorXValue
 ): XiexeToonMaterialFields {
   return {
     BlendMode: createBlendModeField(blendMode),
     ShadowRamp: { $type: 'reference', targetId: null },
     ShadowSharpness: { $type: 'float', value: 0 },
+    ...(color !== undefined ? { Color: { $type: 'colorX', value: color } } : {}),
   };
 }
 
@@ -94,7 +98,8 @@ export function buildQuadMeshComponents(
   textureValue?: string,
   dualSided: boolean = false,
   size: QuadSize = { x: 1, y: 1 },
-  blendMode: BlendModeValue = 'Cutout'
+  blendMode: BlendModeValue = 'Cutout',
+  color?: ColorXValue
 ): ResoniteComponent[] {
   const meshId = `${slotId}-mesh`;
   const materialId = `${slotId}-mat`;
@@ -129,7 +134,7 @@ export function buildQuadMeshComponents(
   components.push({
     id: materialId,
     type: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
-    fields: buildXiexeToonMaterialFields(blendMode),
+    fields: buildXiexeToonMaterialFields(blendMode, color),
   });
 
   if (textureValue && !sharedTextureId) {
