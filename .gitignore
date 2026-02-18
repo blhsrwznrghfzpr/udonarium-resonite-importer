@@ -40,3 +40,6 @@ parsed/
 yarn.lock
 pnpm-lock.yaml
 test-results.json
+
+# Local assistant workspace
+.claude/
