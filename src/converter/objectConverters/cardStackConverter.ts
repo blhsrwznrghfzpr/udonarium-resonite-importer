@@ -1,7 +1,7 @@
 import { CardStack, UdonariumObject } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import { buildBoxColliderComponent } from './componentBuilders';
 import { lookupImageAspectRatio } from '../imageAspectRatioMap';
+import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const CARD_STACK_Y_OFFSET = 0.001;
 const DEFAULT_CARD_ASPECT_RATIO = 1;
@@ -43,33 +43,32 @@ function resolveCardAspectRatio(
   return DEFAULT_CARD_ASPECT_RATIO;
 }
 
-export function applyCardStackConversion(
+export function convertCardStack(
   udonObj: CardStack,
-  resoniteObj: ResoniteObject,
+  baseObj: ResoniteObject,
   convertObject: (obj: UdonariumObject) => ResoniteObject,
   imageAspectRatioMap?: Map<string, number>
-): void {
+): ResoniteObject {
   const cardWidth = udonObj.cards[0]?.size ?? 1;
   const cardHeight = cardWidth * resolveCardAspectRatio(udonObj, imageAspectRatioMap);
-  // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  resoniteObj.position.x += cardWidth / 2;
-  resoniteObj.position.z -= cardHeight / 2;
-  resoniteObj.position.y += CARD_STACK_Y_OFFSET;
-  resoniteObj.rotation = { x: 0, y: udonObj.rotate ?? 0, z: 0 };
-  resoniteObj.components = [
-    buildBoxColliderComponent(resoniteObj.id, { x: cardWidth, y: 0.05, z: cardHeight }),
-    {
-      id: `${resoniteObj.id}-grabbable`,
-      type: '[FrooxEngine]FrooxEngine.Grabbable',
-      fields: {
-        Scalable: { $type: 'bool', value: true },
-      },
-    },
-  ];
-  resoniteObj.children = [...udonObj.cards].reverse().map((card, i) => {
-    const child = convertObject(card);
+  const stackedCards = [...udonObj.cards].reverse().map((card, i) => ({
+    ...convertObject(card),
     // Stack cards locally under the parent slot.
-    child.position = { x: 0, y: i * 0.0005, z: 0 };
-    return child;
-  });
+    position: { x: 0, y: i * 0.0005, z: 0 },
+  }));
+
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  return new ResoniteObjectBuilder({
+    ...baseObj,
+    position: {
+      x: baseObj.position.x + cardWidth / 2,
+      y: baseObj.position.y + CARD_STACK_Y_OFFSET,
+      z: baseObj.position.z - cardHeight / 2,
+    },
+    rotation: { x: 0, y: udonObj.rotate ?? 0, z: 0 },
+  })
+    .addBoxCollider({ x: cardWidth, y: 0.05, z: cardHeight })
+    .addGrabbable()
+    .addChildren(stackedCards)
+    .build();
 }

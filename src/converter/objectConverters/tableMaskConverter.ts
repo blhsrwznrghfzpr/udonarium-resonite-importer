@@ -1,10 +1,7 @@
 import { TableMask } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import {
-  buildBoxColliderComponent,
-  buildQuadMeshComponents,
-  resolveTextureValue,
-} from './componentBuilders';
+import { resolveTextureValue } from '../textureUtils';
+import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const TABLE_MASK_Y_OFFSET = 0.002;
 const TABLE_MASK_COLLIDER_THICKNESS = 0.01;
@@ -21,60 +18,38 @@ function resolveMaskOpacity(mask: TableMask): number {
   return clamp01(opacityRaw / 100);
 }
 
-export function applyTableMaskConversion(
+export function convertTableMask(
   udonObj: TableMask,
-  resoniteObj: ResoniteObject,
+  baseObj: ResoniteObject,
   textureMap?: Map<string, string>
-): void {
-  resoniteObj.rotation = { x: 90, y: 0, z: 0 };
-  resoniteObj.position.x += udonObj.width / 2;
-  resoniteObj.position.z -= udonObj.height / 2;
-  resoniteObj.position.y += TABLE_MASK_Y_OFFSET;
-
+): ResoniteObject {
   const hasMaskImage = !!udonObj.images[0]?.identifier;
   const textureValue = resolveTextureValue(udonObj.images[0]?.identifier, textureMap);
   const opacity = resolveMaskOpacity(udonObj);
   const colorValue = hasMaskImage ? 1 : 0;
-  resoniteObj.components = [
-    ...buildQuadMeshComponents(resoniteObj.id, textureValue, true, {
-      x: udonObj.width,
-      y: udonObj.height,
-    }),
-    buildBoxColliderComponent(resoniteObj.id, {
-      x: udonObj.width,
-      y: udonObj.height,
-      z: TABLE_MASK_COLLIDER_THICKNESS,
-    }),
-  ];
-  if (!udonObj.isLock) {
-    resoniteObj.components.push({
-      id: `${resoniteObj.id}-grabbable`,
-      type: '[FrooxEngine]FrooxEngine.Grabbable',
-      fields: {
-        Scalable: { $type: 'bool', value: true },
-      },
-    });
-  }
 
-  const material = resoniteObj.components.find(
-    (component) => component.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
-  );
-  if (!material) {
-    return;
-  }
-
-  material.fields = {
-    ...material.fields,
-    BlendMode: { $type: 'enum', value: 'Alpha', enumType: 'BlendMode' },
-    Color: {
-      $type: 'colorX',
-      value: {
-        r: colorValue,
-        g: colorValue,
-        b: colorValue,
-        a: opacity,
-        profile: 'Linear',
-      },
+  // Udonarium positions are edge-based; Resonite uses center-based transforms.
+  const builder = new ResoniteObjectBuilder({
+    ...baseObj,
+    rotation: { x: 90, y: 0, z: 0 },
+    position: {
+      x: baseObj.position.x + udonObj.width / 2,
+      y: baseObj.position.y + TABLE_MASK_Y_OFFSET,
+      z: baseObj.position.z - udonObj.height / 2,
     },
-  };
+  })
+    .addQuadMesh(textureValue, true, { x: udonObj.width, y: udonObj.height }, 'Alpha', {
+      r: colorValue,
+      g: colorValue,
+      b: colorValue,
+      a: opacity,
+      profile: 'Linear',
+    })
+    .addBoxCollider({ x: udonObj.width, y: udonObj.height, z: TABLE_MASK_COLLIDER_THICKNESS });
+
+  if (!udonObj.isLock) {
+    builder.addGrabbable();
+  }
+
+  return builder.build();
 }

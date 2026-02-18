@@ -1,9 +1,9 @@
-﻿import { describe, expect, it } from 'vitest';
-import { applyTerrainConversion } from './terrainConverter';
+import { describe, expect, it } from 'vitest';
+import { convertTerrain } from './terrainConverter';
 import { Terrain } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 
-describe('applyTerrainConversion', () => {
+describe('convertTerrain', () => {
   it('terrain (unlocked) has BoxCollider + Grabbable and creates five QuadMesh faces', () => {
     const udonObj: Terrain = {
       id: 'terrain-1',
@@ -27,18 +27,17 @@ describe('applyTerrainConversion', () => {
       name: 'Terrain',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: ['wall.png', 'floor.png'],
       components: [],
       children: [],
     };
 
-    applyTerrainConversion(udonObj, resoniteObj);
+    const result = convertTerrain(udonObj, resoniteObj);
 
-    expect(resoniteObj.components.map((c) => c.type)).toEqual([
+    expect(result.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
       '[FrooxEngine]FrooxEngine.Grabbable',
     ]);
-    expect(resoniteObj.components[0].fields).toEqual({
+    expect(result.components[0].fields).toEqual({
       Size: {
         $type: 'float3',
         value: {
@@ -48,12 +47,12 @@ describe('applyTerrainConversion', () => {
         },
       },
     });
-    expect(resoniteObj.position.x).toBe(5);
-    expect(resoniteObj.position.y).toBe(1);
-    expect(resoniteObj.position.z).toBe(-2);
+    expect(result.position.x).toBe(5);
+    expect(result.position.y).toBe(1);
+    expect(result.position.z).toBe(-2);
 
-    expect(resoniteObj.children).toHaveLength(2);
-    const topFace = resoniteObj.children.find((child) => child.id === 'slot-terrain-1-top');
+    expect(result.children).toHaveLength(2);
+    const topFace = result.children.find((child) => child.id === 'slot-terrain-1-top');
     expect(topFace).toBeDefined();
     expect(topFace?.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.QuadMesh',
@@ -63,7 +62,7 @@ describe('applyTerrainConversion', () => {
       '[FrooxEngine]FrooxEngine.MeshRenderer',
     ]);
 
-    const wallsSlot = resoniteObj.children.find((child) => child.id === 'slot-terrain-1-walls');
+    const wallsSlot = result.children.find((child) => child.id === 'slot-terrain-1-walls');
     expect(wallsSlot).toBeDefined();
     expect(wallsSlot?.isActive).toBe(true);
     expect(wallsSlot?.children).toHaveLength(4);
@@ -121,17 +120,14 @@ describe('applyTerrainConversion', () => {
       name: 'Locked Terrain',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: [],
       components: [],
       children: [],
     };
 
-    applyTerrainConversion(udonObj, resoniteObj);
+    const result = convertTerrain(udonObj, resoniteObj);
 
-    expect(resoniteObj.components.map((c) => c.type)).toEqual([
-      '[FrooxEngine]FrooxEngine.BoxCollider',
-    ]);
-    expect(resoniteObj.components[0].fields).toEqual({
+    expect(result.components.map((c) => c.type)).toEqual(['[FrooxEngine]FrooxEngine.BoxCollider']);
+    expect(result.components[0].fields).toEqual({
       Size: {
         $type: 'float3',
         value: {
@@ -170,25 +166,24 @@ describe('applyTerrainConversion', () => {
       name: 'No Walls Terrain',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: ['wall.png', 'floor.png'],
       components: [],
       children: [],
     };
 
-    applyTerrainConversion(udonObj, resoniteObj);
+    const result = convertTerrain(udonObj, resoniteObj);
 
-    expect(resoniteObj.children).toHaveLength(2);
-    expect(resoniteObj.children[0].id).toBe('slot-terrain-3-top');
-    expect(resoniteObj.children[0].components.map((c) => c.type)).toEqual([
+    expect(result.children).toHaveLength(2);
+    expect(result.children[0].id).toBe('slot-terrain-3-top');
+    expect(result.children[0].components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.QuadMesh',
       '[FrooxEngine]FrooxEngine.StaticTexture2D',
       '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
       '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
       '[FrooxEngine]FrooxEngine.MeshRenderer',
     ]);
-    expect(resoniteObj.children[1].id).toBe('slot-terrain-3-walls');
-    expect(resoniteObj.children[1].isActive).toBe(false);
-    expect(resoniteObj.children[1].children).toHaveLength(4);
+    expect(result.children[1].id).toBe('slot-terrain-3-walls');
+    expect(result.children[1].isActive).toBe(false);
+    expect(result.children[1].children).toHaveLength(4);
   });
 
   it('terrain rotate maps to Resonite Y rotation and keeps edge-to-center offset', () => {
@@ -214,14 +209,13 @@ describe('applyTerrainConversion', () => {
       name: 'Terrain Rotate',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: [],
       components: [],
       children: [],
     };
 
-    applyTerrainConversion(udonObj, resoniteObj);
+    const result = convertTerrain(udonObj, resoniteObj);
 
-    expect(resoniteObj.position).toEqual({ x: 1, y: 1, z: -1 });
-    expect(resoniteObj.rotation).toEqual({ x: 0, y: 30, z: 0 });
+    expect(result.position).toEqual({ x: 1, y: 1, z: -1 });
+    expect(result.rotation).toEqual({ x: 0, y: 30, z: 0 });
   });
 });

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { TableMask } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
-import { applyTableMaskConversion } from './tableMaskConverter';
+import { convertTableMask } from './tableMaskConverter';
 
-describe('applyTableMaskConversion', () => {
+describe('convertTableMask', () => {
   it('uses black color and opacity alpha when image is not set', () => {
     const udonObj: TableMask = {
       id: 'mask-1',
@@ -21,17 +21,16 @@ describe('applyTableMaskConversion', () => {
       name: 'Mask',
       position: { x: 1, y: 2, z: 3 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: [],
       components: [],
       children: [],
     };
 
-    applyTableMaskConversion(udonObj, resoniteObj);
+    const result = convertTableMask(udonObj, resoniteObj);
 
-    expect(resoniteObj.rotation).toEqual({ x: 90, y: 0, z: 0 });
-    expect(resoniteObj.position).toEqual({ x: 3.5, y: 2.002, z: 1.5 });
+    expect(result.rotation).toEqual({ x: 90, y: 0, z: 0 });
+    expect(result.position).toEqual({ x: 3.5, y: 2.002, z: 1.5 });
 
-    const quadMesh = resoniteObj.components.find(
+    const quadMesh = result.components.find(
       (component) => component.type === '[FrooxEngine]FrooxEngine.QuadMesh'
     );
     expect(quadMesh?.fields).toEqual({
@@ -39,7 +38,7 @@ describe('applyTableMaskConversion', () => {
       DualSided: { $type: 'bool', value: true },
     });
 
-    const material = resoniteObj.components.find(
+    const material = result.components.find(
       (component) => component.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
     );
     expect(material?.fields).toMatchObject({
@@ -50,7 +49,7 @@ describe('applyTableMaskConversion', () => {
       },
     });
 
-    const collider = resoniteObj.components.find(
+    const collider = result.components.find(
       (component) => component.type === '[FrooxEngine]FrooxEngine.BoxCollider'
     );
     expect(collider?.fields).toEqual({
@@ -75,14 +74,13 @@ describe('applyTableMaskConversion', () => {
       name: 'Mask With Image',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: ['none_icon'],
       components: [],
       children: [],
     };
 
-    applyTableMaskConversion(udonObj, resoniteObj);
+    const result = convertTableMask(udonObj, resoniteObj);
 
-    const material = resoniteObj.components.find(
+    const material = result.components.find(
       (component) => component.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
     );
     expect(material?.fields).toMatchObject({
@@ -110,14 +108,13 @@ describe('applyTableMaskConversion', () => {
       name: 'Unlocked Mask',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: [],
       components: [],
       children: [],
     };
 
-    applyTableMaskConversion(udonObj, resoniteObj);
+    const result = convertTableMask(udonObj, resoniteObj);
 
-    const grabbable = resoniteObj.components.find(
+    const grabbable = result.components.find(
       (component) => component.type === '[FrooxEngine]FrooxEngine.Grabbable'
     );
     expect(grabbable).toBeDefined();
@@ -144,14 +141,13 @@ describe('applyTableMaskConversion', () => {
       name: 'Locked Mask',
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      textures: [],
       components: [],
       children: [],
     };
 
-    applyTableMaskConversion(udonObj, resoniteObj);
+    const result = convertTableMask(udonObj, resoniteObj);
 
-    const grabbable = resoniteObj.components.find(
+    const grabbable = result.components.find(
       (component) => component.type === '[FrooxEngine]FrooxEngine.Grabbable'
     );
     expect(grabbable).toBeUndefined();
