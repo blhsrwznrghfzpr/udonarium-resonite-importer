@@ -32,6 +32,7 @@ function createObject(id: string): ResoniteObject {
       },
     ],
     children: [],
+    isActive: true,
   };
 }
 
@@ -42,8 +43,8 @@ describe('sharedMaterial', () => {
     const definitions = prepareSharedMaterialDefinitions(objects);
 
     expect(definitions).toHaveLength(1);
-    expect(definitions[0].key).toBe('xiexe-toon:#FFFFFFFF:Cutout');
-    expect(definitions[0].name).toBe('XiexeToon_Cutout_FFFFFFFF');
+    expect(definitions[0].key).toBe('xiexe-toon:#FFFFFFFF:Cutout:Default');
+    expect(definitions[0].name).toBe('XiexeToon_Cutout_Default_FFFFFFFF');
     expect(definitions[0].componentType).toBe('[FrooxEngine]FrooxEngine.XiexeToonMaterial');
     expect(
       objects
@@ -84,6 +85,24 @@ describe('sharedMaterial', () => {
         $type: 'colorX',
         value: { r: 1, g: 1, b: 1, a: 0.5, profile: 'sRGB' },
       },
+    };
+
+    const definitions = prepareSharedMaterialDefinitions(objects);
+
+    expect(definitions).toHaveLength(2);
+  });
+
+  it('does not deduplicate materials when Culling differs', () => {
+    const objects: ResoniteObject[] = [createObject('a'), createObject('b')];
+    const materialB = objects[1].components.find(
+      (component) => component.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
+    );
+    if (!materialB) {
+      throw new Error('material missing');
+    }
+    materialB.fields = {
+      ...materialB.fields,
+      Culling: { $type: 'enum', value: 'Off', enumType: 'Culling' },
     };
 
     const definitions = prepareSharedMaterialDefinitions(objects);

@@ -20,7 +20,7 @@ async function main(): Promise<void> {
       const metadata = await sharp(buffer).metadata();
       const width = metadata.width;
       const height = metadata.height;
-      const hasAlpha = metadata.hasAlpha ?? ((metadata.channels ?? 0) >= 4);
+      const hasAlpha = metadata.hasAlpha ?? (metadata.channels ?? 0) >= 4;
       if (!width || !height) {
         console.log(`${id}\tN/A\tN/A\tERROR: missing width/height\tN/A`);
         continue;

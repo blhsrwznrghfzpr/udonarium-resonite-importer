@@ -17,6 +17,10 @@ import { convertTextNote } from './objectConverters/textNoteConverter';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 import { replaceTexturesInValue } from './textureUtils';
 
+interface ConverterOptions {
+  enableCharacterColliderOnLockedTerrain?: boolean;
+}
+
 /**
  * Convert Udonarium 2D coordinates to Resonite 3D coordinates
  * Udonarium: +X right, +Y down (CSS-like)
@@ -52,7 +56,8 @@ function convertObjectWithTextures(
   udonObj: UdonariumObject,
   textureMap?: Map<string, string>,
   imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
+  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  options?: ConverterOptions
 ): ResoniteObject {
   const position = convertPosition(udonObj.position.x, udonObj.position.y, udonObj.position.z);
 
@@ -77,14 +82,23 @@ function convertObjectWithTextures(
         imageBlendModeMap
       );
     case 'terrain':
-      return convertTerrain(udonObj, position, textureMap, imageBlendModeMap);
+      return convertTerrain(udonObj, position, textureMap, imageBlendModeMap, undefined, options);
     case 'table':
       return convertTable(
         udonObj,
         position,
         textureMap,
-        (obj) => convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap),
-        imageBlendModeMap
+        (obj) =>
+          convertObjectWithTextures(
+            obj,
+            textureMap,
+            imageAspectRatioMap,
+            imageBlendModeMap,
+            options
+          ),
+        imageBlendModeMap,
+        undefined,
+        options
       );
     case 'table-mask':
       return convertTableMask(udonObj, position, textureMap);
@@ -94,7 +108,14 @@ function convertObjectWithTextures(
       return convertCardStack(
         udonObj,
         position,
-        (obj) => convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap),
+        (obj) =>
+          convertObjectWithTextures(
+            obj,
+            textureMap,
+            imageAspectRatioMap,
+            imageBlendModeMap,
+            options
+          ),
         imageAspectRatioMap
       );
     case 'text-note':
@@ -153,10 +174,11 @@ export function convertObjectsWithTextureMap(
   udonObjects: UdonariumObject[],
   textureMap: Map<string, string>,
   imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
+  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  options?: ConverterOptions
 ): ResoniteObject[] {
   const converted = udonObjects.map((obj) =>
-    convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap)
+    convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap, options)
   );
   return applyGameTableVisibility(converted, udonObjects);
 }

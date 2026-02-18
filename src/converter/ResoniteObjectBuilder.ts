@@ -39,6 +39,7 @@ type XiexeToonMaterialFields = {
   BlendMode: BlendModeField;
   ShadowRamp: { $type: 'reference'; targetId: null };
   ShadowSharpness: { $type: 'float'; value: 0 };
+  Culling?: { $type: 'enum'; value: 'Off'; enumType: 'Culling' };
   Color?: { $type: 'colorX'; value: ColorXValue };
 };
 
@@ -49,12 +50,14 @@ function createBlendModeField(blendMode: BlendModeValue): BlendModeField {
 
 function buildXiexeToonMaterialFields(
   blendMode: BlendModeValue = 'Cutout',
-  color?: ColorXValue
+  color?: ColorXValue,
+  cullingOff = false
 ): XiexeToonMaterialFields {
   return {
     BlendMode: createBlendModeField(blendMode),
     ShadowRamp: { $type: 'reference', targetId: null },
     ShadowSharpness: { $type: 'float', value: 0 },
+    ...(cullingOff ? { Culling: { $type: 'enum', value: 'Off', enumType: 'Culling' } } : {}),
     ...(color !== undefined ? { Color: { $type: 'colorX', value: color } } : {}),
   };
 }
@@ -97,7 +100,6 @@ function buildQuadMeshComponents(
       type: '[FrooxEngine]FrooxEngine.QuadMesh',
       fields: {
         Size: { $type: 'float2', value: size },
-        ...(dualSided ? { DualSided: { $type: 'bool', value: true } } : {}),
       },
     },
   ];
@@ -113,7 +115,7 @@ function buildQuadMeshComponents(
   components.push({
     id: materialId,
     type: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
-    fields: buildXiexeToonMaterialFields(blendMode, color),
+    fields: buildXiexeToonMaterialFields(blendMode, color, dualSided),
   });
 
   if (textureValue && !sharedTextureId) {

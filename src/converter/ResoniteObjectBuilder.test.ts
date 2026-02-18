@@ -80,11 +80,17 @@ describe('ResoniteObjectBuilder', () => {
       ]);
     });
 
-    it('adds DualSided field when dualSided=true', () => {
+    it('sets material Culling=Off when dualSided=true', () => {
       const result = makeBuilder(makeSpec()).addQuadMesh(undefined, true).build();
 
       const quad = result.components.find((c) => c.type.endsWith('QuadMesh'));
-      expect(quad?.fields).toMatchObject({ DualSided: { $type: 'bool', value: true } });
+      expect(quad?.fields.DualSided).toBeUndefined();
+      const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(mat?.fields.Culling).toEqual({
+        $type: 'enum',
+        value: 'Off',
+        enumType: 'Culling',
+      });
     });
 
     it('applies the given size to the QuadMesh', () => {
@@ -246,6 +252,7 @@ describe('ResoniteObjectBuilder', () => {
       rotation: { x: 0, y: 0, z: 0 },
       components: [],
       children: [],
+      isActive: true,
     };
     const childB = { ...childA, id: 'child-b', name: 'B' };
 

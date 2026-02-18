@@ -45,6 +45,13 @@ const portHelpPanel = document.getElementById('port-help-panel') as HTMLElement;
 const hostInput = document.getElementById('host') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
 const rootScaleInput = document.getElementById('root-scale') as HTMLInputElement;
+const rootScaleDirectInput = document.getElementById('root-scale-direct') as HTMLInputElement;
+const lockedTerrainCharacterColliderInput = document.getElementById(
+  'locked-terrain-character-collider'
+) as HTMLInputElement;
+const semiTransparentImageBlendModeInput = document.getElementById(
+  'semi-transparent-image-blend-mode'
+) as HTMLSelectElement;
 const importBtn = document.getElementById('import-btn') as HTMLButtonElement;
 const importLog = document.getElementById('import-log') as HTMLElement;
 const progressArea = document.getElementById('progress-area') as HTMLElement;
@@ -58,6 +65,7 @@ const localeSelect = document.getElementById('locale-select') as HTMLSelectEleme
 
 const LAST_PORT_STORAGE_KEY = 'udonarium_resonite_importer_last_port';
 const DEFAULT_PORT = 7869;
+const ROOT_SCALE_VALUES = [0.1, 0.2, 0.5, 1, 2, 5, 10] as const;
 
 let currentFilePath: string | null = null;
 let isImporting = false;
@@ -103,6 +111,46 @@ function setSelectedFilePath(filePath: string): void {
 function setPortHelpPanelVisible(visible: boolean): void {
   portHelpPanel.style.display = visible ? 'block' : 'none';
   portHelpBtn.setAttribute('aria-expanded', visible ? 'true' : 'false');
+}
+
+function getRootScaleIndex(): number {
+  const parsed = Number.parseInt(rootScaleInput.value, 10);
+  if (!Number.isFinite(parsed)) {
+    return 3;
+  }
+  return Math.min(Math.max(parsed, 0), ROOT_SCALE_VALUES.length - 1);
+}
+
+function getSelectedRootScale(): number {
+  return ROOT_SCALE_VALUES[getRootScaleIndex()] ?? 1;
+}
+
+function getRootScaleFromDirectInput(): number {
+  const parsed = Number.parseFloat(rootScaleDirectInput.value);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    return parsed;
+  }
+  if (Number.isFinite(parsed) && parsed <= 0) {
+    return 0.01;
+  }
+  return getSelectedRootScale();
+}
+
+function findNearestRootScaleIndex(scale: number): number {
+  let nearestIndex = 0;
+  let nearestDelta = Number.POSITIVE_INFINITY;
+  for (const [index, value] of ROOT_SCALE_VALUES.entries()) {
+    const delta = Math.abs(value - scale);
+    if (delta < nearestDelta) {
+      nearestDelta = delta;
+      nearestIndex = index;
+    }
+  }
+  return nearestIndex;
+}
+
+function syncRootScaleInputsFromSlider(): void {
+  rootScaleDirectInput.value = String(getSelectedRootScale());
 }
 
 // Apply translations to UI
@@ -155,7 +203,13 @@ localeSelect.addEventListener('change', () => {
 
 // Load default config and set initial values
 void window.electronAPI.getDefaultConfig().then((config) => {
-  rootScaleInput.value = String(config.importGroupScale);
+  rootScaleInput.value = String(findNearestRootScaleIndex(config.importGroupScale));
+  rootScaleDirectInput.value = String(config.importGroupScale);
+});
+semiTransparentImageBlendModeInput.value = 'Cutout';
+syncRootScaleInputsFromSlider();
+rootScaleInput.addEventListener('input', () => {
+  syncRootScaleInputsFromSlider();
 });
 
 // Advanced options toggle
@@ -252,7 +306,10 @@ importBtn.addEventListener('click', () => {
       filePath: currentFilePath,
       host: hostInput.value || 'localhost',
       port: parsePortOrNull(portInput.value) ?? DEFAULT_PORT,
-      rootScale: parseFloat(rootScaleInput.value) || 1,
+      rootScale: getRootScaleFromDirectInput(),
+      enableCharacterColliderOnLockedTerrain: lockedTerrainCharacterColliderInput.checked,
+      semiTransparentImageBlendMode:
+        semiTransparentImageBlendModeInput.value === 'Alpha' ? 'Alpha' : 'Cutout',
     };
     saveLastPort(options.port);
 
