@@ -328,11 +328,12 @@ describe('SlotBuilder', () => {
       ).toBe(true);
     });
 
-    it('should place characters under Inventory grouped by fallback location name', async () => {
+    it('should place characters under Inventory grouped by location name', async () => {
       const graveyardCharacter = createResoniteObject({
         id: 'char-graveyard',
         name: 'Character Graveyard',
         sourceType: 'character',
+        locationName: 'graveyard',
       });
       const commonCharacter = createResoniteObject({
         id: 'char-common',
@@ -343,6 +344,7 @@ describe('SlotBuilder', () => {
         id: 'char-graveyard-2',
         name: 'Character Graveyard 2',
         sourceType: 'character',
+        locationName: 'graveyard',
       });
 
       await slotBuilder.buildSlots([
@@ -364,22 +366,31 @@ describe('SlotBuilder', () => {
         5,
         expect.objectContaining({
           parentId: inventorySlotCall.id,
+          name: 'graveyard',
+          isActive: false,
+        })
+      );
+      const graveyardSlotCall = mockClient.addSlot.mock.calls[4][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        6,
+        expect.objectContaining({ id: 'char-graveyard', parentId: graveyardSlotCall.id })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        7,
+        expect.objectContaining({
+          parentId: inventorySlotCall.id,
           name: 'Unknown',
           isActive: false,
         })
       );
-      const unknownSlotCall = mockClient.addSlot.mock.calls[4][0] as { id: string };
+      const unknownSlotCall = mockClient.addSlot.mock.calls[6][0] as { id: string };
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
-        6,
-        expect.objectContaining({ id: 'char-graveyard', parentId: unknownSlotCall.id })
-      );
-      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
-        7,
+        8,
         expect.objectContaining({ id: 'char-common', parentId: unknownSlotCall.id })
       );
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
-        8,
-        expect.objectContaining({ id: 'char-graveyard-2', parentId: unknownSlotCall.id })
+        9,
+        expect.objectContaining({ id: 'char-graveyard-2', parentId: graveyardSlotCall.id })
       );
     });
 
@@ -705,6 +716,12 @@ describe('SlotBuilder', () => {
 
       const callArgs = mockClient.addSlot.mock.calls[0][0] as { id: string };
       expect(callArgs.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
+      expect(mockClient.addComponent).toHaveBeenCalledWith({
+        id: `${callArgs.id}-object-root`,
+        slotId: callArgs.id,
+        componentType: '[FrooxEngine]FrooxEngine.ObjectRoot',
+        fields: {},
+      });
     });
 
     it('should return the group slot ID', async () => {

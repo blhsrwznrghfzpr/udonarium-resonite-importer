@@ -3,7 +3,7 @@
  */
 
 import { randomUUID } from 'crypto';
-import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
+import { CharacterResoniteObject, ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SharedMeshDefinition } from '../converter/sharedMesh';
 import { SharedMaterialDefinition } from '../converter/sharedMaterial';
 import {
@@ -44,6 +44,10 @@ function splitListFields(fields: Record<string, unknown>): {
 
 function isTableRootObject(obj: ResoniteObject): boolean {
   return obj.children.some((child) => child.id.endsWith('-surface'));
+}
+
+function isCharacterObject(obj: ResoniteObject): obj is CharacterResoniteObject {
+  return obj.sourceType === 'character';
 }
 
 export interface SlotBuildResult {
@@ -145,11 +149,11 @@ export class SlotBuilder {
         const { tablesSlotId, objectsSlotId, inventorySlotId } =
           await this.ensureTopLevelObjectSlots();
         const isTable = isTableRootObject(object) || object.sourceType === 'table';
-        const isInventoryObject = !isTable && object.sourceType === 'character';
+        const isInventoryObject = !isTable && isCharacterObject(object);
         const parentId = isTable
           ? tablesSlotId
           : isInventoryObject
-            ? await this.ensureInventoryLocationSlot(undefined, inventorySlotId)
+            ? await this.ensureInventoryLocationSlot(object.locationName, inventorySlotId)
             : objectsSlotId;
         result = await this.buildSlot(object, parentId);
       } catch (error) {
@@ -194,6 +198,12 @@ export class SlotBuilder {
       ...(transform?.rotation ? { rotation: transform.rotation } : {}),
       scale,
       tag: IMPORT_ROOT_TAG,
+    });
+    await this.client.addComponent({
+      id: `${groupId}-object-root`,
+      slotId: groupId,
+      componentType: '[FrooxEngine]FrooxEngine.ObjectRoot',
+      fields: {},
     });
 
     this.rootSlotId = groupId;

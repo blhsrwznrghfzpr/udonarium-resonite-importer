@@ -1,3 +1,4 @@
+import { ObjectType } from '../domain/UdonariumObject';
 import { ResoniteComponent, ResoniteObject } from '../domain/ResoniteObject';
 import { randomUUID } from 'crypto';
 import {
@@ -182,7 +183,17 @@ function buildGrabbableComponent(slotId: string): ResoniteComponent {
  * possibility of accidentally passing a mismatched slotId to component builder functions.
  */
 export class ResoniteObjectBuilder {
-  private readonly obj: ResoniteObject;
+  private readonly obj: {
+    id: string;
+    name: string;
+    position: ResoniteObject['position'];
+    rotation: ResoniteObject['rotation'];
+    sourceType?: ObjectType;
+    locationName?: string;
+    isActive: boolean;
+    components: ResoniteComponent[];
+    children: ResoniteObject[];
+  };
 
   static create(identity: NewResoniteObjectSpec): ResoniteObjectBuilder {
     return new ResoniteObjectBuilder({
@@ -197,7 +208,6 @@ export class ResoniteObjectBuilder {
       name: identity.name,
       position: { x: 0, y: 0, z: 0 },
       rotation: { x: 0, y: 0, z: 0 },
-      sourceType: 'text-note',
       isActive: true,
       components: [],
       children: [],
@@ -218,8 +228,16 @@ export class ResoniteObjectBuilder {
     return this;
   }
 
-  setSourceType(sourceType: ResoniteObject['sourceType']): this {
+  setSourceType(sourceType: ObjectType): this {
     this.obj.sourceType = sourceType;
+    if (sourceType !== 'character') {
+      delete this.obj.locationName;
+    }
+    return this;
+  }
+
+  setLocationName(locationName: string | undefined): this {
+    this.obj.locationName = locationName;
     return this;
   }
 
@@ -274,10 +292,14 @@ export class ResoniteObjectBuilder {
   }
 
   build(): ResoniteObject {
-    return {
+    const result = {
       ...this.obj,
       components: [...this.obj.components],
       children: [...this.obj.children],
     };
+    if (result.sourceType !== 'character') {
+      delete result.locationName;
+    }
+    return result as ResoniteObject;
   }
 }

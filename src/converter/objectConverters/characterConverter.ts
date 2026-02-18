@@ -47,7 +47,8 @@ export function convertCharacter(
       z: basePosition.z - meshWidth / 2,
     })
     .setRotation({ x: 0, y: udonObj.rotate ?? 0, z: udonObj.roll ?? 0 })
-    .setSourceType(udonObj.type);
+    .setSourceType(udonObj.type)
+    .setLocationName(udonObj.locationName);
 
   if (hasCharacterImage) {
     const textureValue = resolveTextureValue(textureIdentifier, textureMap);

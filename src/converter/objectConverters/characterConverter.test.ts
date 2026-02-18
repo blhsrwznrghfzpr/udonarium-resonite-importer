@@ -12,6 +12,7 @@ describe('convertCharacter', () => {
       position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'char.png', name: 'char.png' }],
       properties: new Map(),
+      locationName: 'graveyard',
       size: 3,
       rotate: 30,
       roll: 15,
@@ -48,6 +49,8 @@ describe('convertCharacter', () => {
     expect(result.position.z).toBe(-0.15);
     expect(result.position.y).toBe(0.15);
     expect(result.rotation).toEqual({ x: 0, y: 30, z: 15 });
+    expect(result.sourceType).toBe('character');
+    expect(result.locationName).toBe('graveyard');
 
     const materialComponent = result.components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
