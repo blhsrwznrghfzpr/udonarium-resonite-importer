@@ -339,7 +339,6 @@ describe('SlotBuilder', () => {
         id: 'char-common',
         name: 'Character Common',
         sourceType: 'character',
-        locationName: 'common',
       });
       const anotherGraveyardCharacter = createResoniteObject({
         id: 'char-graveyard-2',
@@ -373,21 +372,21 @@ describe('SlotBuilder', () => {
       );
       const graveyardSlotCall = mockClient.addSlot.mock.calls[4][0] as { id: string };
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
-        7,
-        expect.objectContaining({
-          parentId: inventorySlotCall.id,
-          name: 'common',
-          isActive: false,
-        })
-      );
-      const commonSlotCall = mockClient.addSlot.mock.calls[6][0] as { id: string };
-      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
         6,
         expect.objectContaining({ id: 'char-graveyard', parentId: graveyardSlotCall.id })
       );
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        7,
+        expect.objectContaining({
+          parentId: inventorySlotCall.id,
+          name: 'Unknown',
+          isActive: false,
+        })
+      );
+      const unknownSlotCall = mockClient.addSlot.mock.calls[6][0] as { id: string };
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
         8,
-        expect.objectContaining({ id: 'char-common', parentId: commonSlotCall.id })
+        expect.objectContaining({ id: 'char-common', parentId: unknownSlotCall.id })
       );
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
         9,
@@ -447,7 +446,6 @@ describe('SlotBuilder', () => {
         createResoniteObject({
           id: 'char-1',
           sourceType: 'character',
-          locationName: 'graveyard',
         }),
         createResoniteObject({
           id: 'obj-2',
@@ -718,6 +716,12 @@ describe('SlotBuilder', () => {
 
       const callArgs = mockClient.addSlot.mock.calls[0][0] as { id: string };
       expect(callArgs.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
+      expect(mockClient.addComponent).toHaveBeenCalledWith({
+        id: `${callArgs.id}-object-root`,
+        slotId: callArgs.id,
+        componentType: '[FrooxEngine]FrooxEngine.ObjectRoot',
+        fields: {},
+      });
     });
 
     it('should return the group slot ID', async () => {

@@ -42,7 +42,6 @@ export function parseTerrain(data: unknown, fileName: string): Terrain {
   const isLocked = getBooleanValue(root['@_isLocked']) ?? false;
   const mode = getNumberValue(root['@_mode']) ?? 0;
   const rotate = getNumberValue(root['@_rotate']) ?? 0;
-  const locationName = (root['@_location.name'] as string) || '';
 
   const images: ImageRef[] = [];
   if (wallImage) images.push(wallImage);
@@ -56,7 +55,6 @@ export function parseTerrain(data: unknown, fileName: string): Terrain {
     isLocked,
     mode,
     rotate,
-    locationName,
     width,
     height,
     depth,

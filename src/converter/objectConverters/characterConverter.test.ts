@@ -12,6 +12,7 @@ describe('convertCharacter', () => {
       position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'char.png', name: 'char.png' }],
       properties: new Map(),
+      locationName: 'graveyard',
       size: 3,
       rotate: 30,
       roll: 15,
@@ -28,7 +29,15 @@ describe('convertCharacter', () => {
     const converted: Vector3 = { x: 0.3, y: 0.3, z: 0.3 };
     const convertSize = vi.fn().mockReturnValue(converted);
 
-    const result = convertCharacter(udonObj, resoniteObj, convertSize);
+    const result = convertCharacter(
+      udonObj,
+      resoniteObj.position,
+      convertSize,
+      undefined,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(convertSize).toHaveBeenCalledWith(3);
     expect(result.components.map((c) => c.type)).toEqual([
@@ -48,6 +57,8 @@ describe('convertCharacter', () => {
     expect(result.position.z).toBe(-0.15);
     expect(result.position.y).toBe(0.15);
     expect(result.rotation).toEqual({ x: 0, y: 30, z: 15 });
+    expect(result.sourceType).toBe('character');
+    expect(result.locationName).toBe('graveyard');
 
     const materialComponent = result.components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
@@ -92,7 +103,15 @@ describe('convertCharacter', () => {
     };
     const convertSize = vi.fn().mockReturnValue({ x: 1, y: 1, z: 1 });
 
-    const result = convertCharacter(udonObj, resoniteObj, convertSize);
+    const result = convertCharacter(
+      udonObj,
+      resoniteObj.position,
+      convertSize,
+      undefined,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(result.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
@@ -124,10 +143,12 @@ describe('convertCharacter', () => {
 
     const result = convertCharacter(
       udonObj,
-      resoniteObj,
+      resoniteObj.position,
       convertSize,
       undefined,
-      imageAspectRatioMap
+      imageAspectRatioMap,
+      undefined,
+      resoniteObj.id
     );
 
     const quad = result.components.find((c) => c.type === '[FrooxEngine]FrooxEngine.QuadMesh');

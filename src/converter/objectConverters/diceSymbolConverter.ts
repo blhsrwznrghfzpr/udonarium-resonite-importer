@@ -19,11 +19,12 @@ function resolveBlendMode(
 
 export function convertDiceSymbol(
   udonObj: DiceSymbol,
-  baseObj: ResoniteObject,
+  basePosition: Vector3,
   convertSize: (size: number) => Vector3,
   textureMap?: Map<string, string>,
   imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
+  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  slotId?: string
 ): ResoniteObject {
   const size = convertSize(udonObj.size);
   const faceWidth = size.x;
@@ -42,34 +43,42 @@ export function convertDiceSymbol(
   );
   const activeFaceName = udonObj.face ?? udonObj.faceImages[0]?.name;
 
+  const parentBuilder = ResoniteObjectBuilder.create({
+    id: slotId,
+    name: udonObj.name,
+  })
+    .setRotation({ x: 0, y: udonObj.rotate ?? 0, z: 0 })
+    .setPosition({
+      x: basePosition.x + faceWidth / 2,
+      y: basePosition.y + maxFaceHeight / 2,
+      z: basePosition.z - faceWidth / 2,
+    })
+    .setSourceType(udonObj.type);
+
+  const parentId = parentBuilder.getId();
+
   const faceSlots = udonObj.faceImages.map((faceImage, index) => {
-    const childId = `${baseObj.id}-face-${index}`;
+    const childId = `${parentId}-face-${index}`;
     const childHeight = faceHeights[index] ?? faceWidth * DEFAULT_DICE_ASPECT_RATIO;
     const childTextureValue = resolveTextureValue(faceImage.identifier, textureMap);
     const childBlendMode = resolveBlendMode(faceImage.identifier, imageBlendModeMap);
-    return new ResoniteObjectBuilder({
-      id: childId,
-      name: `${baseObj.name}-face-${faceImage.name}`,
-      // Align smaller faces to the bottom edge of the largest face.
-      position: { x: 0, y: -(maxFaceHeight - childHeight) / 2, z: 0 },
-      rotation: { x: 0, y: 0, z: 0 },
-      isActive: faceImage.name === activeFaceName,
-    })
-      .addQuadMesh(childTextureValue, true, { x: faceWidth, y: childHeight }, childBlendMode)
-      .build();
+    return (
+      ResoniteObjectBuilder.create({
+        id: childId,
+        name: `${udonObj.name}-face-${faceImage.name}`,
+      })
+        // Align smaller faces to the bottom edge of the largest face.
+        .setPosition({ x: 0, y: -(maxFaceHeight - childHeight) / 2, z: 0 })
+        .setRotation({ x: 0, y: 0, z: 0 })
+        .setActive(faceImage.name === activeFaceName)
+        .addQuadMesh(childTextureValue, true, { x: faceWidth, y: childHeight }, childBlendMode)
+        .build()
+    );
   });
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   // Keep only collider on parent; visual renderers live on face child slots.
-  return new ResoniteObjectBuilder({
-    ...baseObj,
-    rotation: { x: 0, y: udonObj.rotate ?? 0, z: 0 },
-    position: {
-      x: baseObj.position.x + faceWidth / 2,
-      y: baseObj.position.y + maxFaceHeight / 2,
-      z: baseObj.position.z - faceWidth / 2,
-    },
-  })
+  return parentBuilder
     .addBoxCollider({ x: faceWidth, y: maxFaceHeight, z: 0.05 })
     .addGrabbable()
     .addChildren(faceSlots)

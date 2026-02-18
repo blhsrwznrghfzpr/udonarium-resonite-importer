@@ -1,5 +1,5 @@
 import { TableMask } from '../../domain/UdonariumObject';
-import { ResoniteObject } from '../../domain/ResoniteObject';
+import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { resolveTextureValue } from '../textureUtils';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
@@ -20,8 +20,9 @@ function resolveMaskOpacity(mask: TableMask): number {
 
 export function convertTableMask(
   udonObj: TableMask,
-  baseObj: ResoniteObject,
-  textureMap?: Map<string, string>
+  basePosition: Vector3,
+  textureMap?: Map<string, string>,
+  slotId?: string
 ): ResoniteObject {
   const hasMaskImage = !!udonObj.images[0]?.identifier;
   const textureValue = resolveTextureValue(udonObj.images[0]?.identifier, textureMap);
@@ -29,15 +30,17 @@ export function convertTableMask(
   const colorValue = hasMaskImage ? 1 : 0;
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  const builder = new ResoniteObjectBuilder({
-    ...baseObj,
-    rotation: { x: 90, y: 0, z: 0 },
-    position: {
-      x: baseObj.position.x + udonObj.width / 2,
-      y: baseObj.position.y + TABLE_MASK_Y_OFFSET,
-      z: baseObj.position.z - udonObj.height / 2,
-    },
+  const builder = ResoniteObjectBuilder.create({
+    id: slotId,
+    name: udonObj.name,
   })
+    .setRotation({ x: 90, y: 0, z: 0 })
+    .setPosition({
+      x: basePosition.x + udonObj.width / 2,
+      y: basePosition.y + TABLE_MASK_Y_OFFSET,
+      z: basePosition.z - udonObj.height / 2,
+    })
+    .setSourceType(udonObj.type)
     .addQuadMesh(textureValue, true, { x: udonObj.width, y: udonObj.height }, 'Alpha', {
       r: colorValue,
       g: colorValue,

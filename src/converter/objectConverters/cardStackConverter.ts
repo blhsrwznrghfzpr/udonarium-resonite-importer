@@ -1,5 +1,5 @@
 import { CardStack, UdonariumObject } from '../../domain/UdonariumObject';
-import { ResoniteObject } from '../../domain/ResoniteObject';
+import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
@@ -45,9 +45,10 @@ function resolveCardAspectRatio(
 
 export function convertCardStack(
   udonObj: CardStack,
-  baseObj: ResoniteObject,
+  basePosition: Vector3,
   convertObject: (obj: UdonariumObject) => ResoniteObject,
-  imageAspectRatioMap?: Map<string, number>
+  imageAspectRatioMap?: Map<string, number>,
+  slotId?: string
 ): ResoniteObject {
   const cardWidth = udonObj.cards[0]?.size ?? 1;
   const cardHeight = cardWidth * resolveCardAspectRatio(udonObj, imageAspectRatioMap);
@@ -58,15 +59,17 @@ export function convertCardStack(
   }));
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  return new ResoniteObjectBuilder({
-    ...baseObj,
-    position: {
-      x: baseObj.position.x + cardWidth / 2,
-      y: baseObj.position.y + CARD_STACK_Y_OFFSET,
-      z: baseObj.position.z - cardHeight / 2,
-    },
-    rotation: { x: 0, y: udonObj.rotate ?? 0, z: 0 },
+  return ResoniteObjectBuilder.create({
+    id: slotId,
+    name: udonObj.name,
   })
+    .setPosition({
+      x: basePosition.x + cardWidth / 2,
+      y: basePosition.y + CARD_STACK_Y_OFFSET,
+      z: basePosition.z - cardHeight / 2,
+    })
+    .setRotation({ x: 0, y: udonObj.rotate ?? 0, z: 0 })
+    .setSourceType(udonObj.type)
     .addBoxCollider({ x: cardWidth, y: 0.05, z: cardHeight })
     .addGrabbable()
     .addChildren(stackedCards)

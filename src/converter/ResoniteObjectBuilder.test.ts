@@ -11,10 +11,16 @@ function makeSpec(id = 'slot-abc') {
   };
 }
 
+function makeBuilder(spec = makeSpec()) {
+  return ResoniteObjectBuilder.create({ id: spec.id, name: spec.name })
+    .setPosition(spec.position)
+    .setRotation(spec.rotation);
+}
+
 describe('ResoniteObjectBuilder', () => {
   describe('build()', () => {
     it('returns a ResoniteObject with the given spec', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('my-slot')).build();
+      const result = makeBuilder(makeSpec('my-slot')).build();
 
       expect(result.id).toBe('my-slot');
       expect(result.name).toBe('Test');
@@ -23,14 +29,14 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('starts with empty components and children', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).build();
+      const result = makeBuilder(makeSpec()).build();
 
       expect(result.components).toEqual([]);
       expect(result.children).toEqual([]);
     });
 
     it('returns a shallow copy so further mutations do not affect prior build results', () => {
-      const builder = new ResoniteObjectBuilder(makeSpec());
+      const builder = makeBuilder(makeSpec());
       const first = builder.build();
       builder.addGrabbable();
       const second = builder.build();
@@ -38,13 +44,24 @@ describe('ResoniteObjectBuilder', () => {
       expect(first.components).toHaveLength(0);
       expect(second.components).toHaveLength(1);
     });
+
+    it('generates an id when omitted in create()', () => {
+      const result = ResoniteObjectBuilder.create({ name: 'Generated' }).build();
+
+      expect(result.id).toMatch(/^udon-imp-/);
+      expect(result.name).toBe('Generated');
+    });
+
+    it('exposes generated id via getId()', () => {
+      const builder = ResoniteObjectBuilder.create({ name: 'Generated' });
+
+      expect(builder.getId()).toMatch(/^udon-imp-/);
+    });
   });
 
   describe('addQuadMesh()', () => {
     it('derives all component IDs from the slot ID', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('s1'))
-        .addQuadMesh('texture://img.png')
-        .build();
+      const result = makeBuilder(makeSpec('s1')).addQuadMesh('texture://img.png').build();
 
       for (const c of result.components) {
         expect(c.id).toMatch(/^s1-/);
@@ -52,7 +69,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('adds QuadMesh, StaticTexture2D, XiexeToonMaterial, MainTexturePropertyBlock, MeshRenderer when texture is given', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).addQuadMesh('texture://img.png').build();
+      const result = makeBuilder(makeSpec()).addQuadMesh('texture://img.png').build();
 
       expect(result.components.map((c) => c.type)).toEqual([
         '[FrooxEngine]FrooxEngine.QuadMesh',
@@ -64,23 +81,21 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('adds DualSided field when dualSided=true', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).addQuadMesh(undefined, true).build();
+      const result = makeBuilder(makeSpec()).addQuadMesh(undefined, true).build();
 
       const quad = result.components.find((c) => c.type.endsWith('QuadMesh'));
       expect(quad?.fields).toMatchObject({ DualSided: { $type: 'bool', value: true } });
     });
 
     it('applies the given size to the QuadMesh', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 2, y: 3 })
-        .build();
+      const result = makeBuilder(makeSpec()).addQuadMesh(undefined, false, { x: 2, y: 3 }).build();
 
       const quad = result.components.find((c) => c.type.endsWith('QuadMesh'));
       expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
     });
 
     it('applies the given blendMode to the material', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
+      const result = makeBuilder(makeSpec())
         .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
         .build();
 
@@ -93,32 +108,28 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('returns this for chaining', () => {
-      const builder = new ResoniteObjectBuilder(makeSpec());
+      const builder = makeBuilder(makeSpec());
       expect(builder.addQuadMesh()).toBe(builder);
     });
   });
 
   describe('addBoxCollider()', () => {
     it('derives the component ID from the slot ID', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('s2'))
-        .addBoxCollider({ x: 1, y: 1, z: 1 })
-        .build();
+      const result = makeBuilder(makeSpec('s2')).addBoxCollider({ x: 1, y: 1, z: 1 }).build();
 
       const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
       expect(collider?.id).toBe('s2-collider');
     });
 
     it('sets the Size field', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
-        .addBoxCollider({ x: 2, y: 3, z: 4 })
-        .build();
+      const result = makeBuilder(makeSpec()).addBoxCollider({ x: 2, y: 3, z: 4 }).build();
 
       const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
       expect(collider?.fields.Size).toEqual({ $type: 'float3', value: { x: 2, y: 3, z: 4 } });
     });
 
     it('adds CharacterCollider field when option is set', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
+      const result = makeBuilder(makeSpec())
         .addBoxCollider({ x: 1, y: 1, z: 1 }, { characterCollider: true })
         .build();
 
@@ -127,53 +138,49 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('does not add CharacterCollider when option is not set', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
-        .addBoxCollider({ x: 1, y: 1, z: 1 })
-        .build();
+      const result = makeBuilder(makeSpec()).addBoxCollider({ x: 1, y: 1, z: 1 }).build();
 
       const collider = result.components.find((c) => c.type.endsWith('BoxCollider'));
       expect(collider?.fields.CharacterCollider).toBeUndefined();
     });
 
     it('returns this for chaining', () => {
-      const builder = new ResoniteObjectBuilder(makeSpec());
+      const builder = makeBuilder(makeSpec());
       expect(builder.addBoxCollider({ x: 1, y: 1, z: 1 })).toBe(builder);
     });
   });
 
   describe('addGrabbable()', () => {
     it('derives the component ID from the slot ID', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('s3')).addGrabbable().build();
+      const result = makeBuilder(makeSpec('s3')).addGrabbable().build();
 
       const grabbable = result.components.find((c) => c.type.endsWith('Grabbable'));
       expect(grabbable?.id).toBe('s3-grabbable');
     });
 
     it('sets Scalable: true', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).addGrabbable().build();
+      const result = makeBuilder(makeSpec()).addGrabbable().build();
 
       const grabbable = result.components.find((c) => c.type.endsWith('Grabbable'));
       expect(grabbable?.fields).toEqual({ Scalable: { $type: 'bool', value: true } });
     });
 
     it('returns this for chaining', () => {
-      const builder = new ResoniteObjectBuilder(makeSpec());
+      const builder = makeBuilder(makeSpec());
       expect(builder.addGrabbable()).toBe(builder);
     });
   });
 
   describe('addTextComponent()', () => {
     it('derives the component ID from the slot ID', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('s4'))
-        .addTextComponent('Hello', 16)
-        .build();
+      const result = makeBuilder(makeSpec('s4')).addTextComponent('Hello', 16).build();
 
       const text = result.components.find((c) => c.type.endsWith('UIX.Text'));
       expect(text?.id).toBe('s4-text');
     });
 
     it('sets Content and Size fields', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).addTextComponent('Hello', 16).build();
+      const result = makeBuilder(makeSpec()).addTextComponent('Hello', 16).build();
 
       const text = result.components.find((c) => c.type.endsWith('UIX.Text'));
       expect(text?.fields).toEqual({
@@ -185,7 +192,7 @@ describe('ResoniteObjectBuilder', () => {
 
   describe('addQuadMesh() color option', () => {
     it('adds a Color field to the XiexeToonMaterial when color is given', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
+      const result = makeBuilder(makeSpec())
         .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha', {
           r: 0.5,
           g: 0.5,
@@ -203,7 +210,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('preserves existing material fields (e.g. BlendMode) alongside color', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
+      const result = makeBuilder(makeSpec())
         .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha', {
           r: 0,
           g: 0,
@@ -222,7 +229,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('does not add Color field when color is not given', () => {
-      const result = new ResoniteObjectBuilder(makeSpec())
+      const result = makeBuilder(makeSpec())
         .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
         .build();
 
@@ -243,32 +250,32 @@ describe('ResoniteObjectBuilder', () => {
     const childB = { ...childA, id: 'child-b', name: 'B' };
 
     it('addChild appends one child', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).addChild(childA).build();
+      const result = makeBuilder(makeSpec()).addChild(childA).build();
 
       expect(result.children).toHaveLength(1);
       expect(result.children[0].id).toBe('child-a');
     });
 
     it('addChildren appends multiple children in order', () => {
-      const result = new ResoniteObjectBuilder(makeSpec()).addChildren([childA, childB]).build();
+      const result = makeBuilder(makeSpec()).addChildren([childA, childB]).build();
 
       expect(result.children.map((c) => c.id)).toEqual(['child-a', 'child-b']);
     });
 
     it('addChild returns this for chaining', () => {
-      const builder = new ResoniteObjectBuilder(makeSpec());
+      const builder = makeBuilder(makeSpec());
       expect(builder.addChild(childA)).toBe(builder);
     });
 
     it('addChildren returns this for chaining', () => {
-      const builder = new ResoniteObjectBuilder(makeSpec());
+      const builder = makeBuilder(makeSpec());
       expect(builder.addChildren([childA])).toBe(builder);
     });
   });
 
   describe('method chaining', () => {
     it('produces the correct component order when chaining multiple add methods', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('s5'))
+      const result = makeBuilder(makeSpec('s5'))
         .addQuadMesh('texture://img.png', true, { x: 2, y: 3 }, 'Opaque')
         .addBoxCollider({ x: 2, y: 3, z: 0.05 })
         .addGrabbable()
@@ -286,7 +293,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('all component IDs are derived from the same slot ID', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('my-id'))
+      const result = makeBuilder(makeSpec('my-id'))
         .addQuadMesh('texture://img.png')
         .addBoxCollider({ x: 1, y: 1, z: 1 })
         .addGrabbable()
@@ -300,7 +307,7 @@ describe('ResoniteObjectBuilder', () => {
 
   describe('addQuadMesh() with shared texture reference', () => {
     it('uses shared StaticTexture2D references without creating local texture components', () => {
-      const result = new ResoniteObjectBuilder(makeSpec('slot-1'))
+      const result = makeBuilder(makeSpec('slot-1'))
         .addQuadMesh(toTextureReference('shared-texture-id'))
         .build();
 
@@ -333,16 +340,10 @@ describe('ResoniteObjectBuilder', () => {
   });
 
   describe('optional ResoniteObject fields', () => {
-    it('preserves sourceType, locationName, isActive from spec', () => {
-      const result = new ResoniteObjectBuilder({
-        ...makeSpec(),
-        sourceType: 'character',
-        locationName: 'table',
-        isActive: false,
-      }).build();
+    it('preserves sourceType and isActive from spec', () => {
+      const result = makeBuilder(makeSpec()).setSourceType('character').setActive(false).build();
 
       expect(result.sourceType).toBe('character');
-      expect(result.locationName).toBe('table');
       expect(result.isActive).toBe(false);
     });
   });

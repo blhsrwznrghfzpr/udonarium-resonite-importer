@@ -2,7 +2,6 @@
  * Converts Udonarium objects to Resonite objects
  */
 
-import { randomUUID } from 'crypto';
 import { GameTable, UdonariumObject } from '../domain/UdonariumObject';
 import { ImageBlendMode } from '../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
@@ -15,9 +14,8 @@ import { convertTerrain } from './objectConverters/terrainConverter';
 import { convertTable } from './objectConverters/tableConverter';
 import { convertTableMask } from './objectConverters/tableMaskConverter';
 import { convertTextNote } from './objectConverters/textNoteConverter';
+import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 import { replaceTexturesInValue } from './textureUtils';
-
-const SLOT_ID_PREFIX = 'udon-imp';
 
 /**
  * Convert Udonarium 2D coordinates to Resonite 3D coordinates
@@ -58,26 +56,12 @@ function convertObjectWithTextures(
 ): ResoniteObject {
   const position = convertPosition(udonObj.position.x, udonObj.position.y, udonObj.position.z);
 
-  const slotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
-  const baseObj: ResoniteObject = {
-    id: slotId,
-    name: udonObj.name,
-    position,
-    rotation: { x: 0, y: 0, z: 0 },
-    sourceType: udonObj.type,
-    ...(udonObj.type === 'character' && udonObj.locationName
-      ? { locationName: udonObj.locationName }
-      : {}),
-    components: [],
-    children: [],
-  };
-
   // Apply type-specific conversions
   switch (udonObj.type) {
     case 'character':
       return convertCharacter(
         udonObj,
-        baseObj,
+        position,
         convertSize,
         textureMap,
         imageAspectRatioMap,
@@ -86,37 +70,44 @@ function convertObjectWithTextures(
     case 'dice-symbol':
       return convertDiceSymbol(
         udonObj,
-        baseObj,
+        position,
         convertSize,
         textureMap,
         imageAspectRatioMap,
         imageBlendModeMap
       );
     case 'terrain':
-      return convertTerrain(udonObj, baseObj, textureMap, imageBlendModeMap);
+      return convertTerrain(udonObj, position, textureMap, imageBlendModeMap);
     case 'table':
       return convertTable(
         udonObj,
-        baseObj,
+        position,
         textureMap,
         (obj) => convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap),
         imageBlendModeMap
       );
     case 'table-mask':
-      return convertTableMask(udonObj, baseObj, textureMap);
+      return convertTableMask(udonObj, position, textureMap);
     case 'card':
-      return convertCard(udonObj, baseObj, textureMap, imageAspectRatioMap, imageBlendModeMap);
+      return convertCard(udonObj, position, textureMap, imageAspectRatioMap, imageBlendModeMap);
     case 'card-stack':
       return convertCardStack(
         udonObj,
-        baseObj,
+        position,
         (obj) => convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap),
         imageAspectRatioMap
       );
     case 'text-note':
-      return convertTextNote(udonObj, baseObj);
-    default:
-      return baseObj;
+      return convertTextNote(udonObj, position);
+    default: {
+      // Keep fallback for forward-compatibility when new object types are introduced.
+      const unknownObj = udonObj as UdonariumObject;
+      const builder = ResoniteObjectBuilder.create({ name: unknownObj.name })
+        .setPosition(position)
+        .setRotation({ x: 0, y: 0, z: 0 })
+        .setSourceType(unknownObj.type);
+      return builder.build();
+    }
   }
 }
 

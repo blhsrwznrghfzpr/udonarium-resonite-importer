@@ -1,3 +1,5 @@
+import { ObjectType } from './UdonariumObject';
+
 /**
  * Resonite object type definitions
  */
@@ -14,14 +16,20 @@ export interface ResoniteComponent {
   fields: Record<string, unknown>;
 }
 
-export interface ResoniteObject {
+type BaseResoniteObject = {
   id: string;
   name: string;
   position: Vector3;
   rotation: Vector3;
-  sourceType?: string;
-  locationName?: string;
-  isActive?: boolean;
+  sourceType?: Exclude<ObjectType, 'character'>;
+  isActive: boolean;
   components: ResoniteComponent[];
   children: ResoniteObject[];
-}
+};
+
+export type CharacterResoniteObject = Omit<BaseResoniteObject, 'sourceType'> & {
+  sourceType: 'character';
+  locationName?: string;
+};
+
+export type ResoniteObject = BaseResoniteObject | CharacterResoniteObject;

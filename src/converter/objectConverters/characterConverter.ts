@@ -19,11 +19,12 @@ function resolveBlendMode(
 
 export function convertCharacter(
   udonObj: GameCharacter,
-  baseObj: ResoniteObject,
+  basePosition: Vector3,
   convertSize: (size: number) => Vector3,
   textureMap?: Map<string, string>,
   imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
+  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  slotId?: string
 ): ResoniteObject {
   const size = convertSize(udonObj.size);
   const meshWidth = size.x;
@@ -36,15 +37,18 @@ export function convertCharacter(
   const hasCharacterImage = !!textureIdentifier;
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  const builder = new ResoniteObjectBuilder({
-    ...baseObj,
-    position: {
-      x: baseObj.position.x + meshWidth / 2,
-      y: baseObj.position.y + (hasCharacterImage ? meshHeight : size.y) / 2,
-      z: baseObj.position.z - meshWidth / 2,
-    },
-    rotation: { x: 0, y: udonObj.rotate ?? 0, z: udonObj.roll ?? 0 },
-  });
+  const builder = ResoniteObjectBuilder.create({
+    id: slotId,
+    name: udonObj.name,
+  })
+    .setPosition({
+      x: basePosition.x + meshWidth / 2,
+      y: basePosition.y + (hasCharacterImage ? meshHeight : size.y) / 2,
+      z: basePosition.z - meshWidth / 2,
+    })
+    .setRotation({ x: 0, y: udonObj.rotate ?? 0, z: udonObj.roll ?? 0 })
+    .setSourceType(udonObj.type)
+    .setLocationName(udonObj.locationName);
 
   if (hasCharacterImage) {
     const textureValue = resolveTextureValue(textureIdentifier, textureMap);

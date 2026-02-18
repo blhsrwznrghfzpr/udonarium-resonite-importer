@@ -11,7 +11,6 @@ describe('convertTerrain', () => {
       isLocked: false,
       mode: 3,
       rotate: 0,
-      locationName: 'table',
       name: 'Terrain',
       position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'wall.png', name: 'wall.png' }],
@@ -31,7 +30,13 @@ describe('convertTerrain', () => {
       children: [],
     };
 
-    const result = convertTerrain(udonObj, resoniteObj);
+    const result = convertTerrain(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(result.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
@@ -104,7 +109,6 @@ describe('convertTerrain', () => {
       isLocked: true,
       mode: 3,
       rotate: 0,
-      locationName: 'table',
       name: 'Locked Terrain',
       position: { x: 0, y: 0, z: 0 },
       images: [],
@@ -124,7 +128,13 @@ describe('convertTerrain', () => {
       children: [],
     };
 
-    const result = convertTerrain(udonObj, resoniteObj);
+    const result = convertTerrain(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(result.components.map((c) => c.type)).toEqual(['[FrooxEngine]FrooxEngine.BoxCollider']);
     expect(result.components[0].fields).toEqual({
@@ -150,7 +160,6 @@ describe('convertTerrain', () => {
       isLocked: false,
       mode: 1,
       rotate: 0,
-      locationName: 'table',
       name: 'No Walls Terrain',
       position: { x: 0, y: 0, z: 0 },
       images: [{ identifier: 'wall.png', name: 'wall.png' }],
@@ -170,7 +179,13 @@ describe('convertTerrain', () => {
       children: [],
     };
 
-    const result = convertTerrain(udonObj, resoniteObj);
+    const result = convertTerrain(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(result.children).toHaveLength(2);
     expect(result.children[0].id).toBe('slot-terrain-3-top');
@@ -193,7 +208,6 @@ describe('convertTerrain', () => {
       isLocked: false,
       mode: 3,
       rotate: 30,
-      locationName: 'table',
       name: 'Terrain Rotate',
       position: { x: 0, y: 0, z: 0 },
       images: [],
@@ -213,7 +227,13 @@ describe('convertTerrain', () => {
       children: [],
     };
 
-    const result = convertTerrain(udonObj, resoniteObj);
+    const result = convertTerrain(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(result.position).toEqual({ x: 1, y: 1, z: -1 });
     expect(result.rotation).toEqual({ x: 0, y: 30, z: 0 });
