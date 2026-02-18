@@ -42,7 +42,7 @@ export function convertTable(
   })
     .setPosition({ x: udonObj.width / 2, y: 0, z: -udonObj.height / 2 })
     .setRotation({ x: 90, y: 0, z: 0 })
-    .addQuadMesh(textureValue, false, { x: udonObj.width, y: udonObj.height }, blendMode)
+    .addQuadMesh(textureValue, true, { x: udonObj.width, y: udonObj.height }, blendMode)
     .addBoxCollider(
       { x: udonObj.width, y: udonObj.height, z: 0 },
       { characterCollider: options?.enableCharacterColliderOnLockedTerrain ?? false }

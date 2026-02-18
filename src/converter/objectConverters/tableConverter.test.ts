@@ -81,6 +81,14 @@ describe('convertTable', () => {
     expect(visual.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 20, y: 10 } },
     });
+    const material = visual.components.find(
+      (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
+    );
+    expect(material?.fields.Culling).toEqual({
+      $type: 'enum',
+      value: 'Off',
+      enumType: 'Culling',
+    });
 
     expect(result.children[1]).toBe(convertedTerrain);
   });
