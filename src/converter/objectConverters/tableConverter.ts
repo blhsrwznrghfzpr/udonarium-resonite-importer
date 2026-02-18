@@ -1,6 +1,6 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
-import { ResoniteObject } from '../../domain/ResoniteObject';
+import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { BlendModeValue, resolveTextureValue } from '../textureUtils';
 import { lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
@@ -17,21 +17,30 @@ function resolveBlendMode(
 
 export function convertTable(
   udonObj: GameTable,
-  baseObj: ResoniteObject,
+  slotId: string | undefined,
+  basePosition: Vector3,
   textureMap?: Map<string, string>,
   convertObject?: (obj: UdonariumObject) => ResoniteObject,
   imageBlendModeMap?: Map<string, ImageBlendMode>
 ): ResoniteObject {
-  const surfaceId = `${baseObj.id}-surface`;
+  const parentBuilder = ResoniteObjectBuilder.create({
+    id: slotId,
+    name: udonObj.name,
+  })
+    .setPosition(basePosition)
+    .setRotation({ x: 0, y: 0, z: 0 })
+    .setSourceType(udonObj.type);
+
+  const surfaceId = `${parentBuilder.getId()}-surface`;
   const textureIdentifier = udonObj.images[0]?.identifier;
   const textureValue = resolveTextureValue(textureIdentifier, textureMap);
   const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
-  const tableVisual = new ResoniteObjectBuilder({
+  const tableVisual = ResoniteObjectBuilder.create({
     id: surfaceId,
-    name: `${baseObj.name}-surface`,
-    position: { x: udonObj.width / 2, y: 0, z: -udonObj.height / 2 },
-    rotation: { x: 90, y: 0, z: 0 },
+    name: `${udonObj.name}-surface`,
   })
+    .setPosition({ x: udonObj.width / 2, y: 0, z: -udonObj.height / 2 })
+    .setRotation({ x: 90, y: 0, z: 0 })
     .addQuadMesh(textureValue, false, { x: udonObj.width, y: udonObj.height }, blendMode)
     .addBoxCollider({ x: udonObj.width, y: udonObj.height, z: 0 })
     .build();
@@ -42,10 +51,5 @@ export function convertTable(
       : [];
 
   // Keep table container unrotated so child object positions stay stable.
-  return new ResoniteObjectBuilder({
-    ...baseObj,
-    rotation: { x: 0, y: 0, z: 0 },
-  })
-    .addChildren([tableVisual, ...convertedChildren])
-    .build();
+  return parentBuilder.addChildren([tableVisual, ...convertedChildren]).build();
 }

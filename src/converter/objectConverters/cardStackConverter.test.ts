@@ -51,7 +51,7 @@ describe('convertCardStack', () => {
       })
     );
 
-    const result = convertCardStack(udonObj, resoniteObj, convertObject);
+    const result = convertCardStack(udonObj, resoniteObj.id, resoniteObj.position, convertObject);
 
     expect(convertObject).toHaveBeenCalledTimes(2);
     expect(convertObject).toHaveBeenNthCalledWith(1, cardB);
@@ -124,7 +124,8 @@ describe('convertCardStack', () => {
 
     const result = convertCardStack(
       udonObj,
-      resoniteObj,
+      resoniteObj.id,
+      resoniteObj.position,
       convertObject,
       new Map<string, number>([['front.png', 2]])
     );
@@ -185,7 +186,8 @@ describe('convertCardStack', () => {
 
     const result = convertCardStack(
       udonObj,
-      resoniteObj,
+      resoniteObj.id,
+      resoniteObj.position,
       convertObject,
       new Map<string, number>([
         ['./assets/images/trump/c01.gif', 1.5],

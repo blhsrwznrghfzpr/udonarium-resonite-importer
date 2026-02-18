@@ -225,7 +225,6 @@ describe('ObjectConverter', () => {
           isLocked: false,
           mode: 3,
           rotate: 0,
-          locationName: 'table',
           width: 10,
           height: 5,
           depth: 3,
@@ -347,7 +346,6 @@ describe('ObjectConverter', () => {
           isLocked: false,
           mode: 3,
           rotate: 0,
-          locationName: 'table',
           width: 1,
           height: 1,
           depth: 1,
@@ -553,7 +551,7 @@ describe('ObjectConverter', () => {
 
       expect(result[0].isActive).toBe(true);
       expect(result[1].isActive).toBe(false);
-      expect(result[2].isActive).toBeUndefined();
+      expect(result[2].isActive).toBe(true);
     });
   });
 });

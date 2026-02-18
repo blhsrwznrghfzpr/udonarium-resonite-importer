@@ -28,7 +28,7 @@ describe('convertCharacter', () => {
     const converted: Vector3 = { x: 0.3, y: 0.3, z: 0.3 };
     const convertSize = vi.fn().mockReturnValue(converted);
 
-    const result = convertCharacter(udonObj, resoniteObj, convertSize);
+    const result = convertCharacter(udonObj, resoniteObj.id, resoniteObj.position, convertSize);
 
     expect(convertSize).toHaveBeenCalledWith(3);
     expect(result.components.map((c) => c.type)).toEqual([
@@ -92,7 +92,7 @@ describe('convertCharacter', () => {
     };
     const convertSize = vi.fn().mockReturnValue({ x: 1, y: 1, z: 1 });
 
-    const result = convertCharacter(udonObj, resoniteObj, convertSize);
+    const result = convertCharacter(udonObj, resoniteObj.id, resoniteObj.position, convertSize);
 
     expect(result.components.map((c) => c.type)).toEqual([
       '[FrooxEngine]FrooxEngine.BoxCollider',
@@ -124,7 +124,8 @@ describe('convertCharacter', () => {
 
     const result = convertCharacter(
       udonObj,
-      resoniteObj,
+      resoniteObj.id,
+      resoniteObj.position,
       convertSize,
       undefined,
       imageAspectRatioMap

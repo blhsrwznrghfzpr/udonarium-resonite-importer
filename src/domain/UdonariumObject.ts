@@ -77,7 +77,6 @@ export interface Terrain extends BaseUdonariumObject {
   isLocked: boolean;
   mode: number;
   rotate: number;
-  locationName: string;
   width: number;
   height: number;
   depth: number;

@@ -149,7 +149,7 @@ export class SlotBuilder {
         const parentId = isTable
           ? tablesSlotId
           : isInventoryObject
-            ? await this.ensureInventoryLocationSlot(object.locationName, inventorySlotId)
+            ? await this.ensureInventoryLocationSlot(undefined, inventorySlotId)
             : objectsSlotId;
         result = await this.buildSlot(object, parentId);
       } catch (error) {

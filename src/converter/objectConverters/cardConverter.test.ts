@@ -29,7 +29,7 @@ describe('convertCard', () => {
     const udonObj = createBaseCard();
     const resoniteObj = createBaseResonite();
 
-    const result = convertCard(udonObj, resoniteObj);
+    const result = convertCard(udonObj, resoniteObj.id, resoniteObj.position);
 
     expect(result.position).toEqual({ x: 0.5, y: 0.001, z: -0.5 });
     expect(result.rotation).toEqual({ x: 0, y: 0, z: 0 });
@@ -48,7 +48,7 @@ describe('convertCard', () => {
     udonObj.size = 2;
     const resoniteObj = createBaseResonite();
 
-    const result = convertCard(udonObj, resoniteObj);
+    const result = convertCard(udonObj, resoniteObj.id, resoniteObj.position);
 
     expect(result.position).toEqual({ x: 1, y: 0.001, z: -1 });
     const collider = result.components.find(
@@ -72,7 +72,7 @@ describe('convertCard', () => {
     const udonObj = createBaseCard();
     const resoniteObj = createBaseResonite();
 
-    const result = convertCard(udonObj, resoniteObj);
+    const result = convertCard(udonObj, resoniteObj.id, resoniteObj.position);
 
     const frontTexture = result.children[0].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.StaticTexture2D'
@@ -98,7 +98,7 @@ describe('convertCard', () => {
     udonObj.rotate = -30;
     const resoniteObj = createBaseResonite();
 
-    const result = convertCard(udonObj, resoniteObj);
+    const result = convertCard(udonObj, resoniteObj.id, resoniteObj.position);
 
     expect(result.rotation).toEqual({ x: 0, y: -30, z: 180 });
   });
@@ -110,7 +110,7 @@ describe('convertCard', () => {
     udonObj.images = [{ identifier: 'fallback.png', name: 'fallback.png' }];
     const resoniteObj = createBaseResonite();
 
-    const result = convertCard(udonObj, resoniteObj);
+    const result = convertCard(udonObj, resoniteObj.id, resoniteObj.position);
 
     const frontTexture = result.children[0].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.StaticTexture2D'
@@ -136,7 +136,7 @@ describe('convertCard', () => {
     udonObj.images = [{ identifier: 'front.gif', name: 'front.gif' }];
     const resoniteObj = createBaseResonite();
 
-    const result = convertCard(udonObj, resoniteObj);
+    const result = convertCard(udonObj, resoniteObj.id, resoniteObj.position);
 
     const frontTexture = result.children[0].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.StaticTexture2D'
@@ -155,7 +155,13 @@ describe('convertCard', () => {
     const resoniteObj = createBaseResonite();
     const imageAspectRatioMap = new Map<string, number>([['front.png', 2]]);
 
-    const result = convertCard(udonObj, resoniteObj, undefined, imageAspectRatioMap);
+    const result = convertCard(
+      udonObj,
+      resoniteObj.id,
+      resoniteObj.position,
+      undefined,
+      imageAspectRatioMap
+    );
 
     expect(result.position).toEqual({ x: 1, y: 0.001, z: -2 });
     const collider = result.components.find(
@@ -175,7 +181,13 @@ describe('convertCard', () => {
     const resoniteObj = createBaseResonite();
     const imageAspectRatioMap = new Map<string, number>([['assets/images/trump/z02.gif', 2]]);
 
-    const result = convertCard(udonObj, resoniteObj, undefined, imageAspectRatioMap);
+    const result = convertCard(
+      udonObj,
+      resoniteObj.id,
+      resoniteObj.position,
+      undefined,
+      imageAspectRatioMap
+    );
 
     expect(result.position).toEqual({ x: 1, y: 0.001, z: -2 });
   });
@@ -193,7 +205,13 @@ describe('convertCard', () => {
       ['testCharacter_1_image', 1.2],
     ]);
 
-    const result = convertCard(udonObj, resoniteObj, undefined, imageAspectRatioMap);
+    const result = convertCard(
+      udonObj,
+      resoniteObj.id,
+      resoniteObj.position,
+      undefined,
+      imageAspectRatioMap
+    );
 
     expect(result.position).toEqual({ x: 1, y: 0.001, z: -1.2 });
     const collider = result.components.find(
@@ -224,7 +242,14 @@ describe('convertCard', () => {
       ['back.png', 'Alpha' as const],
     ]);
 
-    const result = convertCard(udonObj, resoniteObj, undefined, undefined, imageBlendModeMap);
+    const result = convertCard(
+      udonObj,
+      resoniteObj.id,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      imageBlendModeMap
+    );
 
     const frontMaterial = result.children[0].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'
@@ -249,7 +274,14 @@ describe('convertCard', () => {
     const resoniteObj = createBaseResonite();
     const imageBlendModeMap = new Map([['back.png', 'Alpha' as const]]);
 
-    const result = convertCard(udonObj, resoniteObj, undefined, undefined, imageBlendModeMap);
+    const result = convertCard(
+      udonObj,
+      resoniteObj.id,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      imageBlendModeMap
+    );
 
     const frontMaterial = result.children[0].components.find(
       (c) => c.type === '[FrooxEngine]FrooxEngine.XiexeToonMaterial'

@@ -11,7 +11,6 @@ describe('convertTable', () => {
       isLocked: false,
       mode: 3,
       rotate: 0,
-      locationName: 'table',
       name: 'Terrain',
       position: { x: 10, y: 20, z: 0 },
       images: [],
@@ -55,7 +54,13 @@ describe('convertTable', () => {
       children: [],
     };
 
-    const result = convertTable(udonObj, resoniteObj, undefined, () => convertedTerrain);
+    const result = convertTable(
+      udonObj,
+      resoniteObj.id,
+      resoniteObj.position,
+      undefined,
+      () => convertedTerrain
+    );
 
     expect(result.rotation).toEqual({ x: 0, y: 0, z: 0 });
     expect(result.components).toEqual([]);

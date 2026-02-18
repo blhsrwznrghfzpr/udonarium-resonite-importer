@@ -36,7 +36,6 @@ describe('TerrainParser', () => {
       expect(result.isLocked).toBe(false);
       expect(result.mode).toBe(0);
       expect(result.rotate).toBe(0);
-      expect(result.locationName).toBe('');
       expect(result.width).toBe(3);
       expect(result.height).toBe(2);
       expect(result.depth).toBe(4);
@@ -297,7 +296,6 @@ describe('TerrainParser', () => {
       expect(result.isLocked).toBe(true);
       expect(result.mode).toBe(3);
       expect(result.rotate).toBe(30);
-      expect(result.locationName).toBe('table');
     });
 
     it('should default position to (0, 0)', () => {
@@ -356,7 +354,6 @@ describe('TerrainParser', () => {
       expect(result.isLocked).toBe(false);
       expect(result.mode).toBe(0);
       expect(result.rotate).toBe(0);
-      expect(result.locationName).toBe('');
       expect(result.wallImage).toBeNull();
       expect(result.floorImage).toBeNull();
       expect(result.images).toHaveLength(0);

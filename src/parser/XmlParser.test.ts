@@ -402,7 +402,6 @@ describe('XmlParser', () => {
       expect(terrain.isLocked).toBe(false);
       expect(terrain.mode).toBe(3);
       expect(terrain.rotate).toBe(0);
-      expect(terrain.locationName).toBe('table');
       expect(terrain.width).toBe(2);
       expect(terrain.height).toBe(2);
       expect(terrain.depth).toBe(2);
@@ -438,7 +437,6 @@ describe('XmlParser', () => {
       expect(terrain.isLocked).toBe(true);
       expect(terrain.mode).toBe(3);
       expect(terrain.rotate).toBe(0);
-      expect(terrain.locationName).toBe('table');
     });
 
     it('should parse terrain with different dimensions', () => {

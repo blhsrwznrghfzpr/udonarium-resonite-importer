@@ -1,4 +1,5 @@
 import { ResoniteComponent, ResoniteObject } from '../domain/ResoniteObject';
+import { randomUUID } from 'crypto';
 import {
   BlendModeValue,
   ColorXValue,
@@ -11,7 +12,14 @@ import {
 type QuadSize = { x: number; y: number };
 type BoxSize = { x: number; y: number; z: number };
 
-type ResoniteObjectSpec = Omit<ResoniteObject, 'components' | 'children'>;
+export type NewResoniteObjectSpec = {
+  id?: string;
+  name: string;
+};
+
+type ResoniteObjectIdentity = Required<NewResoniteObjectSpec>;
+
+const SLOT_ID_PREFIX = 'udon-imp';
 
 type StaticTexture2DFields = {
   URL: { $type: 'Uri'; value: string };
@@ -176,12 +184,48 @@ function buildGrabbableComponent(slotId: string): ResoniteComponent {
 export class ResoniteObjectBuilder {
   private readonly obj: ResoniteObject;
 
-  constructor(spec: ResoniteObjectSpec) {
+  static create(identity: NewResoniteObjectSpec): ResoniteObjectBuilder {
+    return new ResoniteObjectBuilder({
+      id: identity.id ?? `${SLOT_ID_PREFIX}-${randomUUID()}`,
+      name: identity.name,
+    });
+  }
+
+  private constructor(identity: ResoniteObjectIdentity) {
     this.obj = {
-      ...spec,
+      id: identity.id,
+      name: identity.name,
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: 0, z: 0 },
+      sourceType: 'text-note',
+      isActive: true,
       components: [],
       children: [],
     };
+  }
+
+  getId(): string {
+    return this.obj.id;
+  }
+
+  setPosition(position: ResoniteObject['position']): this {
+    this.obj.position = position;
+    return this;
+  }
+
+  setRotation(rotation: ResoniteObject['rotation']): this {
+    this.obj.rotation = rotation;
+    return this;
+  }
+
+  setSourceType(sourceType: ResoniteObject['sourceType']): this {
+    this.obj.sourceType = sourceType;
+    return this;
+  }
+
+  setActive(isActive: ResoniteObject['isActive']): this {
+    this.obj.isActive = isActive;
+    return this;
   }
 
   addQuadMesh(

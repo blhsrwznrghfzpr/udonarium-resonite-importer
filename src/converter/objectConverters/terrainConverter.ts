@@ -24,14 +24,17 @@ function buildWallSlot(
   textureValue: string | undefined,
   blendMode: BlendModeValue
 ): ResoniteObject {
-  return new ResoniteObjectBuilder({ id, name, position, rotation })
+  return ResoniteObjectBuilder.create({ id, name })
+    .setPosition(position)
+    .setRotation(rotation)
     .addQuadMesh(textureValue, false, size, blendMode)
     .build();
 }
 
 export function convertTerrain(
   udonObj: Terrain,
-  baseObj: ResoniteObject,
+  slotId: string | undefined,
+  basePosition: Vector3,
   textureMap?: Map<string, string>,
   imageBlendModeMap?: Map<string, ImageBlendMode>
 ): ResoniteObject {
@@ -48,34 +51,46 @@ export function convertTerrain(
   const topBlendMode = resolveBlendMode(topTextureIdentifier, imageBlendModeMap);
   const sideBlendMode = resolveBlendMode(sideTextureIdentifier, imageBlendModeMap);
 
-  const topId = `${baseObj.id}-top`;
-  const wallsId = `${baseObj.id}-walls`;
+  const mainBuilder = ResoniteObjectBuilder.create({
+    id: slotId,
+    name: udonObj.name,
+  })
+    .setRotation({ x: 0, y: udonObj.rotate, z: 0 })
+    .setPosition({
+      x: basePosition.x + udonObj.width / 2,
+      y: basePosition.y + udonObj.height / 2,
+      z: basePosition.z - udonObj.depth / 2,
+    })
+    .setSourceType(udonObj.type);
+
+  const topId = `${mainBuilder.getId()}-top`;
+  const wallsId = `${mainBuilder.getId()}-walls`;
   const frontId = `${wallsId}-front`;
   const backId = `${wallsId}-back`;
   const leftId = `${wallsId}-left`;
   const rightId = `${wallsId}-right`;
   const hideWalls = udonObj.mode === 1;
 
-  const topSurface = new ResoniteObjectBuilder({
+  const topSurface = ResoniteObjectBuilder.create({
     id: topId,
-    name: `${baseObj.name}-top`,
-    position: { x: 0, y: udonObj.height / 2, z: 0 },
-    rotation: { x: 90, y: 0, z: 0 },
+    name: `${udonObj.name}-top`,
   })
+    .setPosition({ x: 0, y: udonObj.height / 2, z: 0 })
+    .setRotation({ x: 90, y: 0, z: 0 })
     .addQuadMesh(topTextureValue, false, { x: udonObj.width, y: udonObj.depth }, topBlendMode)
     .build();
 
-  const wallsContainer = new ResoniteObjectBuilder({
+  const wallsContainer = ResoniteObjectBuilder.create({
     id: wallsId,
-    name: `${baseObj.name}-walls`,
-    position: { x: 0, y: 0, z: 0 },
-    rotation: { x: 0, y: 0, z: 0 },
-    isActive: !hideWalls,
+    name: `${udonObj.name}-walls`,
   })
+    .setPosition({ x: 0, y: 0, z: 0 })
+    .setRotation({ x: 0, y: 0, z: 0 })
+    .setActive(!hideWalls)
     .addChild(
       buildWallSlot(
         frontId,
-        `${baseObj.name}-front`,
+        `${udonObj.name}-front`,
         { x: 0, y: 0, z: -udonObj.depth / 2 },
         { x: 0, y: 0, z: 0 },
         { x: udonObj.width, y: udonObj.height },
@@ -86,7 +101,7 @@ export function convertTerrain(
     .addChild(
       buildWallSlot(
         backId,
-        `${baseObj.name}-back`,
+        `${udonObj.name}-back`,
         { x: 0, y: 0, z: udonObj.depth / 2 },
         { x: 0, y: 180, z: 0 },
         { x: udonObj.width, y: udonObj.height },
@@ -97,7 +112,7 @@ export function convertTerrain(
     .addChild(
       buildWallSlot(
         leftId,
-        `${baseObj.name}-left`,
+        `${udonObj.name}-left`,
         { x: -udonObj.width / 2, y: 0, z: 0 },
         { x: 0, y: 90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
@@ -108,7 +123,7 @@ export function convertTerrain(
     .addChild(
       buildWallSlot(
         rightId,
-        `${baseObj.name}-right`,
+        `${udonObj.name}-right`,
         { x: udonObj.width / 2, y: 0, z: 0 },
         { x: 0, y: -90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
@@ -120,15 +135,7 @@ export function convertTerrain(
 
   // Axis mapping: width -> X, height -> Y, depth -> Z
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  const mainBuilder = new ResoniteObjectBuilder({
-    ...baseObj,
-    rotation: { x: 0, y: udonObj.rotate, z: 0 },
-    position: {
-      x: baseObj.position.x + udonObj.width / 2,
-      y: baseObj.position.y + udonObj.height / 2,
-      z: baseObj.position.z - udonObj.depth / 2,
-    },
-  }).addBoxCollider(
+  mainBuilder.addBoxCollider(
     { x: udonObj.width, y: udonObj.height, z: udonObj.depth },
     { characterCollider: udonObj.isLocked }
   );

@@ -40,7 +40,7 @@ describe('convertDiceSymbol', () => {
     const udonObj = createBaseDice();
     const resoniteObj = createBaseResonite();
 
-    const result = convertDiceSymbol(udonObj, resoniteObj, (size) => ({
+    const result = convertDiceSymbol(udonObj, resoniteObj.id, resoniteObj.position, (size) => ({
       x: size,
       y: size,
       z: size,
@@ -68,7 +68,8 @@ describe('convertDiceSymbol', () => {
 
     const result = convertDiceSymbol(
       udonObj,
-      resoniteObj,
+      resoniteObj.id,
+      resoniteObj.position,
       (size) => ({ x: size, y: size, z: size }),
       undefined,
       imageAspectRatioMap
@@ -99,7 +100,7 @@ describe('convertDiceSymbol', () => {
     udonObj.rotate = -30;
     const resoniteObj = createBaseResonite();
 
-    const result = convertDiceSymbol(udonObj, resoniteObj, (size) => ({
+    const result = convertDiceSymbol(udonObj, resoniteObj.id, resoniteObj.position, (size) => ({
       x: size,
       y: size,
       z: size,

@@ -328,24 +328,21 @@ describe('SlotBuilder', () => {
       ).toBe(true);
     });
 
-    it('should place characters under Inventory grouped by location name', async () => {
+    it('should place characters under Inventory grouped by fallback location name', async () => {
       const graveyardCharacter = createResoniteObject({
         id: 'char-graveyard',
         name: 'Character Graveyard',
         sourceType: 'character',
-        locationName: 'graveyard',
       });
       const commonCharacter = createResoniteObject({
         id: 'char-common',
         name: 'Character Common',
         sourceType: 'character',
-        locationName: 'common',
       });
       const anotherGraveyardCharacter = createResoniteObject({
         id: 'char-graveyard-2',
         name: 'Character Graveyard 2',
         sourceType: 'character',
-        locationName: 'graveyard',
       });
 
       await slotBuilder.buildSlots([
@@ -367,31 +364,22 @@ describe('SlotBuilder', () => {
         5,
         expect.objectContaining({
           parentId: inventorySlotCall.id,
-          name: 'graveyard',
+          name: 'Unknown',
           isActive: false,
         })
       );
-      const graveyardSlotCall = mockClient.addSlot.mock.calls[4][0] as { id: string };
-      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
-        7,
-        expect.objectContaining({
-          parentId: inventorySlotCall.id,
-          name: 'common',
-          isActive: false,
-        })
-      );
-      const commonSlotCall = mockClient.addSlot.mock.calls[6][0] as { id: string };
+      const unknownSlotCall = mockClient.addSlot.mock.calls[4][0] as { id: string };
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
         6,
-        expect.objectContaining({ id: 'char-graveyard', parentId: graveyardSlotCall.id })
+        expect.objectContaining({ id: 'char-graveyard', parentId: unknownSlotCall.id })
+      );
+      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
+        7,
+        expect.objectContaining({ id: 'char-common', parentId: unknownSlotCall.id })
       );
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
         8,
-        expect.objectContaining({ id: 'char-common', parentId: commonSlotCall.id })
-      );
-      expect(mockClient.addSlot).toHaveBeenNthCalledWith(
-        9,
-        expect.objectContaining({ id: 'char-graveyard-2', parentId: graveyardSlotCall.id })
+        expect.objectContaining({ id: 'char-graveyard-2', parentId: unknownSlotCall.id })
       );
     });
 
@@ -447,7 +435,6 @@ describe('SlotBuilder', () => {
         createResoniteObject({
           id: 'char-1',
           sourceType: 'character',
-          locationName: 'graveyard',
         }),
         createResoniteObject({
           id: 'obj-2',

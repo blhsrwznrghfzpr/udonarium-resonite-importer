@@ -24,7 +24,7 @@ describe('convertTextNote', () => {
       children: [],
     };
 
-    const result = convertTextNote(udonObj, resoniteObj);
+    const result = convertTextNote(udonObj, resoniteObj.id, resoniteObj.position);
 
     expect(result.position).toEqual({ x: 0.5, y: 0, z: -0.5 });
     expect(result.components).toEqual([
@@ -66,7 +66,7 @@ describe('convertTextNote', () => {
       children: [],
     };
 
-    const result = convertTextNote(udonObj, resoniteObj);
+    const result = convertTextNote(udonObj, resoniteObj.id, resoniteObj.position);
 
     expect(result.position).toEqual({ x: 0.5, y: 0, z: -0.5 });
     expect(result.components[0].fields).toEqual({
