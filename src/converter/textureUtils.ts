@@ -53,14 +53,18 @@ export function replaceTexturesInValue(value: unknown, textureMap: Map<string, s
   return replaced;
 }
 
-export function isGifTexture(textureValue: string): boolean {
-  if (textureValue.startsWith(TEXTURE_REFERENCE_PREFIX)) {
+export function isGifTexture(identifier: string, textureMap?: Map<string, string>): boolean {
+  if (identifier.startsWith(TEXTURE_REFERENCE_PREFIX)) {
     return false;
   }
-  if (textureValue.startsWith(TEXTURE_PLACEHOLDER_PREFIX)) {
-    return GIF_EXTENSION_PATTERN.test(textureValue.slice(TEXTURE_PLACEHOLDER_PREFIX.length));
+  if (textureMap) {
+    const resolvedUrl = textureMap.get(identifier) ?? identifier;
+    return GIF_EXTENSION_PATTERN.test(identifier) || GIF_EXTENSION_PATTERN.test(resolvedUrl);
   }
-  return GIF_EXTENSION_PATTERN.test(textureValue);
+  if (identifier.startsWith(TEXTURE_PLACEHOLDER_PREFIX)) {
+    return GIF_EXTENSION_PATTERN.test(identifier.slice(TEXTURE_PLACEHOLDER_PREFIX.length));
+  }
+  return GIF_EXTENSION_PATTERN.test(identifier);
 }
 
 export function parseTextureReferenceId(textureValue?: string): string | undefined {

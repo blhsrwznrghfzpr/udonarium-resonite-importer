@@ -8,6 +8,9 @@ import {
   parseTextureReferenceId,
   toSharedTexturePropertyBlockId,
 } from './textureUtils';
+import { SLOT_ID_PREFIX } from '../config/MappingConfig';
+import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
+import { buildStaticTexture2DFields, buildMainTexturePropertyBlockFields } from './componentFields';
 
 // ---- private types ----
 type QuadSize = { x: number; y: number };
@@ -20,20 +23,7 @@ export type NewResoniteObjectSpec = {
 
 type ResoniteObjectIdentity = Required<NewResoniteObjectSpec>;
 
-const SLOT_ID_PREFIX = 'udon-imp';
-
-type StaticTexture2DFields = {
-  URL: { $type: 'Uri'; value: string };
-  WrapModeU: { $type: 'enum'; value: 'Clamp'; enumType: 'TextureWrapMode' };
-  WrapModeV: { $type: 'enum'; value: 'Clamp'; enumType: 'TextureWrapMode' };
-  FilterMode?: { $type: 'enum?'; value: 'Point'; enumType: 'TextureFilterMode' };
-};
-
 type BlendModeField = { $type: 'enum'; value: BlendModeValue; enumType: 'BlendMode' };
-
-type MainTexturePropertyBlockFields = {
-  Texture: { $type: 'reference'; targetId: string };
-};
 
 type XiexeToonMaterialFields = {
   BlendMode: BlendModeField;
@@ -62,18 +52,6 @@ function buildXiexeToonMaterialFields(
   };
 }
 
-function buildStaticTexture2DFields(textureValue: string): StaticTexture2DFields {
-  const fields: StaticTexture2DFields = {
-    URL: { $type: 'Uri', value: textureValue },
-    WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
-    WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
-  };
-  if (isGifTexture(textureValue)) {
-    fields.FilterMode = { $type: 'enum?', value: 'Point', enumType: 'TextureFilterMode' };
-  }
-  return fields;
-}
-
 function buildQuadMeshComponents(
   slotId: string,
   textureValue?: string,
@@ -97,7 +75,7 @@ function buildQuadMeshComponents(
   const components: ResoniteComponent[] = [
     {
       id: meshId,
-      type: '[FrooxEngine]FrooxEngine.QuadMesh',
+      type: COMPONENT_TYPES.QUAD_MESH,
       fields: {
         Size: { $type: 'float2', value: size },
       },
@@ -107,32 +85,29 @@ function buildQuadMeshComponents(
   if (textureValue && !sharedTextureId) {
     components.push({
       id: textureId,
-      type: '[FrooxEngine]FrooxEngine.StaticTexture2D',
-      fields: buildStaticTexture2DFields(textureValue),
+      type: COMPONENT_TYPES.STATIC_TEXTURE_2D,
+      fields: buildStaticTexture2DFields(textureValue, isGifTexture(textureValue)),
     });
   }
 
   components.push({
     id: materialId,
-    type: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
+    type: COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
     fields: buildXiexeToonMaterialFields(blendMode, color, dualSided),
   });
 
   if (textureValue && !sharedTextureId) {
     const textureProviderId = sharedTextureId ?? localTextureId!;
-    const textureBlockFields: MainTexturePropertyBlockFields = {
-      Texture: { $type: 'reference', targetId: textureProviderId },
-    };
     components.push({
       id: textureBlockId,
-      type: '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
-      fields: textureBlockFields,
+      type: COMPONENT_TYPES.MAIN_TEXTURE_PROPERTY_BLOCK,
+      fields: buildMainTexturePropertyBlockFields(textureProviderId),
     });
   }
 
   components.push({
     id: `${slotId}-renderer`,
-    type: '[FrooxEngine]FrooxEngine.MeshRenderer',
+    type: COMPONENT_TYPES.MESH_RENDERER,
     fields: {
       Mesh: { $type: 'reference', targetId: meshId },
       Materials: {
@@ -160,7 +135,7 @@ function buildBoxColliderComponent(
 ): ResoniteComponent {
   return {
     id: `${slotId}-collider`,
-    type: '[FrooxEngine]FrooxEngine.BoxCollider',
+    type: COMPONENT_TYPES.BOX_COLLIDER,
     fields: {
       Size: { $type: 'float3', value: size },
       ...(options?.characterCollider ? { CharacterCollider: { $type: 'bool', value: true } } : {}),
@@ -171,7 +146,7 @@ function buildBoxColliderComponent(
 function buildGrabbableComponent(slotId: string): ResoniteComponent {
   return {
     id: `${slotId}-grabbable`,
-    type: '[FrooxEngine]FrooxEngine.Grabbable',
+    type: COMPONENT_TYPES.GRABBABLE,
     fields: {
       Scalable: { $type: 'bool', value: true },
     },
@@ -274,7 +249,7 @@ export class ResoniteObjectBuilder {
   addTextComponent(content: string, size: number): this {
     this.obj.components.push({
       id: `${this.obj.id}-text`,
-      type: '[FrooxEngine]FrooxEngine.UIX.Text',
+      type: COMPONENT_TYPES.UIX_TEXT,
       fields: {
         Content: { $type: 'string', value: content },
         Size: { $type: 'float', value: size },

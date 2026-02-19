@@ -10,15 +10,15 @@ import {
   IMPORT_GROUP_SCALE,
   IMPORT_GROUP_Y_OFFSET,
   IMPORT_ROOT_TAG,
+  SLOT_ID_PREFIX,
 } from '../config/MappingConfig';
+import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
+import {
+  buildStaticTexture2DFields,
+  buildMainTexturePropertyBlockFields,
+} from '../converter/componentFields';
+import { isGifTexture } from '../converter/textureUtils';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
-
-const SLOT_ID_PREFIX = 'udon-imp';
-const GIF_EXTENSION_PATTERN = /\.gif(?:$|[?#])/i;
-
-function shouldUsePointFilterMode(identifier: string, textureUrl: string): boolean {
-  return GIF_EXTENSION_PATTERN.test(identifier) || GIF_EXTENSION_PATTERN.test(textureUrl);
-}
 
 function isListField(value: unknown): boolean {
   return (
@@ -202,7 +202,7 @@ export class SlotBuilder {
     await this.client.addComponent({
       id: `${groupId}-object-root`,
       slotId: groupId,
-      componentType: '[FrooxEngine]FrooxEngine.ObjectRoot',
+      componentType: COMPONENT_TYPES.OBJECT_ROOT,
       fields: {},
     });
 
@@ -241,29 +241,14 @@ export class SlotBuilder {
       await this.client.addComponent({
         id: textureComponentId,
         slotId: textureSlotId,
-        componentType: '[FrooxEngine]FrooxEngine.StaticTexture2D',
-        fields: {
-          URL: { $type: 'Uri', value: textureUrl },
-          WrapModeU: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
-          WrapModeV: { $type: 'enum', value: 'Clamp', enumType: 'TextureWrapMode' },
-          ...(shouldUsePointFilterMode(identifier, textureUrl)
-            ? {
-                FilterMode: {
-                  $type: 'enum?',
-                  value: 'Point',
-                  enumType: 'TextureFilterMode',
-                },
-              }
-            : {}),
-        },
+        componentType: COMPONENT_TYPES.STATIC_TEXTURE_2D,
+        fields: buildStaticTexture2DFields(textureUrl, isGifTexture(identifier, textureMap)),
       });
       await this.client.addComponent({
         id: `${textureSlotId}-main-texture-property-block`,
         slotId: textureSlotId,
-        componentType: '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
-        fields: {
-          Texture: { $type: 'reference', targetId: textureComponentId },
-        },
+        componentType: COMPONENT_TYPES.MAIN_TEXTURE_PROPERTY_BLOCK,
+        fields: buildMainTexturePropertyBlockFields(textureComponentId),
       });
 
       textureReferenceMap.set(identifier, textureComponentId);
