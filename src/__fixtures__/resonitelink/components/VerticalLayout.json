@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.UIX.VerticalLayout",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_UIX_VerticalLayout_1771415011211",
-    "sourceMessageId": "tsrl_j9d7co6flo_1q",
+    "entityId": "test_[FrooxEngine]FrooxEngine_UIX_VerticalLayout_1771505610895",
+    "sourceMessageId": "tsrl_98l5vohy4ib_2k",
     "success": true,
     "errorInfo": null
   },
@@ -15,70 +15,70 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_770C"
+          "id": "Reso_17F89"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_770D"
+          "id": "Reso_17F8A"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_770E"
+          "id": "Reso_17F8B"
         },
         "PaddingTop": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_770F"
+          "id": "Reso_17F8C"
         },
         "PaddingRight": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_7710"
+          "id": "Reso_17F8D"
         },
         "PaddingBottom": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_7711"
+          "id": "Reso_17F8E"
         },
         "PaddingLeft": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_7712"
+          "id": "Reso_17F8F"
         },
         "Spacing": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_7713"
+          "id": "Reso_17F90"
         },
         "HorizontalAlign": {
           "$type": "enum",
           "value": "Center",
           "enumType": "LayoutHorizontalAlignment",
-          "id": "Reso_7714"
+          "id": "Reso_17F91"
         },
         "VerticalAlign": {
           "$type": "enum",
           "value": "Middle",
           "enumType": "LayoutVerticalAlignment",
-          "id": "Reso_7715"
+          "id": "Reso_17F92"
         },
         "ForceExpandWidth": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_7716"
+          "id": "Reso_17F93"
         },
         "ForceExpandHeight": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_7717"
+          "id": "Reso_17F94"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_UIX_VerticalLayout_1771415011211",
+      "id": "test_[FrooxEngine]FrooxEngine_UIX_VerticalLayout_1771505610895",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_1r",
+    "sourceMessageId": "tsrl_98l5vohy4ib_2l",
     "success": true,
     "errorInfo": null
   }

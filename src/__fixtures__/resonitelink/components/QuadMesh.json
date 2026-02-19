@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.QuadMesh",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_QuadMesh_1771415011156",
-    "sourceMessageId": "tsrl_j9d7co6flo_q",
+    "entityId": "test_[FrooxEngine]FrooxEngine_QuadMesh_1771505610786",
+    "sourceMessageId": "tsrl_98l5vohy4ib_r",
     "success": true,
     "errorInfo": null
   },
@@ -15,33 +15,49 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_75E9"
+          "id": "Reso_17E5D"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_75EA"
+          "id": "Reso_17E5E"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_75EB"
+          "id": "Reso_17E5F"
         },
         "HighPriorityIntegration": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_75EC"
+          "id": "Reso_17E60"
         },
         "OverrideBoundingBox": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_75ED"
+          "id": "Reso_17E61"
+        },
+        "OverridenBoundingBox": {
+          "$type": "BoundingBox",
+          "value": {
+            "min": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "max": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "id": "Reso_17E62"
         },
         "Profile": {
           "$type": "enum",
           "value": "Linear",
           "enumType": "ColorProfile",
-          "id": "Reso_75EE"
+          "id": "Reso_17E63"
         },
         "Rotation": {
           "$type": "floatQ",
@@ -51,7 +67,7 @@
             "z": 0,
             "w": 1
           },
-          "id": "Reso_75EF"
+          "id": "Reso_17E64"
         },
         "Size": {
           "$type": "float2",
@@ -59,7 +75,7 @@
             "x": 1,
             "y": 1
           },
-          "id": "Reso_75F0"
+          "id": "Reso_17E65"
         },
         "UVOffset": {
           "$type": "float2",
@@ -67,7 +83,7 @@
             "x": 0,
             "y": 0
           },
-          "id": "Reso_75F1"
+          "id": "Reso_17E66"
         },
         "UVScale": {
           "$type": "float2",
@@ -75,22 +91,22 @@
             "x": 1,
             "y": 1
           },
-          "id": "Reso_75F2"
+          "id": "Reso_17E67"
         },
         "ScaleUVWithSize": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_75F3"
+          "id": "Reso_17E68"
         },
         "DualSided": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_75F4"
+          "id": "Reso_17E69"
         },
         "UseVertexColors": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_75F5"
+          "id": "Reso_17E6A"
         },
         "UpperLeftColor": {
           "$type": "colorX",
@@ -101,7 +117,7 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_75F6"
+          "id": "Reso_17E6B"
         },
         "LowerLeftColor": {
           "$type": "colorX",
@@ -112,7 +128,7 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_75F7"
+          "id": "Reso_17E6C"
         },
         "LowerRightColor": {
           "$type": "colorX",
@@ -123,7 +139,7 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_75F8"
+          "id": "Reso_17E6D"
         },
         "UpperRightColor": {
           "$type": "colorX",
@@ -134,13 +150,13 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_75F9"
+          "id": "Reso_17E6E"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_QuadMesh_1771415011156",
+      "id": "test_[FrooxEngine]FrooxEngine_QuadMesh_1771505610786",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_r",
+    "sourceMessageId": "tsrl_98l5vohy4ib_s",
     "success": true,
     "errorInfo": null
   }

@@ -2,13 +2,13 @@
   "$type": "componentDefinitionData",
   "definition": {
     "baseTypeIsComponent": true,
-    "categoryPath": "Assets/Material Property Blocks",
+    "categoryPath": "Users/Common Avatar System",
     "type": {
       "baseType": null,
-      "fullTypeName": "[FrooxEngine]FrooxEngine.MainTexturePropertyBlock",
+      "fullTypeName": "[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection",
       "assemblyName": "FrooxEngine",
-      "namespace": "FrooxEngine",
-      "name": "MainTexturePropertyBlock",
+      "namespace": "FrooxEngine.CommonAvatar",
+      "name": "SimpleAvatarProtection",
       "isAbstract": false,
       "isInterface": false,
       "isGenericType": false,
@@ -24,7 +24,23 @@
       "declaringType": null,
       "genericArguments": null,
       "genericParameters": null,
-      "interfaces": []
+      "interfaces": [
+        {
+          "type": "[FrooxEngine]FrooxEngine.IItemPermissions",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        {
+          "type": "[FrooxEngine]FrooxEngine.ICustomInspector",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        {
+          "type": "[FrooxEngine]FrooxEngine.IPackageImportEventReceiver",
+          "isGenericParameter": false,
+          "genericArguments": null
+        }
+      ]
     },
     "members": {
       "persistent": {
@@ -54,7 +70,15 @@
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
       },
-      "HighPriorityIntegration": {
+      "User": {
+        "$type": "syncObject",
+        "type": {
+          "type": "[FrooxEngine]FrooxEngine.CloudUserRef",
+          "isGenericParameter": false,
+          "genericArguments": null
+        }
+      },
+      "ReassignUserOnPackageImport": {
         "$type": "field",
         "valueType": {
           "type": "bool",
@@ -62,25 +86,10 @@
           "genericArguments": null
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
-      },
-      "Texture": {
-        "$type": "reference",
-        "targetType": {
-          "type": "[FrooxEngine]FrooxEngine.IAssetProvider<>",
-          "isGenericParameter": false,
-          "genericArguments": [
-            {
-              "type": "[FrooxEngine]FrooxEngine.ITexture2D",
-              "isGenericParameter": false,
-              "genericArguments": null
-            }
-          ]
-        },
-        "type": "[FrooxEngine]FrooxEngine.AssetRef<[FrooxEngine]FrooxEngine.ITexture2D>"
       }
     }
   },
-  "sourceMessageId": "tsrl_98l5vohy4ib_9",
+  "sourceMessageId": "tsrl_98l5vohy4ib_g",
   "success": true,
   "errorInfo": null
 }

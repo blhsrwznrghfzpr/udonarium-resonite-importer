@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.MeshRenderer",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_MeshRenderer_1771415011165",
-    "sourceMessageId": "tsrl_j9d7co6flo_w",
+    "entityId": "test_[FrooxEngine]FrooxEngine_MeshRenderer_1771505610804",
+    "sourceMessageId": "tsrl_98l5vohy4ib_11",
     "success": true,
     "errorInfo": null
   },
@@ -15,56 +15,56 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_7603"
+          "id": "Reso_17E79"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_7604"
+          "id": "Reso_17E7A"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_7605"
+          "id": "Reso_17E7B"
         },
         "Mesh": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.Mesh>",
-          "id": "Reso_7606"
+          "id": "Reso_17E7C"
         },
         "Materials": {
           "$type": "list",
           "elements": [],
-          "id": "Reso_7607"
+          "id": "Reso_17E7D"
         },
         "MaterialPropertyBlocks": {
           "$type": "list",
           "elements": [],
-          "id": "Reso_7608"
+          "id": "Reso_17E7E"
         },
         "ShadowCastMode": {
           "$type": "enum",
           "value": "On",
           "enumType": "ShadowCastMode",
-          "id": "Reso_7609"
+          "id": "Reso_17E7F"
         },
         "MotionVectorMode": {
           "$type": "enum",
           "value": "Object",
           "enumType": "MotionVectorMode",
-          "id": "Reso_760A"
+          "id": "Reso_17E80"
         },
         "SortingOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_760B"
+          "id": "Reso_17E81"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_MeshRenderer_1771415011165",
+      "id": "test_[FrooxEngine]FrooxEngine_MeshRenderer_1771505610804",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_x",
+    "sourceMessageId": "tsrl_98l5vohy4ib_12",
     "success": true,
     "errorInfo": null
   }
