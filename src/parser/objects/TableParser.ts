@@ -106,10 +106,6 @@ export function parseTableMask(data: unknown, fileName: string): TableMask {
   // Parse position and attributes
   const position = parsePosition(root);
   const isLock = getBooleanValue(root['@_isLock']) ?? false;
-  const properties = new Map<string, string | number>();
-  if (opacity !== undefined) {
-    properties.set('opacity', opacity);
-  }
   const images: ImageRef[] = [];
   if (imageIdentifier) {
     images.push({
@@ -127,6 +123,7 @@ export function parseTableMask(data: unknown, fileName: string): TableMask {
     width,
     height,
     images,
-    properties,
+    opacity: opacity ?? 100,
+    properties: new Map(),
   };
 }

@@ -373,7 +373,8 @@ describe('ObjectConverter', () => {
           isLock: false,
           width: 5,
           height: 4,
-          properties: new Map([['opacity', 30]]),
+          opacity: 30,
+          properties: new Map(),
         };
 
         const result = convertObject(tableMask);

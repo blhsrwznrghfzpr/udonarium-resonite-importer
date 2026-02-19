@@ -111,6 +111,7 @@ export interface TableMask extends BaseUdonariumObject {
   isLock: boolean;
   width: number;
   height: number;
+  opacity: number;
 }
 
 export interface TextNote extends BaseUdonariumObject {
