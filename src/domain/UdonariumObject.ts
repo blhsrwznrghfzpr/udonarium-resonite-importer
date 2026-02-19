@@ -15,7 +15,6 @@ export type ObjectType =
 export interface ImageRef {
   identifier: string;
   name: string;
-  data?: Buffer;
 }
 
 export interface Vector3 {
