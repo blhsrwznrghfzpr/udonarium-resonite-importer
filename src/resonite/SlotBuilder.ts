@@ -17,7 +17,7 @@ import {
   buildStaticTexture2DFields,
   buildMainTexturePropertyBlockFields,
 } from '../converter/componentFields';
-import { isGifTextureByIdentifierOrUrl } from '../converter/textureUtils';
+import { isGifTexture } from '../converter/textureUtils';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
 
 function isListField(value: unknown): boolean {
@@ -242,10 +242,7 @@ export class SlotBuilder {
         id: textureComponentId,
         slotId: textureSlotId,
         componentType: COMPONENT_TYPES.STATIC_TEXTURE_2D,
-        fields: buildStaticTexture2DFields(
-          textureUrl,
-          isGifTextureByIdentifierOrUrl(identifier, textureUrl)
-        ),
+        fields: buildStaticTexture2DFields(textureUrl, isGifTexture(identifier, textureMap)),
       });
       await this.client.addComponent({
         id: `${textureSlotId}-main-texture-property-block`,
