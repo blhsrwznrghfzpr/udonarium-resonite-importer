@@ -1,0 +1,60 @@
+{
+  "componentType": "[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection",
+  "addResponse": {
+    "$type": "newEntityId",
+    "entityId": "test_[FrooxEngine]FrooxEngine_CommonAvatar_SimpleAvatarProtection_1771505610870",
+    "sourceMessageId": "tsrl_98l5vohy4ib_25",
+    "success": true,
+    "errorInfo": null
+  },
+  "getResponse": {
+    "$type": "componentData",
+    "data": {
+      "componentType": "[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection",
+      "members": {
+        "persistent": {
+          "$type": "bool",
+          "value": true,
+          "id": "Reso_17F4E"
+        },
+        "UpdateOrder": {
+          "$type": "int",
+          "value": 0,
+          "id": "Reso_17F4F"
+        },
+        "Enabled": {
+          "$type": "bool",
+          "value": true,
+          "id": "Reso_17F50"
+        },
+        "User": {
+          "$type": "syncObject",
+          "members": {
+            "User": {
+              "$type": "reference",
+              "targetId": "Reso_3683",
+              "targetType": "[FrooxEngine]FrooxEngine.User",
+              "id": "Reso_17F51"
+            },
+            "_userId": {
+              "$type": "string",
+              "value": "U-yoshi1123-",
+              "id": "Reso_17F52"
+            }
+          },
+          "id": "Reso_17F53"
+        },
+        "ReassignUserOnPackageImport": {
+          "$type": "bool",
+          "value": true,
+          "id": "Reso_17F54"
+        }
+      },
+      "id": "test_[FrooxEngine]FrooxEngine_CommonAvatar_SimpleAvatarProtection_1771505610870",
+      "isReferenceOnly": false
+    },
+    "sourceMessageId": "tsrl_98l5vohy4ib_26",
+    "success": true,
+    "errorInfo": null
+  }
+}

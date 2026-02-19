@@ -1,7 +1,7 @@
 {
-  "testedAt": "2026-02-18T11:43:31.222Z",
-  "totalComponents": 14,
-  "successful": 14,
+  "testedAt": "2026-02-19T12:53:30.912Z",
+  "totalComponents": 15,
+  "successful": 15,
   "failed": 0,
   "results": {
     "[FrooxEngine]FrooxEngine.QuadMesh": {
@@ -32,6 +32,9 @@
       "success": true
     },
     "[FrooxEngine]FrooxEngine.BoxCollider": {
+      "success": true
+    },
+    "[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection": {
       "success": true
     },
     "[FrooxEngine]FrooxEngine.UIX.Canvas": {

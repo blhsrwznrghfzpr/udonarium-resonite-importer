@@ -5,8 +5,10 @@
     "*",
     "Assets",
     "Audio",
+    "Avatar",
     "Cloud",
     "Common UI",
+    "Components",
     "Data",
     "Debug",
     "Generators",
@@ -36,7 +38,7 @@
     "World"
   ],
   "totalComponentCount": 7914,
-  "sourceMessageId": "tsrl_j9d7co6flo_1",
+  "sourceMessageId": "tsrl_98l5vohy4ib_1",
   "success": true,
   "errorInfo": null
 }

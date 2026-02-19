@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.PBS_Metallic",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_PBS_Metallic_1771415011178",
-    "sourceMessageId": "tsrl_j9d7co6flo_15",
+    "entityId": "test_[FrooxEngine]FrooxEngine_PBS_Metallic_1771505610829",
+    "sourceMessageId": "tsrl_98l5vohy4ib_1g",
     "success": true,
     "errorInfo": null
   },
@@ -15,28 +15,28 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_7660"
+          "id": "Reso_17ED6"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_7661"
+          "id": "Reso_17ED7"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_7662"
+          "id": "Reso_17ED8"
         },
         "HighPriorityIntegration": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_7663"
+          "id": "Reso_17ED9"
         },
         "_shader": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.Shader>",
-          "id": "Reso_7664"
+          "id": "Reso_17EDA"
         },
         "TextureScale": {
           "$type": "float2",
@@ -44,7 +44,7 @@
             "x": 1,
             "y": 1
           },
-          "id": "Reso_7665"
+          "id": "Reso_17EDB"
         },
         "TextureOffset": {
           "$type": "float2",
@@ -52,7 +52,7 @@
             "x": 0,
             "y": 0
           },
-          "id": "Reso_7666"
+          "id": "Reso_17EDC"
         },
         "DetailTextureScale": {
           "$type": "float2",
@@ -60,7 +60,7 @@
             "x": 1,
             "y": 1
           },
-          "id": "Reso_7667"
+          "id": "Reso_17EDD"
         },
         "DetailTextureOffset": {
           "$type": "float2",
@@ -68,7 +68,7 @@
             "x": 0,
             "y": 0
           },
-          "id": "Reso_7668"
+          "id": "Reso_17EDE"
         },
         "AlbedoColor": {
           "$type": "colorX",
@@ -79,13 +79,13 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_7669"
+          "id": "Reso_17EDF"
         },
         "AlbedoTexture": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_766A"
+          "id": "Reso_17EE0"
         },
         "EmissiveColor": {
           "$type": "colorX",
@@ -96,106 +96,106 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_766B"
+          "id": "Reso_17EE1"
         },
         "EmissiveMap": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_766C"
+          "id": "Reso_17EE2"
         },
         "NormalScale": {
           "$type": "float",
           "value": 1,
-          "id": "Reso_766D"
+          "id": "Reso_17EE3"
         },
         "NormalMap": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_766E"
+          "id": "Reso_17EE4"
         },
         "HeightMap": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_766F"
+          "id": "Reso_17EE5"
         },
         "HeightScale": {
           "$type": "float",
           "value": 0.02,
-          "id": "Reso_7670"
+          "id": "Reso_17EE6"
         },
         "OcclusionMap": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_7671"
+          "id": "Reso_17EE7"
         },
         "DetailAlbedoTexture": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_7672"
+          "id": "Reso_17EE8"
         },
         "DetailNormalMap": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_7673"
+          "id": "Reso_17EE9"
         },
         "DetailNormalScale": {
           "$type": "float",
           "value": 1,
-          "id": "Reso_7674"
+          "id": "Reso_17EEA"
         },
         "BlendMode": {
           "$type": "enum",
           "value": "Opaque",
           "enumType": "BlendMode",
-          "id": "Reso_7675"
+          "id": "Reso_17EEB"
         },
         "AlphaCutoff": {
           "$type": "float",
           "value": 0.5,
-          "id": "Reso_7676"
+          "id": "Reso_17EEC"
         },
         "OffsetFactor": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_7677"
+          "id": "Reso_17EED"
         },
         "OffsetUnits": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_7678"
+          "id": "Reso_17EEE"
         },
         "RenderQueue": {
           "$type": "int",
           "value": -1,
-          "id": "Reso_7679"
+          "id": "Reso_17EEF"
         },
         "Metallic": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_767A"
+          "id": "Reso_17EF0"
         },
         "Smoothness": {
           "$type": "float",
           "value": 0.25,
-          "id": "Reso_767B"
+          "id": "Reso_17EF1"
         },
         "MetallicMap": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.ITexture2D>",
-          "id": "Reso_767C"
+          "id": "Reso_17EF2"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_PBS_Metallic_1771415011178",
+      "id": "test_[FrooxEngine]FrooxEngine_PBS_Metallic_1771505610829",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_16",
+    "sourceMessageId": "tsrl_98l5vohy4ib_1h",
     "success": true,
     "errorInfo": null
   }

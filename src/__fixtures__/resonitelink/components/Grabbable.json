@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.Grabbable",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_Grabbable_1771415011192",
-    "sourceMessageId": "tsrl_j9d7co6flo_1e",
+    "entityId": "test_[FrooxEngine]FrooxEngine_Grabbable_1771505610853",
+    "sourceMessageId": "tsrl_98l5vohy4ib_1v",
     "success": true,
     "errorInfo": null
   },
@@ -15,117 +15,117 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76BA"
+          "id": "Reso_17F30"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_76BB"
+          "id": "Reso_17F31"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76BC"
+          "id": "Reso_17F32"
         },
         "ReparentOnRelease": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76BD"
+          "id": "Reso_17F33"
         },
         "PreserveUserSpace": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76BE"
+          "id": "Reso_17F34"
         },
         "DestroyOnRelease": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76BF"
+          "id": "Reso_17F35"
         },
         "GrabPriority": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_76C0"
+          "id": "Reso_17F36"
         },
         "GrabPriorityWhenGrabbed": {
           "$type": "int?",
           "value": null,
-          "id": "Reso_76C1"
+          "id": "Reso_17F37"
         },
         "CustomCanGrabCheck": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.GrabCheck",
-          "id": "Reso_76C2"
+          "id": "Reso_17F38"
         },
         "EditModeOnly": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76C3"
+          "id": "Reso_17F39"
         },
         "AllowSteal": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76C4"
+          "id": "Reso_17F3A"
         },
         "DropOnDisable": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76C5"
+          "id": "Reso_17F3B"
         },
         "ActiveUserFilter": {
           "$type": "enum",
           "value": "Disabled",
           "enumType": "ActiveUserHandling",
-          "id": "Reso_76C6"
+          "id": "Reso_17F3C"
         },
         "OnlyUsers": {
           "$type": "list",
           "elements": [],
-          "id": "Reso_76C7"
+          "id": "Reso_17F3D"
         },
         "Scalable": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76C8"
+          "id": "Reso_17F3E"
         },
         "Receivable": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76C9"
+          "id": "Reso_17F3F"
         },
         "AllowOnlyPhysicalGrab": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76CA"
+          "id": "Reso_17F40"
         },
         "_grabber": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.Grabber",
-          "id": "Reso_76CB"
+          "id": "Reso_17F41"
         },
         "_lastParent": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.Slot",
-          "id": "Reso_76CC"
+          "id": "Reso_17F42"
         },
         "_lastParentIsUserSpace": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76CD"
+          "id": "Reso_17F43"
         },
         "__legacyActiveUserRootOnly": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76CE"
+          "id": "Reso_17F44"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_Grabbable_1771415011192",
+      "id": "test_[FrooxEngine]FrooxEngine_Grabbable_1771505610853",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_1f",
+    "sourceMessageId": "tsrl_98l5vohy4ib_1w",
     "success": true,
     "errorInfo": null
   }

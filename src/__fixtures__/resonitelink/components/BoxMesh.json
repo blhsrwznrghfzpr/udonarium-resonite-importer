@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.BoxMesh",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_BoxMesh_1771415011161",
-    "sourceMessageId": "tsrl_j9d7co6flo_t",
+    "entityId": "test_[FrooxEngine]FrooxEngine_BoxMesh_1771505610796",
+    "sourceMessageId": "tsrl_98l5vohy4ib_w",
     "success": true,
     "errorInfo": null
   },
@@ -15,33 +15,49 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_75FA"
+          "id": "Reso_17E6F"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_75FB"
+          "id": "Reso_17E70"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_75FC"
+          "id": "Reso_17E71"
         },
         "HighPriorityIntegration": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_75FD"
+          "id": "Reso_17E72"
         },
         "OverrideBoundingBox": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_75FE"
+          "id": "Reso_17E73"
+        },
+        "OverridenBoundingBox": {
+          "$type": "BoundingBox",
+          "value": {
+            "min": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "max": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "id": "Reso_17E74"
         },
         "Profile": {
           "$type": "enum",
           "value": "Linear",
           "enumType": "ColorProfile",
-          "id": "Reso_75FF"
+          "id": "Reso_17E75"
         },
         "Size": {
           "$type": "float3",
@@ -50,7 +66,7 @@
             "y": 1,
             "z": 1
           },
-          "id": "Reso_7600"
+          "id": "Reso_17E76"
         },
         "UVScale": {
           "$type": "float3",
@@ -59,18 +75,18 @@
             "y": 1,
             "z": 1
           },
-          "id": "Reso_7601"
+          "id": "Reso_17E77"
         },
         "ScaleUVWithSize": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_7602"
+          "id": "Reso_17E78"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_BoxMesh_1771415011161",
+      "id": "test_[FrooxEngine]FrooxEngine_BoxMesh_1771505610796",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_u",
+    "sourceMessageId": "tsrl_98l5vohy4ib_x",
     "success": true,
     "errorInfo": null
   }

@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.StaticTexture2D",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_StaticTexture2D_1771415011189",
-    "sourceMessageId": "tsrl_j9d7co6flo_1b",
+    "entityId": "test_[FrooxEngine]FrooxEngine_StaticTexture2D_1771505610845",
+    "sourceMessageId": "tsrl_98l5vohy4ib_1q",
     "success": true,
     "errorInfo": null
   },
@@ -15,129 +15,129 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76A3"
+          "id": "Reso_17F19"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_76A4"
+          "id": "Reso_17F1A"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76A5"
+          "id": "Reso_17F1B"
         },
         "URL": {
           "$type": "Uri",
           "value": null,
-          "id": "Reso_76A6"
+          "id": "Reso_17F1C"
         },
         "FilterMode": {
           "$type": "enum?",
           "value": null,
           "enumType": "TextureFilterMode",
-          "id": "Reso_76A7"
+          "id": "Reso_17F1D"
         },
         "AnisotropicLevel": {
           "$type": "int?",
           "value": null,
-          "id": "Reso_76A8"
+          "id": "Reso_17F1E"
         },
         "Uncompressed": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76A9"
+          "id": "Reso_17F1F"
         },
         "DirectLoad": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76AA"
+          "id": "Reso_17F20"
         },
         "ForceExactVariant": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76AB"
+          "id": "Reso_17F21"
         },
         "PreferredFormat": {
           "$type": "enum?",
           "value": null,
           "enumType": "TextureCompression",
-          "id": "Reso_76AC"
+          "id": "Reso_17F22"
         },
         "PreferredProfile": {
           "$type": "enum?",
           "value": null,
           "enumType": "ColorProfile",
-          "id": "Reso_76AD"
+          "id": "Reso_17F23"
         },
         "MipMapBias": {
           "$type": "float",
           "value": 0,
-          "id": "Reso_76AE"
+          "id": "Reso_17F24"
         },
         "IsNormalMap": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76AF"
+          "id": "Reso_17F25"
         },
         "WrapModeU": {
           "$type": "enum",
           "value": "Repeat",
           "enumType": "TextureWrapMode",
-          "id": "Reso_76B0"
+          "id": "Reso_17F26"
         },
         "WrapModeV": {
           "$type": "enum",
           "value": "Repeat",
           "enumType": "TextureWrapMode",
-          "id": "Reso_76B1"
+          "id": "Reso_17F27"
         },
         "PowerOfTwoAlignThreshold": {
           "$type": "float",
           "value": 0.05,
-          "id": "Reso_76B2"
+          "id": "Reso_17F28"
         },
         "CrunchCompressed": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76B3"
+          "id": "Reso_17F29"
         },
         "MinSize": {
           "$type": "int?",
           "value": null,
-          "id": "Reso_76B4"
+          "id": "Reso_17F2A"
         },
         "MaxSize": {
           "$type": "int?",
           "value": null,
-          "id": "Reso_76B5"
+          "id": "Reso_17F2B"
         },
         "MipMaps": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76B6"
+          "id": "Reso_17F2C"
         },
         "KeepOriginalMipMaps": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76B7"
+          "id": "Reso_17F2D"
         },
         "MipMapFilter": {
           "$type": "enum",
           "value": "Box",
           "enumType": "Filtering",
-          "id": "Reso_76B8"
+          "id": "Reso_17F2E"
         },
         "Readable": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76B9"
+          "id": "Reso_17F2F"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_StaticTexture2D_1771415011189",
+      "id": "test_[FrooxEngine]FrooxEngine_StaticTexture2D_1771505610845",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_1c",
+    "sourceMessageId": "tsrl_98l5vohy4ib_1r",
     "success": true,
     "errorInfo": null
   }

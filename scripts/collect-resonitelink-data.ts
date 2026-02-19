@@ -60,7 +60,11 @@ const REQUIRED_COMPONENTS = {
   // Texture components (FrooxEngine namespace)
   textures: ['[FrooxEngine]FrooxEngine.StaticTexture2D'],
   // Interaction components (FrooxEngine namespace)
-  interaction: ['[FrooxEngine]FrooxEngine.Grabbable', '[FrooxEngine]FrooxEngine.BoxCollider'],
+  interaction: [
+    '[FrooxEngine]FrooxEngine.Grabbable',
+    '[FrooxEngine]FrooxEngine.BoxCollider',
+    '[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection',
+  ],
   // UIX components (FrooxEngine.UIX namespace)
   uix: [
     '[FrooxEngine]FrooxEngine.UIX.Canvas',
@@ -238,13 +242,29 @@ function buildResponseSummary(): Record<string, unknown> {
  */
 async function testComponent(
   client: ResoniteLinkClient,
-  slotId: string,
   componentType: string
 ): Promise<{ success: boolean; response: unknown; error?: string }> {
   const underlyingClient = getConnectedLink(client);
+  const slotId = `test_component_slot_${Date.now()}_${Math.floor(Math.random() * 10000)}`;
   const componentId = `test_${componentType.replace(/\./g, '_')}_${Date.now()}`;
 
   try {
+    // Create an isolated slot per component test.
+    await underlyingClient.call({
+      $type: 'addSlot',
+      data: {
+        id: slotId,
+        name: { $type: 'string', value: `ComponentTest_${componentType.split('.').pop() ?? 'Unknown'}` },
+        position: { $type: 'float3', value: { x: 0, y: 0, z: 0 } },
+        scale: { $type: 'float3', value: { x: 1, y: 1, z: 1 } },
+        rotation: { $type: 'floatQ', value: { x: 0, y: 0, z: 0, w: 1 } },
+        isActive: { $type: 'bool', value: true },
+        isPersistent: { $type: 'bool', value: false },
+        tag: { $type: 'string', value: '' },
+        orderOffset: { $type: 'long', value: 0 },
+      },
+    });
+
     // Add component
     const addResponse = (await underlyingClient.call({
       $type: 'addComponent',
@@ -263,11 +283,15 @@ async function testComponent(
         componentId: componentId,
       });
 
-      // Remove component (cleanup)
-      await underlyingClient.call({
-        $type: 'removeComponent',
-        componentId: componentId,
-      });
+      // Remove component (best effort). Some components can affect parent lifecycle.
+      try {
+        await underlyingClient.call({
+          $type: 'removeComponent',
+          componentId: componentId,
+        });
+      } catch {
+        // Ignore cleanup failure.
+      }
 
       return {
         success: true,
@@ -296,30 +320,21 @@ async function testComponent(
       },
       error: error instanceof Error ? error.message : String(error),
     };
+  } finally {
+    // Remove the isolated slot (best effort). It may already be destroyed by component behavior.
+    try {
+      await underlyingClient.call({
+        $type: 'removeSlot',
+        slotId,
+      });
+    } catch {
+      // Ignore cleanup failure.
+    }
   }
 }
 
 async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   console.log('\nCollecting Component Data...');
-
-  const underlyingClient = getConnectedLink(client);
-
-  // Create a test slot first
-  const testSlotId = `test_component_${Date.now()}`;
-  await underlyingClient.call({
-    $type: 'addSlot',
-    data: {
-      id: testSlotId,
-      name: { $type: 'string', value: 'ComponentTest' },
-      position: { $type: 'float3', value: { x: 0, y: 0, z: 0 } },
-      scale: { $type: 'float3', value: { x: 1, y: 1, z: 1 } },
-      rotation: { $type: 'floatQ', value: { x: 0, y: 0, z: 0, w: 1 } },
-      isActive: { $type: 'bool', value: true },
-      isPersistent: { $type: 'bool', value: false },
-      tag: { $type: 'string', value: '' },
-      orderOffset: { $type: 'long', value: 0 },
-    },
-  });
 
   const results: Record<string, unknown> = {};
   const allComponents = [
@@ -334,7 +349,7 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   console.log(`  Testing ${allComponents.length} component types...`);
 
   for (const componentType of allComponents) {
-    const result = await testComponent(client, testSlotId, componentType);
+    const result = await testComponent(client, componentType);
     results[componentType] = result;
     saveComponentJson(componentType, result.response);
 
@@ -366,12 +381,6 @@ async function collectComponentData(client: ResoniteLinkClient): Promise<void> {
   console.log(
     `\n  Summary: ${summary.successful}/${summary.totalComponents} components successful`
   );
-
-  // Cleanup: remove the test slot
-  await underlyingClient.call({
-    $type: 'removeSlot',
-    slotId: testSlotId,
-  });
 }
 
 async function collectTextureData(client: ResoniteLinkClient): Promise<void> {

@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.BoxCollider",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_BoxCollider_1771415011197",
-    "sourceMessageId": "tsrl_j9d7co6flo_1h",
+    "entityId": "test_[FrooxEngine]FrooxEngine_BoxCollider_1771505610862",
+    "sourceMessageId": "tsrl_98l5vohy4ib_20",
     "success": true,
     "errorInfo": null
   },
@@ -15,17 +15,17 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76CF"
+          "id": "Reso_17F45"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 1000000,
-          "id": "Reso_76D0"
+          "id": "Reso_17F46"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_76D1"
+          "id": "Reso_17F47"
         },
         "Offset": {
           "$type": "float3",
@@ -34,28 +34,28 @@
             "y": 0,
             "z": 0
           },
-          "id": "Reso_76D2"
+          "id": "Reso_17F48"
         },
         "Type": {
           "$type": "enum",
           "value": "Static",
           "enumType": "ColliderType",
-          "id": "Reso_76D3"
+          "id": "Reso_17F49"
         },
         "Mass": {
           "$type": "float",
           "value": 1,
-          "id": "Reso_76D4"
+          "id": "Reso_17F4A"
         },
         "CharacterCollider": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76D5"
+          "id": "Reso_17F4B"
         },
         "IgnoreRaycasts": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_76D6"
+          "id": "Reso_17F4C"
         },
         "Size": {
           "$type": "float3",
@@ -64,13 +64,13 @@
             "y": 1,
             "z": 1
           },
-          "id": "Reso_76D7"
+          "id": "Reso_17F4D"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_BoxCollider_1771415011197",
+      "id": "test_[FrooxEngine]FrooxEngine_BoxCollider_1771505610862",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_j9d7co6flo_1i",
+    "sourceMessageId": "tsrl_98l5vohy4ib_21",
     "success": true,
     "errorInfo": null
   }
