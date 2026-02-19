@@ -769,5 +769,19 @@ describe('SlotBuilder', () => {
         })
       );
     });
+
+    it('should add Grabbable to root container when enabled', async () => {
+      await slotBuilder.createImportGroup('My Import', undefined, undefined, true);
+
+      const callArgs = mockClient.addSlot.mock.calls[0][0] as { id: string };
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(2, {
+        id: `${callArgs.id}-grabbable`,
+        slotId: callArgs.id,
+        componentType: COMPONENT_TYPES.GRABBABLE,
+        fields: {
+          Scalable: { $type: 'bool', value: true },
+        },
+      });
+    });
   });
 });

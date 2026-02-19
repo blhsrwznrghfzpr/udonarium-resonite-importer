@@ -153,6 +153,7 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     filePath,
     host,
     port,
+    enableRootGrabbable,
     rootScale,
     enableCharacterColliderOnLockedTerrain,
     semiTransparentImageBlendMode,
@@ -211,7 +212,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     await slotBuilder.createImportGroup(
       groupName,
       previousImport.transform ?? undefined,
-      defaultScale
+      defaultScale,
+      enableRootGrabbable
     );
 
     // Import images

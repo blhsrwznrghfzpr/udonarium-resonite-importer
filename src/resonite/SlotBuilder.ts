@@ -179,7 +179,8 @@ export class SlotBuilder {
   async createImportGroup(
     name: string,
     transform?: SlotTransform,
-    defaultScale?: Vector3
+    defaultScale?: Vector3,
+    enableRootGrabbable = false
   ): Promise<string> {
     const groupId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
     const position: Vector3 = transform?.position ?? { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 };
@@ -205,6 +206,16 @@ export class SlotBuilder {
       componentType: COMPONENT_TYPES.OBJECT_ROOT,
       fields: {},
     });
+    if (enableRootGrabbable) {
+      await this.client.addComponent({
+        id: `${groupId}-grabbable`,
+        slotId: groupId,
+        componentType: COMPONENT_TYPES.GRABBABLE,
+        fields: {
+          Scalable: { $type: 'bool', value: true },
+        },
+      });
+    }
 
     this.rootSlotId = groupId;
     this.tablesSlotId = undefined;
