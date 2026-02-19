@@ -254,7 +254,10 @@ async function testComponent(
       $type: 'addSlot',
       data: {
         id: slotId,
-        name: { $type: 'string', value: `ComponentTest_${componentType.split('.').pop() ?? 'Unknown'}` },
+        name: {
+          $type: 'string',
+          value: `ComponentTest_${componentType.split('.').pop() ?? 'Unknown'}`,
+        },
         position: { $type: 'float3', value: { x: 0, y: 0, z: 0 } },
         scale: { $type: 'float3', value: { x: 1, y: 1, z: 1 } },
         rotation: { $type: 'floatQ', value: { x: 0, y: 0, z: 0, w: 1 } },
