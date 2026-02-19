@@ -1,20 +1,21 @@
-# texture:// / texture-ref:// 設計メモ
+# テクスチャ処理 設計メモ
 
 ## 概要
 
-このプロジェクトでは、コンポーネント生成時のテクスチャ指定に以下 2 種類の記法を使います。
+このプロジェクトでは、全ての画像を **共有テクスチャ** として扱います。
+コンポーネント生成時のテクスチャ指定には以下の内部記法を使います。
 
-- `texture://<identifier>`
 - `texture-ref://<componentId>`
 
-見た目は URL 風ですが、どちらも **変換パイプライン内部で使う識別子** です。
+見た目は URL 風ですが、**変換パイプライン内部で使う識別子** であり、
+Assets/Textures スロット内の既存 `StaticTexture2D` を参照することを意味します。
 
 ---
 
-## identifier の種類と URL・zip ファイル名の関係
+## identifier の種類と登録方法
 
 Udonarium の XML は画像を `imageIdentifier` フィールドで参照します。
-identifier は以下 3 種類に分類されます。
+identifier は以下 4 種類に分類されます。
 
 ### 1. ZIP 内ファイルの identifier
 
@@ -31,11 +32,19 @@ Udonarium の保存ファイル（ZIP）に画像が同梱されている場合�
 `AssetImporter.importImage()` はこの `file.name` をキーに `importedTextures` マップへ登録し、
 `ResoniteLinkClient.importTexture()` が返す `resdb:///...` 形式の URL を値に格納します。
 
+**SVG ファイルの場合**: `sharp` で PNG 変換後にテンプファイルに書き出してからインポートします（Resonite は SVG 非対応）。
+
 ```
 zip: images/front.png
   → ExtractedFile { path: 'images/front.png', name: 'front' }
   → importedTextures: Map { 'front' → 'resdb:///abc123...' }
   → StaticTexture2D.URL = 'resdb:///abc123...'
+
+zip: images/icon.svg
+  → ExtractedFile { path: 'images/icon.svg', name: 'icon' }
+  → sharp(data).png() → icon.png（テンプファイル）
+  → importedTextures: Map { 'icon' → 'resdb:///def456...' }
+  → StaticTexture2D.URL = 'resdb:///def456...'
 ```
 
 ### 2. 既知 ID（KNOWN_IMAGES）
@@ -91,13 +100,7 @@ identifier: './assets/images/BG10a_80.jpg'
 
 ユーザーが外部ホストの画像を直接 URL で指定した場合の形式です。
 
-```
-identifier: 'https://example.com/images/character.png'
-```
-
-`registerExternalUrls()` が identifier をそのまま URL として `registerExternalUrl()` に渡します。
-`./` 始まりや KNOWN_IMAGES と同様に、`importedTextures` に登録され、
-Assets/Textures スロットに**共有テクスチャ**として作成されます。
+**非 SVG URL の場合**: identifier をそのまま URL として登録します。
 
 ```
 identifier: 'https://example.com/images/character.png'
@@ -109,14 +112,31 @@ identifier: 'https://example.com/images/character.png'
      （Assets/Textures スロットに共有テクスチャとして作成）
 ```
 
-**`./` 始まりとの比較**:
+**SVG URL の場合**: `fetch` でダウンロードし、`sharp` で PNG 変換してからインポートします（ZIP 内 SVG と同じ処理）。
 
-| | `./assets/images/foo.png` | `https://example.com/images/foo.png` |
+```
+identifier: 'https://example.com/icons/badge.svg'
+  → importExternalSvgUrl('https://example.com/icons/badge.svg',
+                          'https://example.com/icons/badge.svg')
+  → fetch(...) → SVG バッファ取得
+  → sharp(svgBuffer).png() → badge.png（テンプファイル）
+  → importTexture(badge.png) → 'resdb:///ghi789...'
+  → importedTextures: Map { 'https://example.com/icons/badge.svg'
+                            → 'resdb:///ghi789...' }
+  → StaticTexture2D.URL = 'resdb:///ghi789...'
+     （Assets/Textures スロットに共有テクスチャとして作成）
+```
+
+**4 種類の identifier まとめ**:
+
+| 種類 | 登録メソッド | 値の内容 |
 |---|---|---|
-| `registerExternalUrls` | 登録する | 登録する |
-| Assets/Textures に共有スロット | 作成する | 作成する |
-| オブジェクト内の StaticTexture2D | 作成しない（共有参照） | 作成しない（共有参照） |
-| 同一テクスチャの重複 | 発生しない | 発生しない |
+| ZIP PNG/JPG/GIF | `importImage()` | `resdb:///...` |
+| ZIP SVG（→PNG変換） | `importImage()` | `resdb:///...` |
+| KNOWN_IMAGES | `registerExternalUrl()` | `https://...` |
+| 相対パス（`./`） | `registerExternalUrl()` | `https://udonarium.app/...` |
+| 絶対 URL（非SVG） | `registerExternalUrl()` | `https://...`（identifier そのまま） |
+| 絶対 URL SVG（→PNG変換） | `importExternalSvgUrl()` | `resdb:///...` |
 
 **ブレンドモードの扱い**:
 
@@ -141,14 +161,20 @@ probeBlendModeFromExternalUrl('https://example.com/images/character.png')
 [1] ZIP 抽出
     images/front.png
       → ExtractedFile { path: 'images/front.png', name: 'front', data }
+    images/icon.svg
+      → ExtractedFile { path: 'images/icon.svg', name: 'icon', data }
 
 [2] 外部 URL 登録（registerExternalUrls）
-    例: 'testTableBackgroundImage_image'
-      → importedTextures: { 'testTableBackgroundImage_image'
-                            → 'https://udonarium.app/assets/images/BG10a_80.jpg' }
+    KNOWN_IMAGES / 相対パス / 非 SVG 絶対 URL:
+      → importedTextures: { identifier → url }
+    SVG 絶対 URL:
+      → fetch → sharp → importTexture → importedTextures: { identifier → 'resdb:///...' }
 
-[3] 実ファイルをインポート（assetImporter.importImages）
-    例: { 'front' → 'resdb:///abc123...' }
+[3] ZIP 内ファイルをインポート（assetImporter.importImages）
+    PNG/JPG/GIF: そのままインポート
+    SVG: sharp で PNG 変換 → インポート
+      → importedTextures: { 'front' → 'resdb:///abc123...' }
+                          { 'icon'  → 'resdb:///def456...' }
 
 [4] Assets/Textures スロットに共有テクスチャを作成（slotBuilder.createTextureAssets）
     各 identifier ごとに:
@@ -175,39 +201,6 @@ probeBlendModeFromExternalUrl('https://example.com/images/character.png')
 
 ---
 
-## `texture://` の役割
-
-`texture://` は「まだ実 URL（`resdb:///...` など）が確定していないテクスチャ」を表すプレースホルダーです。
-
-- `resolveTextureValue()` は `textureMap` が渡されない場合に `texture://<identifier>` を返す。
-- `resolveTextureValue()` は `textureMap` が渡されている場合は `textureMap.get(identifier) ?? identifier` を返す（プレースホルダーは生成しない）。
-- `replaceTexturesInValue()` が、オブジェクト全体を再帰的に走査してこのプレースホルダーを実 URL に置換する（`resolveTexturePlaceholders()` 経由）。
-- `buildQuadMeshComponents()` では `texture://` 始まりの値を受け取ると、
-  `StaticTexture2D` と `MainTexturePropertyBlock` をそのスロット（オブジェクト直下）に生成する。
-
-### なぜ必要か
-
-- **テスト・ライブラリ用途**: `convertObjects()`（textureMap なし版）を呼ぶと `texture://` プレースホルダーが含まれた変換結果が得られ、後から `resolveTexturePlaceholders()` で一括置換できる。
-- **2 段階処理の分離**: オブジェクト変換（形状・座標）と、アセットインポート（URL 確定）を疎結合に保てる。
-- **再帰オブジェクト対応**: table/terrain のような子オブジェクトを含む構造でも、後段で一括置換できる。
-
-> **注意**: 現在の CLI フロー（`index.ts`）では、オブジェクト変換時にすでに `textureComponentMap`（`texture-ref://` マップ）が渡されるため、`texture://` プレースホルダーは生成されません。
-
-### dry-run 時の挙動
-
-`--dry-run` 時は空の `Map<string, string>` を `textureMap` として渡します。
-
-```ts
-// dry-run 時
-convertObjectsWithTextureMap(objects, new Map<string, string>(), ...)
-```
-
-`resolveTextureValue(identifier, emptyMap)` → `emptyMap.get(identifier) ?? identifier` → identifier そのもの（例: `'front'`）
-
-そのため dry-run 時は identifier の文字列が `StaticTexture2D.URL` に設定されます（無効な URL ですが変換結果の確認には十分）。
-
----
-
 ## `texture-ref://` の役割
 
 `texture-ref://` は「既存の共有テクスチャコンポーネント（`StaticTexture2D`）を再利用する」ための内部記法です。
@@ -223,32 +216,29 @@ convertObjectsWithTextureMap(objects, new Map<string, string>(), ...)
 
 現在は、`XiexeToonMaterial` のテクスチャ割り当ては `MainTexturePropertyBlock` 経由で統一しています。
 
-- ローカルテクスチャ（`texture://...` / identifier 直接）の場合:
-  - `StaticTexture2D` をそのスロットに生成
-  - 同一スロットの `MainTexturePropertyBlock.Texture` から参照
 - 共有テクスチャ（`texture-ref://...`）の場合（通常の CLI インポート）:
   - Assets/Textures スロットにある共有 `MainTexturePropertyBlock` を参照
   - ローカルには重複生成しない
 
-このため、`texture-ref://...` は「直接マテリアルの Texture フィールドに刺す」用途ではなく、
+`texture-ref://...` は「直接マテリアルの Texture フィールドに刺す」用途ではなく、
 **共有 property block を選ぶためのキー**として扱います。
 
 ### なぜ必要か
 
 - **重複コンポーネント削減**: 同一テクスチャを複数マテリアルで使うときに `StaticTexture2D` / `MainTexturePropertyBlock` を増殖させない。
 - **共有を明示**: 値が URL 系なのか、共有参照なのかを文字列だけで判別できる。
-- **副作用回避**: `texture://` と異なり、後段の URL 置換対象にしない（`isGifTexture()` でも参照値として扱う）。
 
 ---
 
-## 使い分けの目安
+## dry-run 時の挙動
 
-- 実ファイル由来の識別子（`front` など）を後で URL 解決したい → `texture://...`
-- 既存の共有テクスチャコンポーネントを再利用したい → `texture-ref://...`
+`--dry-run` 時は空の `Map<string, string>` を `textureMap` として渡します。
 
-この 2 つを分離していることで、
+```ts
+// dry-run 時
+convertObjectsWithTextureMap(objects, new Map<string, string>(), ...)
+```
 
-1. 変換フェーズは「どのテクスチャを使うか」だけ決める
-2. インポート/生成フェーズは「どの URL/共有コンポーネントに張るか」を決める
+`resolveTextureValue(identifier, emptyMap)` → `emptyMap.get(identifier) ?? identifier` → identifier そのもの（例: `'front'`）
 
-という責務分離を維持できます。
+そのため dry-run 時は identifier の文字列が `StaticTexture2D.URL` に設定されます（無効な URL ですが変換結果の確認には十分）。
