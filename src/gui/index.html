@@ -85,9 +85,11 @@
           </button>
           <div class="card-body">
             <div class="settings-grid">
-              <div class="setting-item">
-                <label for="host" data-i18n="gui.host">ホスト</label>
-                <input type="text" id="host" value="localhost" />
+              <div class="setting-item setting-item-checkbox">
+                <label for="root-grabbable" data-i18n="gui.rootGrabbable">
+                  ルートにGrabbableを付ける
+                </label>
+                <input type="checkbox" id="root-grabbable" />
               </div>
               <div class="setting-item">
                 <label for="root-scale" data-i18n="gui.rootScale">ルートスケール:</label>
@@ -123,6 +125,10 @@
                   <option value="Cutout" data-i18n="gui.blendModeCutout">Cutout</option>
                   <option value="Alpha" data-i18n="gui.blendModeAlpha">Alpha</option>
                 </select>
+              </div>
+              <div class="setting-item">
+                <label for="host" data-i18n="gui.host">ResoniteLinkホスト</label>
+                <input type="text" id="host" value="" placeholder="localhost" />
               </div>
             </div>
           </div>

@@ -46,6 +46,7 @@ const hostInput = document.getElementById('host') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
 const rootScaleInput = document.getElementById('root-scale') as HTMLInputElement;
 const rootScaleDirectInput = document.getElementById('root-scale-direct') as HTMLInputElement;
+const rootGrabbableInput = document.getElementById('root-grabbable') as HTMLInputElement;
 const lockedTerrainCharacterColliderInput = document.getElementById(
   'locked-terrain-character-collider'
 ) as HTMLInputElement;
@@ -134,6 +135,11 @@ function getRootScaleFromDirectInput(): number {
     return 0.01;
   }
   return getSelectedRootScale();
+}
+
+function getHostOrDefault(): string {
+  const host = hostInput.value.trim();
+  return host || 'localhost';
 }
 
 function findNearestRootScaleIndex(scale: number): number {
@@ -304,8 +310,9 @@ importBtn.addEventListener('click', () => {
 
     const options: ImportOptions = {
       filePath: currentFilePath,
-      host: hostInput.value || 'localhost',
+      host: getHostOrDefault(),
       port: parsePortOrNull(portInput.value) ?? DEFAULT_PORT,
+      enableRootGrabbable: rootGrabbableInput.checked,
       rootScale: getRootScaleFromDirectInput(),
       enableCharacterColliderOnLockedTerrain: lockedTerrainCharacterColliderInput.checked,
       semiTransparentImageBlendMode:

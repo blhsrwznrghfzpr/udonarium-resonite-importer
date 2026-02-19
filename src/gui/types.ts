@@ -16,6 +16,7 @@ export interface ImportOptions {
   filePath: string;
   host: string;
   port: number;
+  enableRootGrabbable: boolean;
   rootScale: number;
   enableCharacterColliderOnLockedTerrain: boolean;
   semiTransparentImageBlendMode: 'Cutout' | 'Alpha';
