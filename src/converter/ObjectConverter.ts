@@ -47,11 +47,7 @@ export function convertSize(size: number): Vector3 {
 /**
  * Convert a single Udonarium object to Resonite object
  */
-export function convertObject(udonObj: UdonariumObject): ResoniteObject {
-  return convertObjectWithTextures(udonObj, new Map());
-}
-
-function convertObjectWithTextures(
+export function convertObjectWithTextures(
   udonObj: UdonariumObject,
   textureMap?: Map<string, string>,
   imageAspectRatioMap?: Map<string, number>,
@@ -156,14 +152,6 @@ function applyGameTableVisibility(
   }
 
   return convertedObjects;
-}
-
-/**
- * Convert multiple Udonarium objects to Resonite objects
- */
-export function convertObjects(udonObjects: UdonariumObject[]): ResoniteObject[] {
-  const converted = udonObjects.map((obj) => convertObjectWithTextures(obj, new Map()));
-  return applyGameTableVisibility(converted, udonObjects);
 }
 
 /**
