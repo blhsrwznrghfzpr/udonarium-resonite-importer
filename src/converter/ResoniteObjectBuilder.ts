@@ -8,6 +8,7 @@ import {
   parseTextureReferenceId,
   toSharedTexturePropertyBlockId,
 } from './textureUtils';
+import { SLOT_ID_PREFIX } from '../config/MappingConfig';
 
 // ---- private types ----
 type QuadSize = { x: number; y: number };
@@ -19,8 +20,6 @@ export type NewResoniteObjectSpec = {
 };
 
 type ResoniteObjectIdentity = Required<NewResoniteObjectSpec>;
-
-const SLOT_ID_PREFIX = 'udon-imp';
 
 type StaticTexture2DFields = {
   URL: { $type: 'Uri'; value: string };

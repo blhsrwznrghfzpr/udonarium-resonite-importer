@@ -10,10 +10,10 @@ import {
   IMPORT_GROUP_SCALE,
   IMPORT_GROUP_Y_OFFSET,
   IMPORT_ROOT_TAG,
+  SLOT_ID_PREFIX,
 } from '../config/MappingConfig';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
 
-const SLOT_ID_PREFIX = 'udon-imp';
 const GIF_EXTENSION_PATTERN = /\.gif(?:$|[?#])/i;
 
 function shouldUsePointFilterMode(identifier: string, textureUrl: string): boolean {

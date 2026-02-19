@@ -29,6 +29,11 @@ export const IMPORT_GROUP_Y_OFFSET = 0.001;
 export const IMPORT_ROOT_TAG = 'udonarium-resonite-importer:root';
 
 /**
+ * Prefix used for generated slot IDs during import.
+ */
+export const SLOT_ID_PREFIX = 'udon-imp';
+
+/**
  * Retry configuration for ResoniteLink connection
  */
 export const RETRY_CONFIG = {
