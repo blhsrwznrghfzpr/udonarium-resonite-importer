@@ -116,7 +116,7 @@ export function convertObjectWithTextures(
     case 'text-note':
       return convertTextNote(udonObj, position);
     default: {
-      // Keep fallback for forward-compatibility when new object types are introduced.
+      // Fallback for unsupported object types.
       const unknownObj = udonObj as UdonariumObject;
       const builder = ResoniteObjectBuilder.create({ name: unknownObj.name })
         .setPosition(position)
