@@ -241,7 +241,9 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
           : undefined) ?? seed?.blendMode,
       filterMode: lookupImageFilterMode(options.imageFilterModeMap, identifier) ?? seed?.filterMode,
       sourceKind:
-        lookupByKeys(options.imageSourceKindMap, identifier) ??
+        (!preferImageAssetInfo
+          ? lookupByKeys(options.imageSourceKindMap, identifier)
+          : undefined) ??
         seed?.sourceKind ??
         (preferImageAssetInfo ? 'unknown' : inferSourceKind(identifier, textureValue)),
     });

@@ -175,4 +175,22 @@ describe('imageAssetContext', () => {
     expect(context.resolveTextureValue('legacy_only.png')).toBeUndefined();
     expect(context.getAssetInfo('legacy_only.png')).toBeUndefined();
   });
+
+  it('ignores imageSourceKindMap when imageAssetInfoMap is provided', () => {
+    const context = createImageAssetContext({
+      imageAssetInfoMap: new Map([
+        [
+          'known_icon',
+          {
+            identifier: 'known_icon',
+            textureValue: 'https://udonarium.app/assets/images/known_icon.png',
+            sourceKind: 'known-id',
+          },
+        ],
+      ]),
+      imageSourceKindMap: new Map([['known_icon', 'external-url']]),
+    });
+
+    expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
+  });
 });
