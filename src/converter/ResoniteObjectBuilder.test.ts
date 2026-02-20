@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
-import { toTextureReference } from './textureUtils';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
+import { buildImageAssetContext } from './imageAssetContext';
 
 function makeSpec(id = 'slot-abc') {
   return {
@@ -105,14 +105,25 @@ describe('ResoniteObjectBuilder', () => {
       expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
     });
 
-    it('resolves textureValue from textureMap while using textureIdentifier for blend lookup', () => {
+    it('resolves textureValue from imageAssetInfoMap while using textureIdentifier for blend lookup', () => {
+      const imageAssetContext = buildImageAssetContext({
+        imageAssetInfoMap: new Map([
+          [
+            'front.png',
+            {
+              identifier: 'front.png',
+              textureValue: 'texture-ref://shared-front-static-texture',
+            },
+          ],
+        ]),
+        imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
+      });
       const result = makeBuilder(makeSpec('s-map'))
         .addQuadMesh({
           textureIdentifier: 'front.png',
           dualSided: false,
           size: { x: 1, y: 1 },
-          textureMap: new Map([['front.png', 'texture-ref://shared-front-static-texture']]),
-          imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
+          imageAssetContext,
         })
         .build();
 
@@ -125,9 +136,12 @@ describe('ResoniteObjectBuilder', () => {
       });
     });
 
-    it('applies the given blendMode to the material', () => {
+    it('applies blendMode from imageAssetContext to the material', () => {
+      const imageAssetContext = buildImageAssetContext({
+        imageBlendModeMap: new Map([['front.png', 'Alpha' as const]]),
+      });
       const result = makeBuilder(makeSpec())
-        .addQuadMesh({ size: { x: 1, y: 1 }, blendMode: 'Alpha' })
+        .addQuadMesh({ size: { x: 1, y: 1 }, textureIdentifier: 'front.png', imageAssetContext })
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -226,7 +240,6 @@ describe('ResoniteObjectBuilder', () => {
       const result = makeBuilder(makeSpec())
         .addQuadMesh({
           size: { x: 1, y: 1 },
-          blendMode: 'Alpha',
           color: {
             r: 0.5,
             g: 0.5,
@@ -245,10 +258,14 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('preserves existing material fields (e.g. BlendMode) alongside color', () => {
+      const imageAssetContext = buildImageAssetContext({
+        imageBlendModeMap: new Map([['front.png', 'Alpha' as const]]),
+      });
       const result = makeBuilder(makeSpec())
         .addQuadMesh({
           size: { x: 1, y: 1 },
-          blendMode: 'Alpha',
+          textureIdentifier: 'front.png',
+          imageAssetContext,
           color: {
             r: 0,
             g: 0,
@@ -268,8 +285,15 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('does not add Color field when color is not given', () => {
+      const imageAssetContext = buildImageAssetContext({
+        imageBlendModeMap: new Map([['front.png', 'Alpha' as const]]),
+      });
       const result = makeBuilder(makeSpec())
-        .addQuadMesh({ size: { x: 1, y: 1 }, blendMode: 'Alpha' })
+        .addQuadMesh({
+          size: { x: 1, y: 1 },
+          textureIdentifier: 'front.png',
+          imageAssetContext,
+        })
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -320,7 +344,6 @@ describe('ResoniteObjectBuilder', () => {
           textureIdentifier: 'img.png',
           dualSided: true,
           size: { x: 2, y: 3 },
-          blendMode: 'Opaque',
         })
         .addBoxCollider({ x: 2, y: 3, z: 0.05 })
         .addGrabbable()
@@ -352,13 +375,24 @@ describe('ResoniteObjectBuilder', () => {
 
   describe('addQuadMesh() with shared texture reference', () => {
     it('uses textureIdentifier for blend lookup when textureValue is a shared reference', () => {
+      const imageAssetContext = buildImageAssetContext({
+        imageAssetInfoMap: new Map([
+          [
+            'front.png',
+            {
+              identifier: 'front.png',
+              textureValue: 'texture-ref://shared-texture-id',
+            },
+          ],
+        ]),
+        imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
+      });
       const result = makeBuilder(makeSpec('slot-lookup'))
         .addQuadMesh({
           textureIdentifier: 'front.png',
-          textureMap: new Map([['front.png', toTextureReference('shared-texture-id')]]),
           dualSided: false,
           size: { x: 1, y: 1 },
-          imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
+          imageAssetContext,
         })
         .build();
 
@@ -372,7 +406,7 @@ describe('ResoniteObjectBuilder', () => {
 
     it('uses shared StaticTexture2D references without creating local texture components', () => {
       const result = makeBuilder(makeSpec('slot-1'))
-        .addQuadMesh({ textureIdentifier: toTextureReference('shared-texture-id') })
+        .addQuadMesh({ textureIdentifier: 'texture-ref://shared-texture-id' })
         .build();
 
       expect(result.components.find((c) => c.type.endsWith('StaticTexture2D'))).toBeUndefined();

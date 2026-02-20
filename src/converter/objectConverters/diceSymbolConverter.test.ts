@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { DiceSymbol } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { convertDiceSymbol } from './diceSymbolConverter';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 function createBaseDice(): DiceSymbol {
   return {
@@ -49,9 +50,7 @@ describe('convertDiceSymbol', () => {
         y: size,
         z: size,
       }),
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -79,9 +78,7 @@ describe('convertDiceSymbol', () => {
       udonObj,
       resoniteObj.position,
       (size) => ({ x: size, y: size, z: size }),
-      undefined,
-      imageAspectRatioMap,
-      undefined,
+      buildImageAssetContext({ imageAspectRatioMap }),
       resoniteObj.id
     );
 
@@ -118,9 +115,7 @@ describe('convertDiceSymbol', () => {
         y: size,
         z: size,
       }),
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 

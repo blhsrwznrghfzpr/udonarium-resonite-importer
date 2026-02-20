@@ -1,16 +1,15 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
-import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
+import { ImageAssetContext } from '../imageAssetContext';
 
 export function convertTable(
   udonObj: GameTable,
   basePosition: Vector3,
-  textureMap?: Map<string, string>,
+  imageAssetContext: ImageAssetContext,
   convertObject?: (obj: UdonariumObject) => ResoniteObject,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
-  slotId?: string,
-  options?: { enableCharacterColliderOnLockedTerrain?: boolean }
+  options?: { enableCharacterColliderOnLockedTerrain?: boolean },
+  slotId?: string
 ): ResoniteObject {
   const parentBuilder = ResoniteObjectBuilder.create({
     id: slotId,
@@ -32,8 +31,7 @@ export function convertTable(
       textureIdentifier,
       dualSided: true,
       size: { x: udonObj.width, y: udonObj.height },
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
     })
     .addBoxCollider(
       { x: udonObj.width, y: udonObj.height, z: 0 },
@@ -46,6 +44,5 @@ export function convertTable(
       ? udonObj.children.map((child) => convertObject(child))
       : [];
 
-  // Keep table container unrotated so child object positions stay stable.
   return parentBuilder.addChildren([tableVisual, ...convertedChildren]).build();
 }

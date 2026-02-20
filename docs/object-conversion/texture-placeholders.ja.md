@@ -1,4 +1,4 @@
-# テクスチャ処理 設計メモ
+﻿# テクスチャ処理 設計メモ
 
 ## 概要
 
@@ -9,6 +9,9 @@
 
 見た目は URL 風ですが、**変換パイプライン内部で使う識別子** であり、
 Assets/Textures スロット内の既存 `StaticTexture2D` を参照することを意味します。
+
+画像情報は `Map<string, ImageAssetInfo>`（`importedImageAssetInfoMap`）で保持され、
+`buildImageAssetContext(...)` が `ReadonlyMap` として公開します。
 
 ---
 
@@ -29,21 +32,21 @@ Udonarium の保存ファイル（ZIP）に画像が同梱されている場合�
 | `bg/table.jpg` | `table` | `table` |
 
 `ZipExtractor` は `path.basename(entry.entryName, ext)` を `file.name` として返します。
-`AssetImporter.importImage()` はこの `file.name` をキーに `importedTextures` マップへ登録し、
-`ResoniteLinkClient.importTexture()` が返す `resdb:///...` 形式の URL を値に格納します。
+`AssetImporter.importImage()` はこの `file.name` をキーに `importedImageAssetInfoMap` へ登録し、
+`ImageAssetInfo.textureValue` に `ResoniteLinkClient.importTexture()` の `resdb:///...` を格納します。
 
 **SVG ファイルの場合**: `sharp` で PNG 変換後にテンプファイルに書き出してからインポートします（Resonite は SVG 非対応）。
 
 ```
 zip: images/front.png
   → ExtractedFile { path: 'images/front.png', name: 'front' }
-  → importedTextures: Map { 'front' → 'resdb:///abc123...' }
+  → importedImageAssetInfoMap: Map { 'front' → 'resdb:///abc123...' }
   → StaticTexture2D.URL = 'resdb:///abc123...'
 
 zip: images/icon.svg
   → ExtractedFile { path: 'images/icon.svg', name: 'icon' }
   → sharp(data).png() → icon.png（テンプファイル）
-  → importedTextures: Map { 'icon' → 'resdb:///def456...' }
+  → importedImageAssetInfoMap: Map { 'icon' → 'resdb:///def456...' }
   → StaticTexture2D.URL = 'resdb:///def456...'
 ```
 
@@ -63,13 +66,13 @@ ZIP にファイルがなくても外部 URL に解決されます。
 | `none_icon` | `https://udonarium.app/assets/images/ic_account_circle_black_24dp_2x.png` |
 
 `registerExternalUrls()` が `KNOWN_IMAGES.get(identifier).url` を `AssetImporter.registerExternalUrl()` 経由で
-`importedTextures` に登録します。
+`importedImageAssetInfoMap` に登録します。
 
 ```
 identifier: 'testTableBackgroundImage_image'
   → registerExternalUrl('testTableBackgroundImage_image',
                         'https://udonarium.app/assets/images/BG10a_80.jpg')
-  → importedTextures: Map { 'testTableBackgroundImage_image'
+  → importedImageAssetInfoMap: Map { 'testTableBackgroundImage_image'
                             → 'https://udonarium.app/assets/images/BG10a_80.jpg' }
   → StaticTexture2D.URL = 'https://udonarium.app/assets/images/BG10a_80.jpg'
 ```
@@ -84,13 +87,13 @@ Udonarium が Web ホスト上のリソースを参照するときに使う形�
 | `./assets/images/trump/trump_01.png` | `https://udonarium.app/assets/images/trump/trump_01.png` |
 
 `registerExternalUrls()` が `'https://udonarium.app/'` + パス（先頭の `./` を除去）を組み立てて
-`importedTextures` に登録します。
+`importedImageAssetInfoMap` に登録します。
 
 ```
 identifier: './assets/images/BG10a_80.jpg'
   → url = 'https://udonarium.app/assets/images/BG10a_80.jpg'
   → registerExternalUrl('./assets/images/BG10a_80.jpg', url)
-  → importedTextures: Map { './assets/images/BG10a_80.jpg'
+  → importedImageAssetInfoMap: Map { './assets/images/BG10a_80.jpg'
                             → 'https://udonarium.app/assets/images/BG10a_80.jpg' }
   → StaticTexture2D.URL = 'https://udonarium.app/assets/images/BG10a_80.jpg'
      （Assets/Textures スロットに共有テクスチャとして作成）
@@ -106,7 +109,7 @@ identifier: './assets/images/BG10a_80.jpg'
 identifier: 'https://example.com/images/character.png'
   → registerExternalUrl('https://example.com/images/character.png',
                         'https://example.com/images/character.png')
-  → importedTextures: Map { 'https://example.com/images/character.png'
+  → importedImageAssetInfoMap: Map { 'https://example.com/images/character.png'
                             → 'https://example.com/images/character.png' }
   → StaticTexture2D.URL = 'https://example.com/images/character.png'
      （Assets/Textures スロットに共有テクスチャとして作成）
@@ -121,7 +124,7 @@ identifier: 'https://example.com/icons/badge.svg'
   → fetch(...) → SVG バッファ取得
   → sharp(svgBuffer).png() → badge.png（テンプファイル）
   → importTexture(badge.png) → 'resdb:///ghi789...'
-  → importedTextures: Map { 'https://example.com/icons/badge.svg'
+  → importedImageAssetInfoMap: Map { 'https://example.com/icons/badge.svg'
                             → 'resdb:///ghi789...' }
   → StaticTexture2D.URL = 'resdb:///ghi789...'
      （Assets/Textures スロットに共有テクスチャとして作成）
@@ -142,7 +145,7 @@ identifier: 'https://example.com/icons/badge.svg'
 
 `buildImageBlendModeMap()` は絶対 URL を `buildExternalProbeUrl()` でそのままプローブ対象 URL として扱い、
 実際に HTTP フェッチしてアルファチャンネルを検出します。
-ただしこれはオブジェクト変換前の準備処理であり、`importedTextures` への登録とは無関係です。
+ただしこれはオブジェクト変換前の準備処理であり、`importedImageAssetInfoMap` への登録とは無関係です。
 
 ```
 buildExternalProbeUrl('https://example.com/images/character.png')
@@ -166,30 +169,34 @@ probeBlendModeFromExternalUrl('https://example.com/images/character.png')
 
 [2] 外部 URL 登録（registerExternalUrls）
     KNOWN_IMAGES / 相対パス / 非 SVG 絶対 URL:
-      → importedTextures: { identifier → url }
+      → importedImageAssetInfoMap: { identifier → url }
     SVG 絶対 URL:
-      → fetch → sharp → importTexture → importedTextures: { identifier → 'resdb:///...' }
+      → fetch → sharp → importTexture → importedImageAssetInfoMap: { identifier → 'resdb:///...' }
 
 [3] ZIP 内ファイルをインポート（assetImporter.importImages）
     PNG/JPG/GIF: そのままインポート
     SVG: sharp で PNG 変換 → インポート
-      → importedTextures: { 'front' → 'resdb:///abc123...' }
+      → importedImageAssetInfoMap: { 'front' → 'resdb:///abc123...' }
                           { 'icon'  → 'resdb:///def456...' }
 
-[4] Assets/Textures スロットに共有テクスチャを作成（slotBuilder.createTextureAssets）
+[4] Assets/Textures スロットに共有テクスチャを作成（slotBuilder.createTextureAssetsWithUpdater）
     各 identifier ごとに:
       スロット名 = identifier（例: 'front'）
       StaticTexture2D( URL = textureUrl )
         ID: udon-imp-<uuid>-static-texture
       MainTexturePropertyBlock( Texture → StaticTexture2D )
         ID: udon-imp-<uuid>-main-texture-property-block
-    → textureReferenceMap: { 'front' → 'udon-imp-<uuid>-static-texture' }
+    → updateTextureReference(identifier, componentId) 経由で
+      AssetImporter の ImageAssetInfo.textureValue を
+      'texture-ref://<componentId>' に更新
 
-[5] texture-ref:// マップを生成
-    textureComponentMap: { 'front' → 'texture-ref://udon-imp-<uuid>-static-texture' }
+[5] ImageAssetContext を構築
+    imageAssetInfoMap + imageAspectRatioMap + imageBlendModeMap を
+    buildImageAssetContext(...) へ渡す
+    ※ `imageAssetContext.byIdentifier` は `ReadonlyMap<string, ImageAssetInfo>`
 
-[6] オブジェクト変換（convertObjectsWithTextureMap）
-    resolveTextureValue('front', textureComponentMap)
+[6] オブジェクト変換（convertObjectsWithImageAssetContext）
+    imageAssetContext.resolveTextureValue('front')
       → 'texture-ref://udon-imp-<uuid>-static-texture'
 
 [7] コンポーネント組み立て（buildQuadMeshComponents）
@@ -232,13 +239,26 @@ probeBlendModeFromExternalUrl('https://example.com/images/character.png')
 
 ## dry-run 時の挙動
 
-`--dry-run` 時は空の `Map<string, string>` を `textureMap` として渡します。
+`--dry-run` 時は `buildDryRunImageAssetInfoMap(...)` で `ImageAssetInfo` を生成し、
+`buildImageAssetContext(...)` へ渡します。
 
 ```ts
 // dry-run 時
-convertObjectsWithTextureMap(objects, new Map<string, string>(), ...)
+const imageAssetInfoMap = buildDryRunImageAssetInfoMap(imageFiles, objects);
+const imageAssetContext = buildImageAssetContext({
+  imageAssetInfoMap,
+  imageAspectRatioMap,
+  imageBlendModeMap,
+});
+convertObjectsWithImageAssetContext(objects, imageAssetContext, ...);
 ```
 
-`resolveTextureValue(identifier, emptyMap)` → `emptyMap.get(identifier) ?? identifier` → identifier そのもの（例: `'front'`）
+dry-run 用 `imageAssetInfoMap` には identifier をそのまま `textureValue` として保持するため、
+変換結果では `StaticTexture2D.URL` に identifier 文字列が入ります（接続しないため実行上は問題なし）。
 
-そのため dry-run 時は identifier の文字列が `StaticTexture2D.URL` に設定されます（無効な URL ですが変換結果の確認には十分）。
+---
+
+## 検証状況
+
+- 2026-02-20: `npm run test` 実行
+- 結果: 34 Test Files / 397 Tests が全件成功

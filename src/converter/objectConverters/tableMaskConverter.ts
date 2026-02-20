@@ -1,7 +1,7 @@
 import { TableMask } from '../../domain/UdonariumObject';
-import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
+import { ImageAssetContext } from '../imageAssetContext';
 
 const TABLE_MASK_Y_OFFSET = 0.002;
 const TABLE_MASK_COLLIDER_THICKNESS = 0.01;
@@ -17,15 +17,13 @@ function resolveMaskOpacity(mask: TableMask): number {
 export function convertTableMask(
   udonObj: TableMask,
   basePosition: Vector3,
-  textureMap?: Map<string, string>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  imageAssetContext: ImageAssetContext,
   slotId?: string
 ): ResoniteObject {
   const hasMaskImage = !!udonObj.images[0]?.identifier;
   const opacity = resolveMaskOpacity(udonObj);
   const colorValue = hasMaskImage ? 1 : 0;
 
-  // Udonarium positions are edge-based; Resonite uses center-based transforms.
   const builder = ResoniteObjectBuilder.create({
     id: slotId,
     name: udonObj.name,
@@ -41,8 +39,7 @@ export function convertTableMask(
       textureIdentifier: udonObj.images[0]?.identifier,
       dualSided: true,
       size: { x: udonObj.width, y: udonObj.height },
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
       color: {
         r: colorValue,
         g: colorValue,

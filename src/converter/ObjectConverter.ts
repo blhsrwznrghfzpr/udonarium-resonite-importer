@@ -3,7 +3,6 @@
  */
 
 import { GameTable, UdonariumObject } from '../domain/UdonariumObject';
-import { ImageBlendMode } from '../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SCALE_FACTOR } from '../config/MappingConfig';
 import { convertCharacter } from './objectConverters/characterConverter';
@@ -15,16 +14,12 @@ import { convertTable } from './objectConverters/tableConverter';
 import { convertTableMask } from './objectConverters/tableMaskConverter';
 import { convertTextNote } from './objectConverters/textNoteConverter';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
+import { ImageAssetContext } from './imageAssetContext';
 
 interface ConverterOptions {
   enableCharacterColliderOnLockedTerrain?: boolean;
 }
 
-/**
- * Convert Udonarium 2D coordinates to Resonite 3D coordinates
- * Udonarium: +X right, +Y down (CSS-like)
- * Resonite: +X right, +Y up, +Z forward (Y-up system)
- */
 export function convertPosition(x: number, y: number, z: number): Vector3 {
   return {
     x: x * SCALE_FACTOR,
@@ -33,9 +28,6 @@ export function convertPosition(x: number, y: number, z: number): Vector3 {
   };
 }
 
-/**
- * Convert Udonarium size to Resonite scale
- */
 export function convertSize(size: number): Vector3 {
   return {
     x: size,
@@ -44,79 +36,42 @@ export function convertSize(size: number): Vector3 {
   };
 }
 
-/**
- * Convert a single Udonarium object to Resonite object
- */
 export function convertObjectWithTextures(
   udonObj: UdonariumObject,
-  textureMap?: Map<string, string>,
-  imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  imageAssetContext: ImageAssetContext,
   options?: ConverterOptions
 ): ResoniteObject {
   const position = convertPosition(udonObj.position.x, udonObj.position.y, udonObj.position.z);
 
-  // Apply type-specific conversions
   switch (udonObj.type) {
     case 'character':
-      return convertCharacter(
-        udonObj,
-        position,
-        convertSize,
-        textureMap,
-        imageAspectRatioMap,
-        imageBlendModeMap
-      );
+      return convertCharacter(udonObj, position, convertSize, imageAssetContext);
     case 'dice-symbol':
-      return convertDiceSymbol(
-        udonObj,
-        position,
-        convertSize,
-        textureMap,
-        imageAspectRatioMap,
-        imageBlendModeMap
-      );
+      return convertDiceSymbol(udonObj, position, convertSize, imageAssetContext);
     case 'terrain':
-      return convertTerrain(udonObj, position, textureMap, imageBlendModeMap, undefined, options);
+      return convertTerrain(udonObj, position, imageAssetContext, options);
     case 'table':
       return convertTable(
         udonObj,
         position,
-        textureMap,
-        (obj) =>
-          convertObjectWithTextures(
-            obj,
-            textureMap,
-            imageAspectRatioMap,
-            imageBlendModeMap,
-            options
-          ),
-        imageBlendModeMap,
-        undefined,
+        imageAssetContext,
+        (obj: UdonariumObject) => convertObjectWithTextures(obj, imageAssetContext, options),
         options
       );
     case 'table-mask':
-      return convertTableMask(udonObj, position, textureMap, imageBlendModeMap);
+      return convertTableMask(udonObj, position, imageAssetContext);
     case 'card':
-      return convertCard(udonObj, position, textureMap, imageAspectRatioMap, imageBlendModeMap);
+      return convertCard(udonObj, position, imageAssetContext);
     case 'card-stack':
       return convertCardStack(
         udonObj,
         position,
-        (obj) =>
-          convertObjectWithTextures(
-            obj,
-            textureMap,
-            imageAspectRatioMap,
-            imageBlendModeMap,
-            options
-          ),
-        imageAspectRatioMap
+        (obj: UdonariumObject) => convertObjectWithTextures(obj, imageAssetContext, options),
+        imageAssetContext
       );
     case 'text-note':
       return convertTextNote(udonObj, position);
     default: {
-      // Fallback for unsupported object types.
       const unknownObj = udonObj as UdonariumObject;
       const builder = ResoniteObjectBuilder.create({ name: unknownObj.name })
         .setPosition(position)
@@ -154,18 +109,13 @@ function applyGameTableVisibility(
   return convertedObjects;
 }
 
-/**
- * Convert multiple Udonarium objects using imported texture URL map.
- */
-export function convertObjectsWithTextureMap(
+export function convertObjectsWithImageAssetContext(
   udonObjects: UdonariumObject[],
-  textureMap: Map<string, string>,
-  imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  imageAssetContext: ImageAssetContext,
   options?: ConverterOptions
 ): ResoniteObject[] {
   const converted = udonObjects.map((obj) =>
-    convertObjectWithTextures(obj, textureMap, imageAspectRatioMap, imageBlendModeMap, options)
+    convertObjectWithTextures(obj, imageAssetContext, options)
   );
   return applyGameTableVisibility(converted, udonObjects);
 }

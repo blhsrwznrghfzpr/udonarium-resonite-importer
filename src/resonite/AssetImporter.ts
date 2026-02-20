@@ -8,6 +8,8 @@ import * as os from 'os';
 import sharp from 'sharp';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ExtractedFile } from '../parser/ZipExtractor';
+import { ImageAssetInfo, ImageSourceKind } from '../converter/imageAssetContext';
+import { isGifTexture, toTextureReference } from '../converter/textureUtils';
 
 export interface AssetImportResult {
   identifier: string;
@@ -18,7 +20,7 @@ export interface AssetImportResult {
 
 export class AssetImporter {
   private client: ResoniteLinkClient;
-  private importedTextures: Map<string, string> = new Map();
+  private importedImageAssetInfoMap: Map<string, ImageAssetInfo> = new Map();
   private tempDir: string | null = null;
 
   constructor(client: ResoniteLinkClient) {
@@ -31,10 +33,11 @@ export class AssetImporter {
    */
   async importImage(file: ExtractedFile): Promise<AssetImportResult> {
     // Check if already imported
-    if (this.importedTextures.has(file.name)) {
+    const existing = this.importedImageAssetInfoMap.get(file.name)?.textureValue;
+    if (existing) {
       return {
         identifier: file.name,
-        textureId: this.importedTextures.get(file.name)!,
+        textureId: existing,
         success: true,
       };
     }
@@ -43,7 +46,8 @@ export class AssetImporter {
       const tempFile = await this.writeTempFile(file);
       const textureId = await this.client.importTexture(tempFile);
 
-      this.importedTextures.set(file.name, textureId);
+      const ext = path.extname(file.path || file.name).toLowerCase();
+      this.setImportedAssetInfo(file.name, textureId, ext === '.svg' ? 'zip-svg' : 'zip-image');
 
       return {
         identifier: file.name,
@@ -85,8 +89,12 @@ export class AssetImporter {
   /**
    * Register an external URL as a texture (no file import needed)
    */
-  registerExternalUrl(identifier: string, url: string): void {
-    this.importedTextures.set(identifier, url);
+  registerExternalUrl(
+    identifier: string,
+    url: string,
+    sourceKind: ImageSourceKind = 'external-url'
+  ): void {
+    this.setImportedAssetInfo(identifier, url, sourceKind);
   }
 
   /**
@@ -94,7 +102,7 @@ export class AssetImporter {
    * Resonite does not support SVG, so conversion is required.
    */
   async importExternalSvgUrl(identifier: string, url: string): Promise<void> {
-    if (this.importedTextures.has(identifier)) return;
+    if (this.importedImageAssetInfoMap.has(identifier)) return;
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -110,21 +118,35 @@ export class AssetImporter {
     fs.writeFileSync(filePath, pngBuffer);
 
     const textureId = await this.client.importTexture(filePath);
-    this.importedTextures.set(identifier, textureId);
+    this.setImportedAssetInfo(identifier, textureId, 'external-svg');
   }
 
   /**
    * Get texture ID for a previously imported identifier
    */
   getTextureId(identifier: string): string | undefined {
-    return this.importedTextures.get(identifier);
+    return this.importedImageAssetInfoMap.get(identifier)?.textureValue;
   }
 
   /**
-   * Get all imported texture mappings
+   * Get imported image asset info map (identifier -> texture/source metadata)
    */
-  getImportedTextures(): Map<string, string> {
-    return new Map(this.importedTextures);
+  getImportedImageAssetInfoMap(): Map<string, ImageAssetInfo> {
+    return new Map(this.importedImageAssetInfoMap);
+  }
+
+  /**
+   * Replace a single texture value with shared texture reference.
+   */
+  applyTextureReference(identifier: string, componentId: string): void {
+    const info = this.importedImageAssetInfoMap.get(identifier);
+    if (!info) {
+      return;
+    }
+    this.importedImageAssetInfoMap.set(identifier, {
+      ...info,
+      textureValue: toTextureReference(componentId),
+    });
   }
 
   /**
@@ -135,6 +157,20 @@ export class AssetImporter {
       fs.rmSync(this.tempDir, { recursive: true, force: true });
       this.tempDir = null;
     }
+  }
+
+  private setImportedAssetInfo(
+    identifier: string,
+    textureValue: string,
+    sourceKind: ImageSourceKind
+  ): void {
+    const usePointFilter = isGifTexture(identifier) || isGifTexture(textureValue);
+    this.importedImageAssetInfoMap.set(identifier, {
+      identifier,
+      textureValue,
+      sourceKind,
+      filterMode: usePointFilter ? 'Point' : 'Default',
+    });
   }
 
   private getTempDir(): string {

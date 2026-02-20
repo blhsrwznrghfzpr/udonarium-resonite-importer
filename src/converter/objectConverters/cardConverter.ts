@@ -1,8 +1,7 @@
 import { Card } from '../../domain/UdonariumObject';
-import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
+import { ImageAssetContext } from '../imageAssetContext';
 
 const CARD_Y_OFFSET = 0.001;
 const CARD_FACE_SEPARATION = 0.0001;
@@ -42,14 +41,10 @@ function resolveBackAspectIdentifier(card: Card): string | undefined {
 function resolveAspectRatio(
   primaryIdentifier: string | undefined,
   secondaryIdentifier: string | undefined,
-  imageAspectRatioMap?: Map<string, number>
+  imageAssetContext: ImageAssetContext
 ): number {
-  if (!imageAspectRatioMap) {
-    return DEFAULT_CARD_ASPECT_RATIO;
-  }
-
-  const primaryAspect = lookupImageAspectRatio(imageAspectRatioMap, primaryIdentifier);
-  const secondaryAspect = lookupImageAspectRatio(imageAspectRatioMap, secondaryIdentifier);
+  const primaryAspect = imageAssetContext.lookupAspectRatio(primaryIdentifier);
+  const secondaryAspect = imageAssetContext.lookupAspectRatio(secondaryIdentifier);
 
   if (primaryAspect && Number.isFinite(primaryAspect) && primaryAspect > 0) {
     return primaryAspect;
@@ -63,21 +58,19 @@ function resolveAspectRatio(
 export function convertCard(
   udonObj: Card,
   basePosition: Vector3,
-  textureMap?: Map<string, string>,
-  imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  imageAssetContext: ImageAssetContext,
   slotId?: string
 ): ResoniteObject {
   const cardWidth = udonObj.size;
   const frontAspectRatio = resolveAspectRatio(
     resolveFrontAspectIdentifier(udonObj),
     resolveBackAspectIdentifier(udonObj),
-    imageAspectRatioMap
+    imageAssetContext
   );
   const backAspectRatio = resolveAspectRatio(
     resolveBackAspectIdentifier(udonObj),
     resolveFrontAspectIdentifier(udonObj),
-    imageAspectRatioMap
+    imageAssetContext
   );
   const frontHeight = cardWidth * frontAspectRatio;
   const backHeight = cardWidth * backAspectRatio;
@@ -87,9 +80,6 @@ export function convertCard(
   const frontTextureIdentifier = resolveFrontTextureIdentifier(udonObj);
   const backTextureIdentifier = resolveBackTextureIdentifier(udonObj);
 
-  // Udonarium positions are edge-based; Resonite uses center-based transforms.
-  // Slight Y offset so cards don't z-fight with the table surface.
-  // Keep parent slot rotation on table plane; lay-flat rotation is applied on child faces.
   const parentBuilder = ResoniteObjectBuilder.create({
     id: slotId,
     name: udonObj.name,
@@ -112,15 +102,13 @@ export function convertCard(
     id: `${parentId}-front`,
     name: `${udonObj.name}-front`,
   })
-    // Align top edges when front/back heights differ.
     .setPosition({ x: 0, y: CARD_FACE_SEPARATION, z: frontZOffset })
     .setRotation({ x: 90, y: 0, z: 0 })
     .addQuadMesh({
       textureIdentifier: frontTextureIdentifier,
       dualSided: false,
       size: { x: cardWidth, y: frontHeight },
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
     })
     .build();
 
@@ -128,25 +116,20 @@ export function convertCard(
     id: `${parentId}-back`,
     name: `${udonObj.name}-back`,
   })
-    // Align top edges when front/back heights differ.
     .setPosition({ x: 0, y: -CARD_FACE_SEPARATION, z: backZOffset })
     .setRotation({ x: -90, y: 180, z: 0 })
     .addQuadMesh({
       textureIdentifier: backTextureIdentifier,
       dualSided: false,
       size: { x: cardWidth, y: backHeight },
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
     })
     .build();
 
-  return (
-    parentBuilder
-      // Parent slot rotates only on Y, so make collider thin on local Y.
-      .addBoxCollider({ x: cardWidth, y: 0.01, z: parentHeight })
-      .addGrabbable()
-      .addChild(frontSlot)
-      .addChild(backSlot)
-      .build()
-  );
+  return parentBuilder
+    .addBoxCollider({ x: cardWidth, y: 0.01, z: parentHeight })
+    .addGrabbable()
+    .addChild(frontSlot)
+    .addChild(backSlot)
+    .build();
 }

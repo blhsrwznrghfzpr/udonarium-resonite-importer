@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   convertPosition,
   convertSize,
   convertObjectWithTextures,
-  convertObjectsWithTextureMap,
+  convertObjectsWithImageAssetContext,
 } from './ObjectConverter';
 import { SCALE_FACTOR } from '../config/MappingConfig';
 import type {
@@ -17,6 +17,19 @@ import type {
   TextNote,
 } from '../domain/UdonariumObject';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
+import { buildImageAssetContext, ImageAssetInfo } from './imageAssetContext';
+
+function makeContext(options?: {
+  imageAssetInfoMap?: Map<string, ImageAssetInfo>;
+  imageAspectRatioMap?: Map<string, number>;
+  imageBlendModeMap?: Map<string, 'Cutout' | 'Opaque' | 'Alpha'>;
+}): ReturnType<typeof buildImageAssetContext> {
+  return buildImageAssetContext({
+    imageAssetInfoMap: options?.imageAssetInfoMap,
+    imageAspectRatioMap: options?.imageAspectRatioMap,
+    imageBlendModeMap: options?.imageBlendModeMap,
+  });
+}
 
 describe('ObjectConverter', () => {
   describe('convertPosition', () => {
@@ -99,7 +112,7 @@ describe('ObjectConverter', () => {
           roll: 0,
         };
 
-        const result = convertObjectWithTextures(character, new Map());
+        const result = convertObjectWithTextures(character, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.name).toBe('Test Object');
@@ -124,7 +137,10 @@ describe('ObjectConverter', () => {
         };
         const imageAspectRatioMap = new Map<string, number>([['char-aspect', 1.5]]);
 
-        const [result] = convertObjectsWithTextureMap([character], new Map(), imageAspectRatioMap);
+        const [result] = convertObjectsWithImageAssetContext(
+          [character],
+          makeContext({ imageAspectRatioMap })
+        );
 
         const quad = result.components.find((c) => c.type === COMPONENT_TYPES.QUAD_MESH);
         expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
@@ -154,7 +170,7 @@ describe('ObjectConverter', () => {
           ],
         };
 
-        const result = convertObjectWithTextures(dice, new Map());
+        const result = convertObjectWithTextures(dice, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         const basePos = convertPosition(100, 200, 50);
@@ -190,7 +206,10 @@ describe('ObjectConverter', () => {
           ['large-face', 2],
         ]);
 
-        const [result] = convertObjectsWithTextureMap([dice], new Map(), imageAspectRatioMap);
+        const [result] = convertObjectsWithImageAssetContext(
+          [dice],
+          makeContext({ imageAspectRatioMap })
+        );
 
         const basePos = convertPosition(100, 200, 50);
         expect(result.position).toEqual({
@@ -231,7 +250,7 @@ describe('ObjectConverter', () => {
           floorImage: null,
         };
 
-        const result = convertObjectWithTextures(terrain, new Map());
+        const result = convertObjectWithTextures(terrain, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       });
@@ -250,7 +269,7 @@ describe('ObjectConverter', () => {
           floorImage: null,
         };
 
-        const [result] = convertObjectsWithTextureMap([terrain], new Map(), undefined, undefined, {
+        const [result] = convertObjectsWithImageAssetContext([terrain], makeContext(), {
           enableCharacterColliderOnLockedTerrain: false,
         });
         const collider = result.components.find((c) => c.type === COMPONENT_TYPES.BOX_COLLIDER);
@@ -278,7 +297,7 @@ describe('ObjectConverter', () => {
           children: [],
         };
 
-        const result = convertObjectWithTextures(table, new Map());
+        const result = convertObjectWithTextures(table, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
 
@@ -297,7 +316,7 @@ describe('ObjectConverter', () => {
           children: [],
         };
 
-        const [result] = convertObjectsWithTextureMap([table], new Map(), undefined, undefined, {
+        const [result] = convertObjectsWithImageAssetContext([table], makeContext(), {
           enableCharacterColliderOnLockedTerrain: true,
         });
         const visual = result.children[0];
@@ -323,7 +342,7 @@ describe('ObjectConverter', () => {
           backImage: { identifier: 'back', name: 'back.png' },
         };
 
-        const result = convertObjectWithTextures(card, new Map());
+        const result = convertObjectWithTextures(card, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       });
@@ -338,7 +357,7 @@ describe('ObjectConverter', () => {
           cards: [],
         };
 
-        const result = convertObjectWithTextures(cardStack, new Map());
+        const result = convertObjectWithTextures(cardStack, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       });
@@ -353,7 +372,7 @@ describe('ObjectConverter', () => {
           fontSize: 14,
         };
 
-        const result = convertObjectWithTextures(textNote, new Map());
+        const result = convertObjectWithTextures(textNote, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
       });
@@ -370,7 +389,7 @@ describe('ObjectConverter', () => {
           opacity: 30,
         };
 
-        const result = convertObjectWithTextures(tableMask, new Map());
+        const result = convertObjectWithTextures(tableMask, makeContext());
 
         expect(result.id).toMatch(/^udon-imp-[0-9a-f-]{36}$/);
         expect(result.rotation).toEqual({ x: 90, y: 0, z: 0 });
@@ -452,7 +471,7 @@ describe('ObjectConverter', () => {
       ];
 
       for (const [index, obj] of objects.entries()) {
-        const result = convertObjectWithTextures(obj, new Map());
+        const result = convertObjectWithTextures(obj, makeContext());
         // Table has collider on -surface child slot, others on the slot itself
         const searchTarget =
           obj.type === 'table' ? (result.children[0]?.components ?? []) : result.components;
@@ -477,7 +496,7 @@ describe('ObjectConverter', () => {
         roll: 0,
       };
 
-      const result = convertObjectWithTextures(character, new Map());
+      const result = convertObjectWithTextures(character, makeContext());
 
       expect(result.rotation).toEqual({ x: 0, y: 0, z: 0 });
     });
@@ -492,15 +511,15 @@ describe('ObjectConverter', () => {
         roll: 0,
       };
 
-      const result = convertObjectWithTextures(character, new Map());
+      const result = convertObjectWithTextures(character, makeContext());
 
       expect(result.children).toEqual([]);
     });
   });
 
-  describe('convertObjectsWithTextureMap', () => {
+  describe('convertObjectsWithImageAssetContext', () => {
     it('should convert empty array', () => {
-      const result = convertObjectsWithTextureMap([], new Map());
+      const result = convertObjectsWithImageAssetContext([], makeContext());
       expect(result).toEqual([]);
     });
 
@@ -530,7 +549,7 @@ describe('ObjectConverter', () => {
         },
       ];
 
-      const result = convertObjectsWithTextureMap(objects, new Map());
+      const result = convertObjectsWithImageAssetContext(objects, makeContext());
 
       expect(result).toHaveLength(2);
       expect(result[0].id).toMatch(/^udon-imp-/);
@@ -575,7 +594,7 @@ describe('ObjectConverter', () => {
         },
       ];
 
-      const result = convertObjectsWithTextureMap(objects, new Map());
+      const result = convertObjectsWithImageAssetContext(objects, makeContext());
 
       expect(result).toHaveLength(3);
       const ids = new Set(result.map((r) => r.id));
@@ -611,13 +630,13 @@ describe('ObjectConverter', () => {
         roll: 0,
       };
 
-      const result = convertObjectsWithTextureMap(
+      const result = convertObjectsWithImageAssetContext(
         [
           createTable('table-1', 'Table 1', true),
           createTable('table-2', 'Table 2', false),
           character,
         ],
-        new Map()
+        makeContext()
       );
 
       expect(result[0].isActive).toBe(true);

@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { convertCard } from './cardConverter';
 import { Card } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertCard', () => {
   const createBaseCard = (): Card => ({
@@ -35,9 +36,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -61,9 +60,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -90,9 +87,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -123,9 +118,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -142,9 +135,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -175,9 +166,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -201,9 +190,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      imageAspectRatioMap,
-      undefined,
+      buildImageAssetContext({ imageAspectRatioMap }),
       resoniteObj.id
     );
 
@@ -226,9 +213,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      imageAspectRatioMap,
-      undefined,
+      buildImageAssetContext({ imageAspectRatioMap }),
       resoniteObj.id
     );
 
@@ -251,9 +236,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      imageAspectRatioMap,
-      undefined,
+      buildImageAssetContext({ imageAspectRatioMap }),
       resoniteObj.id
     );
 
@@ -287,9 +270,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      imageBlendModeMap,
+      buildImageAssetContext({ imageBlendModeMap }),
       resoniteObj.id
     );
 
@@ -319,9 +300,7 @@ describe('convertCard', () => {
     const result = convertCard(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
-      imageBlendModeMap,
+      buildImageAssetContext({ imageBlendModeMap }),
       resoniteObj.id
     );
 

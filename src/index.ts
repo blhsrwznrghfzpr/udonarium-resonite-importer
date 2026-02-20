@@ -16,9 +16,9 @@ import * as path from 'path';
 
 import { extractZip } from './parser/ZipExtractor';
 import { parseXmlFiles } from './parser/XmlParser';
-import { convertObjectsWithTextureMap } from './converter/ObjectConverter';
+import { convertObjectsWithImageAssetContext } from './converter/ObjectConverter';
 import { buildImageAspectRatioMap, buildImageBlendModeMap } from './converter/imageAspectRatioMap';
-import { toTextureReference } from './converter/textureUtils';
+import { buildImageAssetContext } from './converter/imageAssetContext';
 import { prepareSharedMeshDefinitions, resolveSharedMeshReferences } from './converter/sharedMesh';
 import {
   prepareSharedMaterialDefinitions,
@@ -28,6 +28,7 @@ import { ResoniteLinkClient } from './resonite/ResoniteLinkClient';
 import { SlotBuilder } from './resonite/SlotBuilder';
 import { AssetImporter } from './resonite/AssetImporter';
 import { registerExternalUrls } from './resonite/registerExternalUrls';
+import { buildDryRunImageAssetInfoMap } from './resonite/dryRunImageAssetInfo';
 import {
   SCALE_FACTOR,
   IMPORT_ROOT_TAG,
@@ -208,12 +209,19 @@ async function run(options: CLIOptions): Promise<void> {
 
   // Dry run - stop here
   if (options.dryRun) {
-    // Convert to Resonite objects (dry-run only)
-    const resoniteObjects = convertObjectsWithTextureMap(
-      parseResult.objects,
-      new Map<string, string>(),
+    const imageAssetInfoMap = buildDryRunImageAssetInfoMap(
+      extractedData.imageFiles,
+      parseResult.objects
+    );
+    const imageAssetContext = buildImageAssetContext({
+      imageAssetInfoMap,
       imageAspectRatioMap,
       imageBlendModeMap,
+    });
+    // Convert to Resonite objects (dry-run only)
+    const resoniteObjects = convertObjectsWithImageAssetContext(
+      parseResult.objects,
+      imageAssetContext,
       {
         enableCharacterColliderOnLockedTerrain: options.enableCharacterColliderOnLockedTerrain,
       }
@@ -306,24 +314,23 @@ async function run(options: CLIOptions): Promise<void> {
       }
     }
 
-    const importedTextures = assetImporter.getImportedTextures();
-    const textureReferenceMap = await slotBuilder.createTextureAssets(importedTextures);
-    const textureComponentMap = new Map<string, string>();
-
-    for (const [identifier] of importedTextures) {
-      const componentId = textureReferenceMap.get(identifier);
-      if (!componentId) {
-        continue;
+    const importedImageAssetInfoMap = assetImporter.getImportedImageAssetInfoMap();
+    await slotBuilder.createTextureAssetsWithUpdater(
+      importedImageAssetInfoMap,
+      (identifier, componentId) => {
+        assetImporter.applyTextureReference(identifier, componentId);
       }
-      textureComponentMap.set(identifier, toTextureReference(componentId));
-    }
+    );
 
     // Build objects after texture asset creation so materials reference shared StaticTexture2D components.
-    const resoniteObjects = convertObjectsWithTextureMap(
-      parseResult.objects,
-      textureComponentMap,
+    const imageAssetContext = buildImageAssetContext({
+      imageAssetInfoMap: assetImporter.getImportedImageAssetInfoMap(),
       imageAspectRatioMap,
       imageBlendModeMap,
+    });
+    const resoniteObjects = convertObjectsWithImageAssetContext(
+      parseResult.objects,
+      imageAssetContext,
       {
         enableCharacterColliderOnLockedTerrain: options.enableCharacterColliderOnLockedTerrain,
       }

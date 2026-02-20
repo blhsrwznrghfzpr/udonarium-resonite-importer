@@ -4,6 +4,7 @@ import * as path from 'path';
 import { AssetImporter } from './AssetImporter';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ExtractedFile } from '../parser/ZipExtractor';
+import { buildImageAssetContext } from '../converter/imageAssetContext';
 
 // Mock ResoniteLinkClient
 vi.mock('./ResoniteLinkClient', () => {
@@ -257,14 +258,14 @@ describe('AssetImporter', () => {
     });
   });
 
-  describe('getImportedTextures', () => {
+  describe('getImportedImageAssetInfoMap', () => {
     it('should return empty map initially', () => {
-      const textures = assetImporter.getImportedTextures();
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
 
-      expect(textures.size).toBe(0);
+      expect(infoMap.size).toBe(0);
     });
 
-    it('should return all imported textures', async () => {
+    it('should return all imported image asset info', async () => {
       mockClient.importTexture.mockResolvedValueOnce('tex-1').mockResolvedValueOnce('tex-2');
 
       await assetImporter.importImage(
@@ -274,18 +275,18 @@ describe('AssetImporter', () => {
         createExtractedFile({ path: 'images/img2.png', name: 'img2.png' })
       );
 
-      const textures = assetImporter.getImportedTextures();
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
 
-      expect(textures.size).toBe(2);
-      expect(textures.get('img1.png')).toBe('tex-1');
-      expect(textures.get('img2.png')).toBe('tex-2');
+      expect(infoMap.size).toBe(2);
+      expect(infoMap.get('img1.png')?.textureValue).toBe('tex-1');
+      expect(infoMap.get('img2.png')?.textureValue).toBe('tex-2');
     });
 
     it('should return a copy of the map (not the original)', async () => {
       await assetImporter.importImage(createExtractedFile({ name: 'original.png' }));
 
-      const textures = assetImporter.getImportedTextures();
-      textures.set('modified.png', 'fake-texture');
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
+      infoMap.set('modified.png', { identifier: 'modified.png', textureValue: 'fake-texture' });
 
       // Original should not be affected
       expect(assetImporter.getTextureId('modified.png')).toBeUndefined();
@@ -303,11 +304,92 @@ describe('AssetImporter', () => {
         createExtractedFile({ path: 'images/fail.png', name: 'fail.png' })
       );
 
-      const textures = assetImporter.getImportedTextures();
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
 
-      expect(textures.size).toBe(1);
-      expect(textures.has('success.png')).toBe(true);
-      expect(textures.has('fail.png')).toBe(false);
+      expect(infoMap.size).toBe(1);
+      expect(infoMap.has('success.png')).toBe(true);
+      expect(infoMap.has('fail.png')).toBe(false);
+    });
+  });
+
+  describe('source kind tracking', () => {
+    it('tracks source kind for imported zip images', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/sample.png', name: 'sample.png' })
+      );
+
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
+      expect(infoMap.get('sample.png')?.sourceKind).toBe('zip-image');
+    });
+
+    it('tracks source kind for registered external URLs', () => {
+      assetImporter.registerExternalUrl(
+        'https://example.com/a.png',
+        'https://example.com/a.png',
+        'external-url'
+      );
+
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
+      expect(infoMap.get('https://example.com/a.png')?.sourceKind).toBe('external-url');
+    });
+  });
+
+  describe('getImportedImageAssetInfoMap detail', () => {
+    it('returns texture/source metadata per identifier', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/info.png', name: 'info.png' })
+      );
+
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
+      expect(infoMap.get('info.png')).toMatchObject({
+        identifier: 'info.png',
+        textureValue: 'texture-id-001',
+        sourceKind: 'zip-image',
+      });
+    });
+
+    it('stores filterMode as Point for gif textures', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/anim.gif', name: 'anim.gif' })
+      );
+
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
+      expect(infoMap.get('anim.gif')?.filterMode).toBe('Point');
+    });
+  });
+
+  describe('applyTextureReference', () => {
+    it('updates a single identifier via applyTextureReference', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/single-ref.png', name: 'single-ref.png' })
+      );
+
+      assetImporter.applyTextureReference('single-ref.png', 'shared-single-ref-component');
+
+      expect(assetImporter.getTextureId('single-ref.png')).toBe(
+        'texture-ref://shared-single-ref-component'
+      );
+    });
+  });
+
+  describe('imageAssetContext integration', () => {
+    it('builds context from importer state', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/context.png', name: 'context.png' })
+      );
+      assetImporter.applyTextureReference('context.png', 'shared-context-component');
+
+      const context = buildImageAssetContext({
+        imageAssetInfoMap: assetImporter.getImportedImageAssetInfoMap(),
+        imageAspectRatioMap: new Map([['context.png', 1.25]]),
+        imageBlendModeMap: new Map([['context.png', 'Opaque']]),
+      });
+
+      expect(context.resolveTextureValue('context.png')).toBe(
+        'texture-ref://shared-context-component'
+      );
+      expect(context.lookupAspectRatio('context.png')).toBe(1.25);
+      expect(context.lookupBlendMode('context.png')).toBe('Opaque');
     });
   });
 

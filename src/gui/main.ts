@@ -6,9 +6,9 @@ import { app, BrowserWindow, ipcMain, dialog, IpcMainInvokeEvent } from 'electro
 import * as path from 'path';
 import { extractZip } from '../parser/ZipExtractor';
 import { parseXmlFiles } from '../parser/XmlParser';
-import { convertObjectsWithTextureMap } from '../converter/ObjectConverter';
+import { convertObjectsWithImageAssetContext } from '../converter/ObjectConverter';
 import { buildImageAspectRatioMap, buildImageBlendModeMap } from '../converter/imageAspectRatioMap';
-import { toTextureReference } from '../converter/textureUtils';
+import { buildImageAssetContext } from '../converter/imageAssetContext';
 import { prepareSharedMeshDefinitions, resolveSharedMeshReferences } from '../converter/sharedMesh';
 import {
   prepareSharedMaterialDefinitions,
@@ -234,22 +234,22 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       }
     );
 
-    const importedTextures = assetImporter.getImportedTextures();
-    const textureReferenceMap = await slotBuilder.createTextureAssets(importedTextures);
-    const textureComponentMap = new Map<string, string>();
-    for (const [identifier] of importedTextures) {
-      const componentId = textureReferenceMap.get(identifier);
-      if (!componentId) {
-        continue;
+    const importedImageAssetInfoMap = assetImporter.getImportedImageAssetInfoMap();
+    await slotBuilder.createTextureAssetsWithUpdater(
+      importedImageAssetInfoMap,
+      (identifier, componentId) => {
+        assetImporter.applyTextureReference(identifier, componentId);
       }
-      textureComponentMap.set(identifier, toTextureReference(componentId));
-    }
+    );
 
-    const resoniteObjects = convertObjectsWithTextureMap(
-      parseResult.objects,
-      textureComponentMap,
+    const imageAssetContext = buildImageAssetContext({
+      imageAssetInfoMap: assetImporter.getImportedImageAssetInfoMap(),
       imageAspectRatioMap,
       imageBlendModeMap,
+    });
+    const resoniteObjects = convertObjectsWithImageAssetContext(
+      parseResult.objects,
+      imageAssetContext,
       { enableCharacterColliderOnLockedTerrain }
     );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);

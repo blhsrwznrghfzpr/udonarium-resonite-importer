@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { registerExternalUrls } from './registerExternalUrls';
+import { collectExternalImageSources, registerExternalUrls } from './registerExternalUrls';
 import { AssetImporter } from './AssetImporter';
 import { GameCharacter, Terrain, Card, CardStack } from '../domain/UdonariumObject';
 
@@ -46,6 +46,34 @@ const baseCharacter = (): GameCharacter => ({
 });
 
 describe('registerExternalUrls', () => {
+  describe('collectExternalImageSources', () => {
+    it('collects source kind and url without importer side effects', () => {
+      const sources = collectExternalImageSources([
+        {
+          ...baseCharacter(),
+          images: [
+            { identifier: './assets/images/bg.jpg', name: 'bg' },
+            { identifier: 'known_icon', name: 'known_icon' },
+            { identifier: 'https://example.com/images/a.svg', name: 'a' },
+          ],
+        },
+      ]);
+
+      expect(sources.get('./assets/images/bg.jpg')).toMatchObject({
+        url: 'https://udonarium.app/assets/images/bg.jpg',
+        sourceKind: 'udonarium-asset-url',
+      });
+      expect(sources.get('known_icon')).toMatchObject({
+        url: 'https://udonarium.app/assets/images/known_icon.png',
+        sourceKind: 'known-id',
+      });
+      expect(sources.get('https://example.com/images/a.svg')).toMatchObject({
+        url: 'https://example.com/images/a.svg',
+        sourceKind: 'external-svg',
+      });
+    });
+  });
+
   describe('relative path identifiers (./ prefix)', () => {
     it('registers relative path as udonarium.app URL', async () => {
       const assetImporter = makeAssetImporter();
@@ -58,7 +86,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         './assets/images/bg.jpg',
-        'https://udonarium.app/assets/images/bg.jpg'
+        'https://udonarium.app/assets/images/bg.jpg',
+        'udonarium-asset-url'
       );
     });
   });
@@ -75,7 +104,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'known_icon',
-        'https://udonarium.app/assets/images/known_icon.png'
+        'https://udonarium.app/assets/images/known_icon.png',
+        'known-id'
       );
     });
   });
@@ -92,7 +122,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'https://example.com/images/character.png',
-        'https://example.com/images/character.png'
+        'https://example.com/images/character.png',
+        'external-url'
       );
     });
 
@@ -107,7 +138,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'http://example.com/img.png',
-        'http://example.com/img.png'
+        'http://example.com/img.png',
+        'external-url'
       );
     });
 
@@ -149,7 +181,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'https://example.com/wall.png',
-        'https://example.com/wall.png'
+        'https://example.com/wall.png',
+        'external-url'
       );
     });
 
@@ -175,7 +208,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'https://example.com/floor.jpg',
-        'https://example.com/floor.jpg'
+        'https://example.com/floor.jpg',
+        'external-url'
       );
     });
 
@@ -198,11 +232,13 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'https://example.com/front.png',
-        'https://example.com/front.png'
+        'https://example.com/front.png',
+        'external-url'
       );
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'https://example.com/back.png',
-        'https://example.com/back.png'
+        'https://example.com/back.png',
+        'external-url'
       );
     });
 
@@ -235,7 +271,8 @@ describe('registerExternalUrls', () => {
 
       expect(assetImporter.registerExternalUrl).toHaveBeenCalledWith(
         'https://example.com/card.png',
-        'https://example.com/card.png'
+        'https://example.com/card.png',
+        'external-url'
       );
     });
   });

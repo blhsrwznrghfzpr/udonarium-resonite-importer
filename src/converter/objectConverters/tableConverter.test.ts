@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { convertTable } from './tableConverter';
 import { GameTable, Terrain } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertTable', () => {
   it('keeps the table container unrotated and builds visual quad as a child slot', () => {
@@ -59,7 +60,7 @@ describe('convertTable', () => {
     const result = convertTable(
       udonObj,
       resoniteObj.position,
-      undefined,
+      buildImageAssetContext(),
       () => convertedTerrain,
       undefined,
       resoniteObj.id
@@ -109,11 +110,10 @@ describe('convertTable', () => {
     const result = convertTable(
       udonObj,
       { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
       undefined,
-      undefined,
-      undefined,
-      'slot-table-2',
-      { enableCharacterColliderOnLockedTerrain: true }
+      { enableCharacterColliderOnLockedTerrain: true },
+      'slot-table-2'
     );
     const visual = result.children[0];
     const collider = visual.components.find((c) => c.type === COMPONENT_TYPES.BOX_COLLIDER);

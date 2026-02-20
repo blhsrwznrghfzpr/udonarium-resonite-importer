@@ -1,8 +1,9 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { TableMask } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { convertTableMask } from './tableMaskConverter';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertTableMask', () => {
   it('uses black color and opacity alpha when image is not set', () => {
@@ -30,8 +31,7 @@ describe('convertTableMask', () => {
     const result = convertTableMask(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -90,8 +90,7 @@ describe('convertTableMask', () => {
     const result = convertTableMask(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -123,8 +122,7 @@ describe('convertTableMask', () => {
     const result = convertTableMask(
       udonObj,
       { x: 0, y: 0, z: 0 },
-      undefined,
-      new Map([['mask.png', 'Opaque' as const]])
+      buildImageAssetContext({ imageBlendModeMap: new Map([['mask.png', 'Opaque' as const]]) })
     );
 
     const material = result.components.find(
@@ -152,7 +150,7 @@ describe('convertTableMask', () => {
       opacity: 100,
     };
 
-    const result = convertTableMask(udonObj, { x: 0, y: 0, z: 0 });
+    const result = convertTableMask(udonObj, { x: 0, y: 0, z: 0 }, buildImageAssetContext());
 
     const material = result.components.find(
       (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
@@ -187,8 +185,7 @@ describe('convertTableMask', () => {
     const result = convertTableMask(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -227,8 +224,7 @@ describe('convertTableMask', () => {
     const result = convertTableMask(
       udonObj,
       resoniteObj.position,
-      undefined,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 

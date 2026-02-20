@@ -1,8 +1,9 @@
-import { describe, expect, it, vi } from 'vitest';
+﻿import { describe, expect, it, vi } from 'vitest';
 import { convertCardStack } from './cardStackConverter';
 import { Card, CardStack, UdonariumObject } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertCardStack', () => {
   it('reverses card order and applies stack offsets', () => {
@@ -57,7 +58,7 @@ describe('convertCardStack', () => {
       udonObj,
       resoniteObj.position,
       convertObject,
-      undefined,
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -136,7 +137,7 @@ describe('convertCardStack', () => {
       udonObj,
       resoniteObj.position,
       convertObject,
-      new Map<string, number>([['front.png', 2]]),
+      buildImageAssetContext({ imageAspectRatioMap: new Map<string, number>([['front.png', 2]]) }),
       resoniteObj.id
     );
 
@@ -200,10 +201,12 @@ describe('convertCardStack', () => {
       udonObj,
       resoniteObj.position,
       convertObject,
-      new Map<string, number>([
-        ['./assets/images/trump/c01.gif', 1.5],
-        ['testCharacter_1_image', 1.2],
-      ]),
+      buildImageAssetContext({
+        imageAspectRatioMap: new Map<string, number>([
+          ['./assets/images/trump/c01.gif', 1.5],
+          ['testCharacter_1_image', 1.2],
+        ]),
+      }),
       resoniteObj.id
     );
 
