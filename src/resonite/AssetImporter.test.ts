@@ -390,7 +390,7 @@ describe('AssetImporter', () => {
       expect(context.lookupBlendMode('context.png')).toBe('Opaque');
     });
 
-    it('does not trigger legacy option warning for importer context path', async () => {
+    it('builds importer context without warning', async () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
       await assetImporter.importImage(
         createExtractedFile({ path: 'images/context2.png', name: 'context2.png' })

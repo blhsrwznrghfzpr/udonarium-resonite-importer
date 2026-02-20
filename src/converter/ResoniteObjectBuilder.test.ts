@@ -105,7 +105,7 @@ describe('ResoniteObjectBuilder', () => {
       expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
     });
 
-    it('resolves textureValue from textureMap while using textureIdentifier for blend lookup', () => {
+    it('resolves textureValue from imageAssetInfoMap while using textureIdentifier for blend lookup', () => {
       const imageAssetContext = createImageAssetContext({
         imageAssetInfoMap: new Map([
           [

@@ -517,7 +517,7 @@ describe('ObjectConverter', () => {
     });
   });
 
-  describe('convertObjectsWithTextureMap', () => {
+  describe('convertObjectsWithImageAssetContext', () => {
     it('should convert empty array', () => {
       const result = convertObjectsWithImageAssetContext([], makeContext());
       expect(result).toEqual([]);

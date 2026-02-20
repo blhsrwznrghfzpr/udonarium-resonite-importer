@@ -159,7 +159,7 @@ export type ImageAssetContext = {
 - まずは context と旧 map を並行生成し、差分ログで検証可能にする。
 
 ### Phase 2: Builder/Converter 参照先の置換
-- `convertObjectsWithTextureMap` の内部で context を使う経路を追加。
+- `convertObjectsWithImageAssetContext` の内部で context を使う経路を追加。
 - `addQuadMesh` オプションを `textureIdentifier + imageAssetContext` ベースへ移行。
 - `isGifTexture(...)` 依存を `getFilterMode(...)` 参照に置き換える。
 

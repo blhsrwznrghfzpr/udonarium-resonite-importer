@@ -176,20 +176,23 @@ probeBlendModeFromExternalUrl('https://example.com/images/character.png')
       → importedTextures: { 'front' → 'resdb:///abc123...' }
                           { 'icon'  → 'resdb:///def456...' }
 
-[4] Assets/Textures スロットに共有テクスチャを作成（slotBuilder.createTextureAssets）
+[4] Assets/Textures スロットに共有テクスチャを作成（slotBuilder.createTextureAssetsWithUpdater）
     各 identifier ごとに:
       スロット名 = identifier（例: 'front'）
       StaticTexture2D( URL = textureUrl )
         ID: udon-imp-<uuid>-static-texture
       MainTexturePropertyBlock( Texture → StaticTexture2D )
         ID: udon-imp-<uuid>-main-texture-property-block
-    → textureReferenceMap: { 'front' → 'udon-imp-<uuid>-static-texture' }
+    → updateTextureReference(identifier, componentId) 経由で
+      AssetImporter の ImageAssetInfo.textureValue を
+      'texture-ref://<componentId>' に更新
 
-[5] texture-ref:// マップを生成
-    textureComponentMap: { 'front' → 'texture-ref://udon-imp-<uuid>-static-texture' }
+[5] ImageAssetContext を構築
+    imageAssetInfoMap + imageAspectRatioMap + imageBlendModeMap を
+    buildImageAssetContext(...) へ渡す
 
-[6] オブジェクト変換（convertObjectsWithTextureMap）
-    resolveTextureValue('front', textureComponentMap)
+[6] オブジェクト変換（convertObjectsWithImageAssetContext）
+    imageAssetContext.resolveTextureValue('front')
       → 'texture-ref://udon-imp-<uuid>-static-texture'
 
 [7] コンポーネント組み立て（buildQuadMeshComponents）
@@ -232,13 +235,19 @@ probeBlendModeFromExternalUrl('https://example.com/images/character.png')
 
 ## dry-run 時の挙動
 
-`--dry-run` 時は空の `Map<string, string>` を `textureMap` として渡します。
+`--dry-run` 時は `buildDryRunImageAssetInfoMap(...)` で `ImageAssetInfo` を生成し、
+`buildImageAssetContext(...)` へ渡します。
 
 ```ts
 // dry-run 時
-convertObjectsWithTextureMap(objects, new Map<string, string>(), ...)
+const imageAssetInfoMap = buildDryRunImageAssetInfoMap(imageFiles, objects);
+const imageAssetContext = buildImageAssetContext({
+  imageAssetInfoMap,
+  imageAspectRatioMap,
+  imageBlendModeMap,
+});
+convertObjectsWithImageAssetContext(objects, imageAssetContext, ...);
 ```
 
-`resolveTextureValue(identifier, emptyMap)` → `emptyMap.get(identifier) ?? identifier` → identifier そのもの（例: `'front'`）
-
-そのため dry-run 時は identifier の文字列が `StaticTexture2D.URL` に設定されます（無効な URL ですが変換結果の確認には十分）。
+dry-run 用 `imageAssetInfoMap` には identifier をそのまま `textureValue` として保持するため、
+変換結果では `StaticTexture2D.URL` に identifier 文字列が入ります（接続しないため実行上は問題なし）。
