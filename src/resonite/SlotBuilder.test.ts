@@ -500,6 +500,17 @@ describe('SlotBuilder', () => {
   });
 
   describe('createTextureAssets', () => {
+    it('warns once when using deprecated createTextureAssets API', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
+
+      await slotBuilder.createTextureAssets(textureMap);
+      await slotBuilder.createTextureAssets(textureMap);
+
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      warnSpy.mockRestore();
+    });
+
     it('can apply texture references via updater callback without exposing map', async () => {
       const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
       const updateTextureReference = vi.fn();

@@ -72,6 +72,7 @@ export class SlotBuilder {
   private texturesSlotId?: string;
   private meshesSlotId?: string;
   private materialsSlotId?: string;
+  private hasWarnedCreateTextureAssets = false;
 
   constructor(client: ResoniteLinkClient, rootSlotId = 'Root') {
     this.client = client;
@@ -235,6 +236,12 @@ export class SlotBuilder {
   }
 
   async createTextureAssets(textureMap: Map<string, string>): Promise<Map<string, string>> {
+    if (!this.hasWarnedCreateTextureAssets) {
+      this.hasWarnedCreateTextureAssets = true;
+      console.warn(
+        '[deprecated] SlotBuilder.createTextureAssets is deprecated. Prefer createTextureAssetsWithUpdater.'
+      );
+    }
     const textureReferenceMap = new Map<string, string>();
     await this.createTextureAssetsWithUpdater(textureMap, (identifier, textureComponentId) => {
       textureReferenceMap.set(identifier, textureComponentId);

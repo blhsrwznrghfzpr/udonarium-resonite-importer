@@ -33,6 +33,7 @@ export class AssetImporter {
   private client: ResoniteLinkClient;
   private importedImageAssetInfoMap: Map<string, ImageAssetInfo> = new Map();
   private tempDir: string | null = null;
+  private hasWarnedApplyTextureReferences = false;
 
   constructor(client: ResoniteLinkClient) {
     this.client = client;
@@ -189,6 +190,12 @@ export class AssetImporter {
    * @deprecated Prefer applyTextureReference(identifier, componentId) from updater callback.
    */
   applyTextureReferences(textureReferenceComponentMap: Map<string, string>): void {
+    if (!this.hasWarnedApplyTextureReferences) {
+      this.hasWarnedApplyTextureReferences = true;
+      console.warn(
+        '[deprecated] AssetImporter.applyTextureReferences is deprecated. Prefer applyTextureReference via SlotBuilder updater callback.'
+      );
+    }
     for (const [identifier, componentId] of textureReferenceComponentMap) {
       this.applyTextureReference(identifier, componentId);
     }

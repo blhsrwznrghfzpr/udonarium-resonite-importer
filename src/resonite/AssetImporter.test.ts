@@ -382,6 +382,23 @@ describe('AssetImporter', () => {
         'zip-image'
       );
     });
+
+    it('warns once when using deprecated map-based update API', async () => {
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/ref-warn.png', name: 'ref-warn.png' })
+      );
+
+      assetImporter.applyTextureReferences(
+        new Map([['ref-warn.png', 'shared-ref-warn-component']])
+      );
+      assetImporter.applyTextureReferences(
+        new Map([['ref-warn.png', 'shared-ref-warn-component-2']])
+      );
+
+      expect(warnSpy).toHaveBeenCalledTimes(1);
+      warnSpy.mockRestore();
+    });
   });
 
   describe('buildImageAssetContext', () => {
