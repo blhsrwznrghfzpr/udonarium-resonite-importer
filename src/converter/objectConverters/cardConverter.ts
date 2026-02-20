@@ -1,23 +1,13 @@
 import { Card } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from '../textureUtils';
+import { resolveTextureValue } from '../textureUtils';
 import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const CARD_Y_OFFSET = 0.001;
 const CARD_FACE_SEPARATION = 0.0001;
 const DEFAULT_CARD_ASPECT_RATIO = 1;
-
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Cutout';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Cutout';
-}
 
 function resolveFrontTextureIdentifier(card: Card): string | undefined {
   return card.frontImage?.identifier ?? card.backImage?.identifier ?? card.images[0]?.identifier;
@@ -99,8 +89,8 @@ export function convertCard(
   const backTextureIdentifier = resolveBackTextureIdentifier(udonObj);
   const frontTextureValue = resolveTextureValue(frontTextureIdentifier, textureMap);
   const backTextureValue = resolveTextureValue(backTextureIdentifier, textureMap);
-  const frontBlendMode = resolveBlendMode(frontTextureIdentifier, imageBlendModeMap);
-  const backBlendMode = resolveBlendMode(backTextureIdentifier, imageBlendModeMap);
+  const frontBlendMode = lookupImageBlendMode(imageBlendModeMap, frontTextureIdentifier);
+  const backBlendMode = lookupImageBlendMode(imageBlendModeMap, backTextureIdentifier);
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   // Slight Y offset so cards don't z-fight with the table surface.

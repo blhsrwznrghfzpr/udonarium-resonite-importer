@@ -1,6 +1,10 @@
 ﻿import { describe, expect, it, vi } from 'vitest';
 import sharp from 'sharp';
-import { buildImageAspectRatioMap, buildImageBlendModeMap } from './imageAspectRatioMap';
+import {
+  buildImageAspectRatioMap,
+  buildImageBlendModeMap,
+  lookupImageBlendMode,
+} from './imageAspectRatioMap';
 import { UdonariumObject } from '../domain/UdonariumObject';
 
 const SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI = process.env.CI === 'true';
@@ -83,6 +87,21 @@ describe('buildImageAspectRatioMap', () => {
     ]);
 
     expect(result.get('assets/images/BG10a_80.jpg')).toBe(0.75);
+  });
+});
+
+describe('lookupImageBlendMode', () => {
+  it('returns Cutout when map is missing or identifier is unresolved', () => {
+    expect(lookupImageBlendMode(undefined, 'missing.png')).toBe('Cutout');
+    expect(
+      lookupImageBlendMode(new Map<string, 'Cutout' | 'Opaque' | 'Alpha'>(), 'missing.png')
+    ).toBe('Cutout');
+  });
+
+  it('returns resolved value when identifier is found', () => {
+    const blendModeMap = new Map<string, 'Cutout' | 'Opaque' | 'Alpha'>([['front.png', 'Opaque']]);
+
+    expect(lookupImageBlendMode(blendModeMap, 'front.png')).toBe('Opaque');
   });
 });
 

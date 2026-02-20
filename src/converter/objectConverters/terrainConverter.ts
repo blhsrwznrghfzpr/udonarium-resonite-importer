@@ -5,16 +5,6 @@ import { BlendModeValue, resolveTextureValue } from '../textureUtils';
 import { lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Cutout';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Cutout';
-}
-
 function buildWallSlot(
   id: string,
   name: string,
@@ -49,8 +39,8 @@ export function convertTerrain(
     udonObj.images[0]?.identifier;
   const topTextureValue = resolveTextureValue(topTextureIdentifier, textureMap);
   const sideTextureValue = resolveTextureValue(sideTextureIdentifier, textureMap);
-  const topBlendMode = resolveBlendMode(topTextureIdentifier, imageBlendModeMap);
-  const sideBlendMode = resolveBlendMode(sideTextureIdentifier, imageBlendModeMap);
+  const topBlendMode = lookupImageBlendMode(imageBlendModeMap, topTextureIdentifier);
+  const sideBlendMode = lookupImageBlendMode(imageBlendModeMap, sideTextureIdentifier);
 
   const mainBuilder = ResoniteObjectBuilder.create({
     id: slotId,

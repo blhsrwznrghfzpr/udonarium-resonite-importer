@@ -1,19 +1,9 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from '../textureUtils';
+import { resolveTextureValue } from '../textureUtils';
 import { lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
-
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Cutout';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Cutout';
-}
 
 export function convertTable(
   udonObj: GameTable,
@@ -35,7 +25,7 @@ export function convertTable(
   const surfaceId = `${parentBuilder.getId()}-surface`;
   const textureIdentifier = udonObj.images[0]?.identifier;
   const textureValue = resolveTextureValue(textureIdentifier, textureMap);
-  const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
+  const blendMode = lookupImageBlendMode(imageBlendModeMap, textureIdentifier);
   const tableVisual = ResoniteObjectBuilder.create({
     id: surfaceId,
     name: `${udonObj.name}-surface`,
