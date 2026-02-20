@@ -176,9 +176,31 @@ export interface BuildImageAssetContextOptions {
   imageSourceKindMap?: Map<string, ImageSourceKind>;
 }
 
+let hasWarnedLegacyOptions = false;
+
+function warnLegacyBuildOptions(options: BuildImageAssetContextOptions): void {
+  if (hasWarnedLegacyOptions) {
+    return;
+  }
+  const hasLegacyInput =
+    !!options.textureValueMap ||
+    !!options.textureReferenceComponentMap ||
+    !!options.imageSourceKindMap;
+
+  if (!hasLegacyInput) {
+    return;
+  }
+
+  hasWarnedLegacyOptions = true;
+  console.warn(
+    '[deprecated] buildImageAssetContext legacy options are in use. Prefer imageAssetInfoMap-based inputs.'
+  );
+}
+
 export function buildImageAssetContext(
   options: BuildImageAssetContextOptions = {}
 ): ImageAssetContext {
+  warnLegacyBuildOptions(options);
   const resolvedImageFilterModeMap =
     options.imageFilterModeMap ??
     (options.filterModeSourceTextureMap
@@ -287,4 +309,8 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
       return false;
     },
   };
+}
+
+export function __resetLegacyBuildOptionWarningForTests(): void {
+  hasWarnedLegacyOptions = false;
 }

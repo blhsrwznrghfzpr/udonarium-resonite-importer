@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+  __resetLegacyBuildOptionWarningForTests,
   buildImageFilterModeMap,
   buildImageAssetContext,
   createImageAssetContext,
@@ -7,6 +8,21 @@ import {
 } from './imageAssetContext';
 
 describe('imageAssetContext', () => {
+  it('warns once when legacy build options are used', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    __resetLegacyBuildOptionWarningForTests();
+
+    buildImageAssetContext({
+      textureValueMap: new Map([['front.png', 'resdb:///front']]),
+    });
+    buildImageAssetContext({
+      textureReferenceComponentMap: new Map([['front.png', 'shared-front']]),
+    });
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    warnSpy.mockRestore();
+  });
+
   it('buildImageFilterModeMap marks gif identifiers as Point filter', () => {
     const map = buildImageFilterModeMap(
       new Map([
