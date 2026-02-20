@@ -8,12 +8,12 @@
 ---
 
 ## 現在の課題（再整理）
-現在は以下の map が並行して使われる。
+（移行前は）以下の map が並行して使われる。
 
-- `textureMap`（identifier -> URL / `texture-ref://...`）
+- `textureMap`（identifier -> URL / `texture-ref://...`）※旧
 - `imageAspectRatioMap`（identifier -> aspect ratio）
 - `imageBlendModeMap`（identifier -> blend mode）
-- `textureComponentMap`（identifier -> `texture-ref://...`）
+- `textureComponentMap`（identifier -> `texture-ref://...`）※旧
 
 問題点:
 
@@ -27,7 +27,7 @@
 
 ### A. ZIP内通常画像（png/jpg/gif など）
 1. `AssetImporter.importImage` で `importTexture(...)` を呼び、`identifier -> resdb://...` を登録
-2. `SlotBuilder.createTextureAssets` が `StaticTexture2D(URL=resdb://...)` を作成
+2. `SlotBuilder.createTextureAssetsWithUpdater` が `StaticTexture2D(URL=resdb://...)` を作成
 3. その componentId を `texture-ref://...` 化し、変換時 map として使う
 
 ### B. ZIP内SVG
@@ -36,7 +36,7 @@
 
 ### C. 既知ID（`KNOWN_IMAGES`）
 1. `registerExternalUrls` で `identifier -> known url` を登録（`importTexture` は不要）
-2. `createTextureAssets` が URL を持つ shared `StaticTexture2D` を作る
+2. `createTextureAssetsWithUpdater` が URL を持つ shared `StaticTexture2D` を作る
 3. 変換時には `texture-ref://...` 参照を使う
 
 ### D. Udonarium 相対パス（`./assets/...`）
@@ -58,7 +58,7 @@
 
 - 上記 A〜F はすべて `importedImageAssetInfoMap` に収束できるため、shared texture 化の入口は一貫している。
 - 一方で、以下は改善余地がある。
-  - `filterMode` 判定が `isGifTexture(identifier, textureMap)` に依存しており、
+  - `filterMode` 判定が `identifier/textureValue` の拡張子判定に散在しており、
     identifier/URL の揺れがあると判定責務が読みにくい。
   - `blendMode` と `aspectRatio` は map 参照、`filterMode` はその場推論という非対称性がある。
 
