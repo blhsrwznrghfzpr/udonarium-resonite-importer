@@ -137,7 +137,7 @@ describe('imageAssetContext', () => {
     expect(context.resolveTextureValue('front.png')).toBe('texture-ref://shared-front-texture');
   });
 
-  it('can merge importer asset info with texture references', () => {
+  it('prefers importer asset info over texture reference component map', () => {
     const context = buildImageAssetContext({
       imageAssetInfoMap: new Map([
         [
@@ -153,7 +153,9 @@ describe('imageAssetContext', () => {
     });
 
     expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
-    expect(context.resolveTextureValue('known_icon')).toBe('texture-ref://shared-known-icon');
+    expect(context.resolveTextureValue('known_icon')).toBe(
+      'https://udonarium.app/image/none_icon.png'
+    );
   });
 
   it('prefers imageAssetInfoMap and does not fall back to legacy texture map entries', () => {
@@ -192,5 +194,25 @@ describe('imageAssetContext', () => {
     });
 
     expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
+  });
+
+  it('ignores textureReferenceComponentMap when imageAssetInfoMap is provided', () => {
+    const context = createImageAssetContext({
+      imageAssetInfoMap: new Map([
+        [
+          'known_icon',
+          {
+            identifier: 'known_icon',
+            textureValue: 'https://udonarium.app/assets/images/known_icon.png',
+            sourceKind: 'known-id',
+          },
+        ],
+      ]),
+      textureReferenceComponentMap: new Map([['known_icon', 'shared-known-icon']]),
+    });
+
+    expect(context.resolveTextureValue('known_icon')).toBe(
+      'https://udonarium.app/assets/images/known_icon.png'
+    );
   });
 });

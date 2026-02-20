@@ -219,10 +219,9 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
 
   for (const identifier of buildIdentifierSet(options)) {
     const seed = lookupByKeys(options.imageAssetInfoMap, identifier);
-    const textureValueFromRef = resolveTextureReferenceValue(
-      options.textureReferenceComponentMap,
-      identifier
-    );
+    const textureValueFromRef = !preferImageAssetInfo
+      ? resolveTextureReferenceValue(options.textureReferenceComponentMap, identifier)
+      : undefined;
     const textureValueFromMap = options.textureMap
       ? resolveTextureValueFromMap(identifier, options.textureMap)
       : undefined;
