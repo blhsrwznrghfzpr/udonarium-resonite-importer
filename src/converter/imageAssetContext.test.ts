@@ -21,9 +21,21 @@ describe('imageAssetContext', () => {
 
   it('context resolves texture value and filter mode via provided maps', () => {
     const context = createImageAssetContext({
-      textureMap: new Map([
-        ['front.png', 'texture-ref://shared-front-static-texture'],
-        ['anim.gif', 'resdb:///anim-gif'],
+      imageAssetInfoMap: new Map([
+        [
+          'front.png',
+          {
+            identifier: 'front.png',
+            textureValue: 'texture-ref://shared-front-static-texture',
+          },
+        ],
+        [
+          'anim.gif',
+          {
+            identifier: 'anim.gif',
+            textureValue: 'resdb:///anim-gif',
+          },
+        ],
       ]),
       imageFilterModeMap: new Map([
         ['front.png', 'Default'],
@@ -40,7 +52,15 @@ describe('imageAssetContext', () => {
 
   it('stores asset info in byIdentifier and can lookup normalized keys', () => {
     const context = createImageAssetContext({
-      textureMap: new Map([['assets/images/trump/c01.gif', 'resdb:///gif-id']]),
+      imageAssetInfoMap: new Map([
+        [
+          'assets/images/trump/c01.gif',
+          {
+            identifier: 'assets/images/trump/c01.gif',
+            textureValue: 'resdb:///gif-id',
+          },
+        ],
+      ]),
       imageAspectRatioMap: new Map([['assets/images/trump/c01.gif', 1.5]]),
       imageBlendModeMap: new Map([['assets/images/trump/c01.gif', 'Opaque']]),
       imageFilterModeMap: new Map([['assets/images/trump/c01.gif', 'Point']]),
@@ -92,13 +112,31 @@ describe('imageAssetContext', () => {
 
   it('infers sourceKind from identifier and texture value', () => {
     const context = createImageAssetContext({
-      textureMap: new Map([
-        ['character.png', 'resdb:///zip-png'],
-        ['board.svg', 'resdb:///zip-svg'],
-        ['./assets/images/trump/c01.gif', 'https://udonarium.app/assets/images/trump/c01.gif'],
-        ['https://example.com/sprite.png', 'https://example.com/sprite.png'],
-        ['https://example.com/logo.svg', 'resdb:///external-svg'],
-        ['none_icon', 'https://udonarium.app/image/none_icon.png'],
+      imageAssetInfoMap: new Map([
+        ['character.png', { identifier: 'character.png', textureValue: 'resdb:///zip-png' }],
+        ['board.svg', { identifier: 'board.svg', textureValue: 'resdb:///zip-svg' }],
+        [
+          './assets/images/trump/c01.gif',
+          {
+            identifier: './assets/images/trump/c01.gif',
+            textureValue: 'https://udonarium.app/assets/images/trump/c01.gif',
+          },
+        ],
+        [
+          'https://example.com/sprite.png',
+          {
+            identifier: 'https://example.com/sprite.png',
+            textureValue: 'https://example.com/sprite.png',
+          },
+        ],
+        [
+          'https://example.com/logo.svg',
+          { identifier: 'https://example.com/logo.svg', textureValue: 'resdb:///external-svg' },
+        ],
+        [
+          'none_icon',
+          { identifier: 'none_icon', textureValue: 'https://udonarium.app/image/none_icon.png' },
+        ],
       ]),
     });
 
@@ -129,28 +167,7 @@ describe('imageAssetContext', () => {
     expect(context.resolveTextureValue('front.png')).toBe('texture-ref://shared-front-texture');
   });
 
-  it('prefers importer asset info over texture reference component map', () => {
-    const context = createImageAssetContext({
-      imageAssetInfoMap: new Map([
-        [
-          'known_icon',
-          {
-            identifier: 'known_icon',
-            textureValue: 'https://udonarium.app/image/none_icon.png',
-            sourceKind: 'known-id',
-          },
-        ],
-      ]),
-      textureReferenceComponentMap: new Map([['known_icon', 'shared-known-icon']]),
-    });
-
-    expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
-    expect(context.resolveTextureValue('known_icon')).toBe(
-      'https://udonarium.app/image/none_icon.png'
-    );
-  });
-
-  it('prefers imageAssetInfoMap and does not fall back to legacy texture map entries', () => {
+  it('resolves only values stored in imageAssetInfoMap', () => {
     const context = createImageAssetContext({
       imageAssetInfoMap: new Map([
         [
@@ -162,49 +179,10 @@ describe('imageAssetContext', () => {
           },
         ],
       ]),
-      textureMap: new Map([['legacy_only.png', 'resdb:///legacy']]),
     });
 
     expect(context.resolveTextureValue('known_icon')).toBe('texture-ref://shared-known-icon');
     expect(context.resolveTextureValue('legacy_only.png')).toBeUndefined();
     expect(context.getAssetInfo('legacy_only.png')).toBeUndefined();
-  });
-
-  it('ignores imageSourceKindMap when imageAssetInfoMap is provided', () => {
-    const context = createImageAssetContext({
-      imageAssetInfoMap: new Map([
-        [
-          'known_icon',
-          {
-            identifier: 'known_icon',
-            textureValue: 'https://udonarium.app/assets/images/known_icon.png',
-            sourceKind: 'known-id',
-          },
-        ],
-      ]),
-      imageSourceKindMap: new Map([['known_icon', 'external-url']]),
-    });
-
-    expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
-  });
-
-  it('ignores textureReferenceComponentMap when imageAssetInfoMap is provided', () => {
-    const context = createImageAssetContext({
-      imageAssetInfoMap: new Map([
-        [
-          'known_icon',
-          {
-            identifier: 'known_icon',
-            textureValue: 'https://udonarium.app/assets/images/known_icon.png',
-            sourceKind: 'known-id',
-          },
-        ],
-      ]),
-      textureReferenceComponentMap: new Map([['known_icon', 'shared-known-icon']]),
-    });
-
-    expect(context.resolveTextureValue('known_icon')).toBe(
-      'https://udonarium.app/assets/images/known_icon.png'
-    );
   });
 });

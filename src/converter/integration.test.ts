@@ -38,7 +38,6 @@ async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> 
   const imageAspectRatioMap = await buildImageAspectRatioMap(extracted.imageFiles, parsed.objects);
   const imageBlendModeMap = await buildImageBlendModeMap(extracted.imageFiles, parsed.objects);
   const imageAssetContext = createImageAssetContext({
-    textureMap: new Map(),
     imageAspectRatioMap,
     imageBlendModeMap,
   });

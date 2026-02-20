@@ -1,10 +1,6 @@
 import { ImageBlendMode } from '../config/MappingConfig';
 import { lookupImageAspectRatio, lookupImageBlendMode } from './imageAspectRatioMap';
-import {
-  isGifTexture,
-  resolveTextureValue as resolveTextureValueFromMap,
-  toTextureReference,
-} from './textureUtils';
+import { isGifTexture } from './textureUtils';
 
 export type ImageFilterMode = 'Default' | 'Point';
 
@@ -27,13 +23,10 @@ export type ImageAssetInfo = {
 };
 
 export interface ImageAssetContextOptions {
-  textureMap?: Map<string, string>;
-  textureReferenceComponentMap?: Map<string, string>;
   imageAssetInfoMap?: Map<string, ImageAssetInfo>;
   imageAspectRatioMap?: Map<string, number>;
   imageBlendModeMap?: Map<string, ImageBlendMode>;
   imageFilterModeMap?: Map<string, ImageFilterMode>;
-  imageSourceKindMap?: Map<string, ImageSourceKind>;
 }
 
 export interface ImageAssetContext {
@@ -87,23 +80,9 @@ function lookupImageFilterMode(
   return lookupByKeys(imageFilterModeMap, identifier);
 }
 
-function resolveTextureReferenceValue(
-  textureReferenceComponentMap: Map<string, string> | undefined,
-  identifier: string
-): string | undefined {
-  const componentId = lookupByKeys(textureReferenceComponentMap, identifier);
-  return componentId ? toTextureReference(componentId) : undefined;
-}
-
 function buildIdentifierSet(options: ImageAssetContextOptions): Set<string> {
   const identifiers = new Set<string>();
-  const preferImageAssetInfo = (options.imageAssetInfoMap?.size ?? 0) > 0;
   for (const key of options.imageAssetInfoMap?.keys() ?? []) identifiers.add(key);
-  if (!preferImageAssetInfo) {
-    for (const key of options.textureMap?.keys() ?? []) identifiers.add(key);
-    for (const key of options.textureReferenceComponentMap?.keys() ?? []) identifiers.add(key);
-    for (const key of options.imageSourceKindMap?.keys() ?? []) identifiers.add(key);
-  }
   for (const key of options.imageAspectRatioMap?.keys() ?? []) {
     identifiers.add(key);
   }
@@ -176,21 +155,14 @@ export function buildImageAssetContext(
 
 export function createImageAssetContext(options: ImageAssetContextOptions = {}): ImageAssetContext {
   const byIdentifier = new Map<string, ImageAssetInfo>();
-  const preferImageAssetInfo = (options.imageAssetInfoMap?.size ?? 0) > 0;
 
   for (const identifier of buildIdentifierSet(options)) {
     const seed = lookupByKeys(options.imageAssetInfoMap, identifier);
-    const textureValueFromRef = !preferImageAssetInfo
-      ? resolveTextureReferenceValue(options.textureReferenceComponentMap, identifier)
-      : undefined;
-    const textureValueFromMap = options.textureMap
-      ? resolveTextureValueFromMap(identifier, options.textureMap)
-      : undefined;
-    const textureValue = textureValueFromRef ?? seed?.textureValue ?? textureValueFromMap;
+    const textureValue = seed?.textureValue;
 
     byIdentifier.set(identifier, {
       identifier,
-      textureValue: preferImageAssetInfo && !seed ? undefined : textureValue,
+      textureValue,
       aspectRatio:
         (options.imageAspectRatioMap
           ? lookupImageAspectRatio(options.imageAspectRatioMap, identifier)
@@ -200,12 +172,7 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
           ? lookupImageBlendMode(options.imageBlendModeMap, identifier)
           : undefined) ?? seed?.blendMode,
       filterMode: lookupImageFilterMode(options.imageFilterModeMap, identifier) ?? seed?.filterMode,
-      sourceKind:
-        (!preferImageAssetInfo
-          ? lookupByKeys(options.imageSourceKindMap, identifier)
-          : undefined) ??
-        seed?.sourceKind ??
-        (preferImageAssetInfo ? 'unknown' : inferSourceKind(identifier, textureValue)),
+      sourceKind: seed?.sourceKind ?? inferSourceKind(identifier, textureValue),
     });
   }
 
@@ -227,13 +194,7 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
     getAssetInfo,
     resolveTextureValue(identifier?: string): string | undefined {
       const info = getAssetInfo(identifier);
-      if (info?.textureValue) {
-        return info.textureValue;
-      }
-      if (preferImageAssetInfo) {
-        return undefined;
-      }
-      return resolveTextureValueFromMap(identifier, options.textureMap);
+      return info?.textureValue;
     },
     lookupAspectRatio(identifier?: string): number | undefined {
       const info = getAssetInfo(identifier);
@@ -256,9 +217,6 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
       const info = getAssetInfo(identifier);
       if (info?.filterMode) {
         return info.filterMode === 'Point';
-      }
-      if (identifier && !preferImageAssetInfo) {
-        return isGifTexture(identifier, options.textureMap);
       }
       if (resolvedTextureValue) {
         return isGifTexture(resolvedTextureValue);

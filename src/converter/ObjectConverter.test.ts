@@ -17,15 +17,15 @@ import type {
   TextNote,
 } from '../domain/UdonariumObject';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
-import { createImageAssetContext } from './imageAssetContext';
+import { createImageAssetContext, ImageAssetInfo } from './imageAssetContext';
 
 function makeContext(options?: {
-  textureMap?: Map<string, string>;
+  imageAssetInfoMap?: Map<string, ImageAssetInfo>;
   imageAspectRatioMap?: Map<string, number>;
   imageBlendModeMap?: Map<string, 'Cutout' | 'Opaque' | 'Alpha'>;
 }): ReturnType<typeof createImageAssetContext> {
   return createImageAssetContext({
-    textureMap: options?.textureMap ?? new Map<string, string>(),
+    imageAssetInfoMap: options?.imageAssetInfoMap,
     imageAspectRatioMap: options?.imageAspectRatioMap,
     imageBlendModeMap: options?.imageBlendModeMap,
   });

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
-import { toTextureReference } from './textureUtils';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
 import { createImageAssetContext } from './imageAssetContext';
 
@@ -108,7 +107,15 @@ describe('ResoniteObjectBuilder', () => {
 
     it('resolves textureValue from textureMap while using textureIdentifier for blend lookup', () => {
       const imageAssetContext = createImageAssetContext({
-        textureMap: new Map([['front.png', 'texture-ref://shared-front-static-texture']]),
+        imageAssetInfoMap: new Map([
+          [
+            'front.png',
+            {
+              identifier: 'front.png',
+              textureValue: 'texture-ref://shared-front-static-texture',
+            },
+          ],
+        ]),
         imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
       });
       const result = makeBuilder(makeSpec('s-map'))
@@ -369,7 +376,15 @@ describe('ResoniteObjectBuilder', () => {
   describe('addQuadMesh() with shared texture reference', () => {
     it('uses textureIdentifier for blend lookup when textureValue is a shared reference', () => {
       const imageAssetContext = createImageAssetContext({
-        textureMap: new Map([['front.png', toTextureReference('shared-texture-id')]]),
+        imageAssetInfoMap: new Map([
+          [
+            'front.png',
+            {
+              identifier: 'front.png',
+              textureValue: 'texture-ref://shared-texture-id',
+            },
+          ],
+        ]),
         imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
       });
       const result = makeBuilder(makeSpec('slot-lookup'))
@@ -391,7 +406,7 @@ describe('ResoniteObjectBuilder', () => {
 
     it('uses shared StaticTexture2D references without creating local texture components', () => {
       const result = makeBuilder(makeSpec('slot-1'))
-        .addQuadMesh({ textureIdentifier: toTextureReference('shared-texture-id') })
+        .addQuadMesh({ textureIdentifier: 'texture-ref://shared-texture-id' })
         .build();
 
       expect(result.components.find((c) => c.type.endsWith('StaticTexture2D'))).toBeUndefined();
