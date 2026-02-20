@@ -81,12 +81,18 @@ describe('imageAssetContext', () => {
     expect(context.resolveTextureValue('anim.gif')).toBe('texture-ref://anim');
   });
 
-  it('prefers explicit imageSourceKindMap over inferred source kind', () => {
+  it('prefers explicit source kind from imageAssetInfoMap over inferred source kind', () => {
     const context = buildImageAssetContext({
-      textureValueMap: new Map([
-        ['known_icon', 'https://udonarium.app/assets/images/known_icon.png'],
+      imageAssetInfoMap: new Map([
+        [
+          'known_icon',
+          {
+            identifier: 'known_icon',
+            textureValue: 'https://udonarium.app/assets/images/known_icon.png',
+            sourceKind: 'known-id',
+          },
+        ],
       ]),
-      imageSourceKindMap: new Map([['known_icon', 'known-id']]),
     });
 
     expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
@@ -114,10 +120,18 @@ describe('imageAssetContext', () => {
     expect(context.getAssetInfo('none_icon')?.sourceKind).toBe('external-url');
   });
 
-  it('uses textureReferenceComponentMap to resolve texture-ref values', () => {
+  it('resolves texture-ref values from imageAssetInfoMap textureValue', () => {
     const context = buildImageAssetContext({
-      textureReferenceComponentMap: new Map([['front.png', 'shared-front-texture']]),
-      filterModeSourceTextureMap: new Map([['front.png', 'resdb:///front']]),
+      imageAssetInfoMap: new Map([
+        [
+          'front.png',
+          {
+            identifier: 'front.png',
+            textureValue: 'texture-ref://shared-front-texture',
+            sourceKind: 'zip-image',
+          },
+        ],
+      ]),
     });
 
     expect(context.resolveTextureValue('front.png')).toBe('texture-ref://shared-front-texture');
