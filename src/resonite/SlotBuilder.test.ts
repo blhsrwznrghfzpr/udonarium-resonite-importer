@@ -8,6 +8,7 @@ import {
   IMPORT_ROOT_TAG,
 } from '../config/MappingConfig';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
+import { ImageAssetInfo } from '../converter/imageAssetContext';
 
 // Mock ResoniteLinkClient
 vi.mock('./ResoniteLinkClient', () => {
@@ -19,6 +20,12 @@ vi.mock('./ResoniteLinkClient', () => {
     })),
   };
 });
+
+function makeImageAssetInfoMap(entries: Array<[string, string]>): Map<string, ImageAssetInfo> {
+  return new Map(
+    entries.map(([identifier, textureValue]) => [identifier, { identifier, textureValue }])
+  );
+}
 
 describe('SlotBuilder', () => {
   let mockClient: {
@@ -50,11 +57,11 @@ describe('SlotBuilder', () => {
   });
 
   const createTextureAssetsViaUpdater = async (
-    textureMap: Map<string, string>
+    imageAssetInfoMap: Map<string, ImageAssetInfo>
   ): Promise<Map<string, string>> => {
     const textureReferenceMap = new Map<string, string>();
     await slotBuilder.createTextureAssetsWithUpdater(
-      textureMap,
+      imageAssetInfoMap,
       (identifier, textureComponentId) => {
         textureReferenceMap.set(identifier, textureComponentId);
       }
@@ -514,10 +521,10 @@ describe('SlotBuilder', () => {
 
   describe('createTextureAssets', () => {
     it('can apply texture references via updater callback without exposing map', async () => {
-      const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
+      const imageAssetInfoMap = makeImageAssetInfoMap([['card-front.png', 'resdb:///card-front']]);
       const updateTextureReference = vi.fn();
 
-      await slotBuilder.createTextureAssetsWithUpdater(textureMap, updateTextureReference);
+      await slotBuilder.createTextureAssetsWithUpdater(imageAssetInfoMap, updateTextureReference);
 
       expect(updateTextureReference).toHaveBeenCalledTimes(1);
       expect(updateTextureReference).toHaveBeenCalledWith(
@@ -527,9 +534,9 @@ describe('SlotBuilder', () => {
     });
 
     it('should create shared texture slots under Assets/Textures', async () => {
-      const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
+      const imageAssetInfoMap = makeImageAssetInfoMap([['card-front.png', 'resdb:///card-front']]);
 
-      const result = await createTextureAssetsViaUpdater(textureMap);
+      const result = await createTextureAssetsViaUpdater(imageAssetInfoMap);
 
       expect(mockClient.addSlot).toHaveBeenCalledTimes(3);
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
@@ -569,11 +576,11 @@ describe('SlotBuilder', () => {
     });
 
     it('should create shared texture assets for external URLs', async () => {
-      const textureMap = new Map<string, string>([
+      const imageAssetInfoMap = makeImageAssetInfoMap([
         ['external-image', 'https://example.com/image.png'],
       ]);
 
-      const result = await createTextureAssetsViaUpdater(textureMap);
+      const result = await createTextureAssetsViaUpdater(imageAssetInfoMap);
 
       expect(mockClient.addSlot).toHaveBeenCalledTimes(3);
       expect(mockClient.addSlot).toHaveBeenNthCalledWith(
@@ -601,9 +608,9 @@ describe('SlotBuilder', () => {
       expect(result.get('external-image')).toMatch(/-static-texture$/);
     });
     it('should set point filter mode for gif identifiers', async () => {
-      const textureMap = new Map<string, string>([['anim.GIF', 'resdb:///anim']]);
+      const imageAssetInfoMap = makeImageAssetInfoMap([['anim.GIF', 'resdb:///anim']]);
 
-      await createTextureAssetsViaUpdater(textureMap);
+      await createTextureAssetsViaUpdater(imageAssetInfoMap);
 
       const addComponentCall = mockClient.addComponent.mock.calls[0][0] as {
         fields: Record<string, unknown>;
@@ -612,11 +619,11 @@ describe('SlotBuilder', () => {
     });
 
     it('should set point filter mode for gif external URLs', async () => {
-      const textureMap = new Map<string, string>([
+      const imageAssetInfoMap = makeImageAssetInfoMap([
         ['external-image', 'https://example.com/anim.gif'],
       ]);
 
-      await createTextureAssetsViaUpdater(textureMap);
+      await createTextureAssetsViaUpdater(imageAssetInfoMap);
 
       const addComponentCall = mockClient.addComponent.mock.calls[0][0] as {
         fields: Record<string, unknown>;
@@ -664,7 +671,7 @@ describe('SlotBuilder', () => {
     });
 
     it('should reuse existing Assets slot when texture assets already exist', async () => {
-      await createTextureAssetsViaUpdater(new Map<string, string>([['a.png', 'resdb:///a']]));
+      await createTextureAssetsViaUpdater(makeImageAssetInfoMap([['a.png', 'resdb:///a']]));
       mockClient.addSlot.mockClear();
 
       await slotBuilder.createMeshAssets([

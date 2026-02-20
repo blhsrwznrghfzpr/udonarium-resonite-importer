@@ -233,9 +233,9 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       }
     );
 
-    const importedTextures = assetImporter.getImportedTextures();
+    const importedImageAssetInfoMap = assetImporter.getImportedImageAssetInfoMap();
     await slotBuilder.createTextureAssetsWithUpdater(
-      importedTextures,
+      importedImageAssetInfoMap,
       (identifier, componentId) => {
         assetImporter.applyTextureReference(identifier, componentId);
       }

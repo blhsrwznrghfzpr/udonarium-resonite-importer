@@ -17,7 +17,8 @@ import {
   buildStaticTexture2DFields,
   buildMainTexturePropertyBlockFields,
 } from '../converter/componentFields';
-import { buildImageFilterModeMap } from '../converter/imageAssetContext';
+import { ImageAssetInfo } from '../converter/imageAssetContext';
+import { isGifTexture } from '../converter/textureUtils';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
 
 function isListField(value: unknown): boolean {
@@ -60,6 +61,16 @@ export type TextureReferenceUpdater = (
   identifier: string,
   textureComponentId: string
 ) => void | Promise<void>;
+
+function shouldUsePointFilter(textureInfo: ImageAssetInfo): boolean {
+  if (textureInfo.filterMode) {
+    return textureInfo.filterMode === 'Point';
+  }
+  if (textureInfo.textureValue && isGifTexture(textureInfo.textureValue)) {
+    return true;
+  }
+  return isGifTexture(textureInfo.identifier);
+}
 
 export class SlotBuilder {
   private client: ResoniteLinkClient;
@@ -235,19 +246,22 @@ export class SlotBuilder {
   }
 
   async createTextureAssetsWithUpdater(
-    textureMap: Map<string, string>,
+    imageAssetInfoMap: Map<string, ImageAssetInfo>,
     updateTextureReference: TextureReferenceUpdater
   ): Promise<void> {
-    const importableTextures = Array.from(textureMap.entries());
+    const importableTextures = Array.from(imageAssetInfoMap.values()).filter(
+      (info) => !!info.textureValue && !info.textureValue.startsWith('texture-ref://')
+    );
 
     if (importableTextures.length === 0) {
       return;
     }
 
     const texturesSlotId = await this.ensureTexturesSlot();
-    const filterModeMap = buildImageFilterModeMap(textureMap);
 
-    for (const [identifier, textureUrl] of importableTextures) {
+    for (const textureInfo of importableTextures) {
+      const identifier = textureInfo.identifier;
+      const textureValue = textureInfo.textureValue as string;
       const textureSlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
       await this.client.addSlot({
         id: textureSlotId,
@@ -261,7 +275,7 @@ export class SlotBuilder {
         id: textureComponentId,
         slotId: textureSlotId,
         componentType: COMPONENT_TYPES.STATIC_TEXTURE_2D,
-        fields: buildStaticTexture2DFields(textureUrl, filterModeMap.get(identifier) === 'Point'),
+        fields: buildStaticTexture2DFields(textureValue, shouldUsePointFilter(textureInfo)),
       });
       await this.client.addComponent({
         id: `${textureSlotId}-main-texture-property-block`,

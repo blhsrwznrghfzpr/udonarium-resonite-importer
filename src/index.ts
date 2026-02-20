@@ -314,9 +314,9 @@ async function run(options: CLIOptions): Promise<void> {
       }
     }
 
-    const importedTextures = assetImporter.getImportedTextures();
+    const importedImageAssetInfoMap = assetImporter.getImportedImageAssetInfoMap();
     await slotBuilder.createTextureAssetsWithUpdater(
-      importedTextures,
+      importedImageAssetInfoMap,
       (identifier, componentId) => {
         assetImporter.applyTextureReference(identifier, componentId);
       }
