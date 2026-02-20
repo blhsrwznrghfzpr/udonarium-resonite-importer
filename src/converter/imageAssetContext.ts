@@ -121,20 +121,6 @@ function inferSourceKind(identifier: string, textureValue: string | undefined): 
   return 'unknown';
 }
 
-export function buildImageFilterModeMap(
-  textureMap: Map<string, string>
-): Map<string, ImageFilterMode> {
-  const map = new Map<string, ImageFilterMode>();
-  for (const [identifier] of textureMap) {
-    const usePoint = isGifTexture(identifier, textureMap);
-    const mode: ImageFilterMode = usePoint ? 'Point' : 'Default';
-    for (const key of buildLookupKeys(identifier)) {
-      map.set(key, mode);
-    }
-  }
-  return map;
-}
-
 export interface BuildImageAssetContextOptions {
   imageAssetInfoMap?: Map<string, ImageAssetInfo>;
   imageAspectRatioMap?: Map<string, number>;

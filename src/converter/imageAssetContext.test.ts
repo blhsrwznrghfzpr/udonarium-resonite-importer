@@ -1,24 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-  buildImageFilterModeMap,
-  buildImageAssetContext,
-  createImageAssetContext,
-  ImageFilterMode,
-} from './imageAssetContext';
+import { buildImageAssetContext, createImageAssetContext } from './imageAssetContext';
 
 describe('imageAssetContext', () => {
-  it('buildImageFilterModeMap marks gif identifiers as Point filter', () => {
-    const map = buildImageFilterModeMap(
-      new Map([
-        ['assets/images/trump/c01.gif', 'resdb:///gif-id'],
-        ['front.png', 'resdb:///png-id'],
-      ])
-    );
-
-    expect(map.get('assets/images/trump/c01.gif')).toBe<ImageFilterMode>('Point');
-    expect(map.get('front.png')).toBe<ImageFilterMode>('Default');
-  });
-
   it('context resolves texture value and filter mode via provided maps', () => {
     const context = createImageAssetContext({
       imageAssetInfoMap: new Map([
