@@ -23,6 +23,24 @@ describe('imageAssetContext', () => {
     warnSpy.mockRestore();
   });
 
+  it('throws when strict deprecation mode is enabled and legacy options are used', () => {
+    const original = process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS;
+    process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS = '1';
+    __resetLegacyBuildOptionWarningForTests();
+
+    expect(() =>
+      buildImageAssetContext({
+        textureValueMap: new Map([['front.png', 'resdb:///front']]),
+      })
+    ).toThrow(/deprecated-strict/);
+
+    if (original === undefined) {
+      delete process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS;
+    } else {
+      process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS = original;
+    }
+  });
+
   it('buildImageFilterModeMap marks gif identifiers as Point filter', () => {
     const map = buildImageFilterModeMap(
       new Map([

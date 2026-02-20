@@ -399,6 +399,28 @@ describe('AssetImporter', () => {
       expect(warnSpy).toHaveBeenCalledTimes(1);
       warnSpy.mockRestore();
     });
+
+    it('throws when strict deprecation mode is enabled', async () => {
+      const original = process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS;
+      process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS = '1';
+      const strictImporter = new AssetImporter(mockClient as unknown as ResoniteLinkClient);
+      await strictImporter.importImage(
+        createExtractedFile({ path: 'images/ref-strict.png', name: 'ref-strict.png' })
+      );
+
+      expect(() =>
+        strictImporter.applyTextureReferences(
+          new Map([['ref-strict.png', 'shared-ref-strict-component']])
+        )
+      ).toThrow(/deprecated-strict/);
+
+      strictImporter.cleanup();
+      if (original === undefined) {
+        delete process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS;
+      } else {
+        process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS = original;
+      }
+    });
   });
 
   describe('buildImageAssetContext', () => {

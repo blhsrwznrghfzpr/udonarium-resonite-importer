@@ -172,17 +172,29 @@ export interface BuildImageAssetContextOptions {
 }
 
 let hasWarnedLegacyOptions = false;
+const STRICT_DEPRECATIONS_ENV = 'UDONARIUM_IMPORTER_STRICT_DEPRECATIONS';
+
+function shouldThrowOnDeprecatedUsage(): boolean {
+  return process.env[STRICT_DEPRECATIONS_ENV] === '1';
+}
 
 function warnLegacyBuildOptions(options: BuildImageAssetContextOptions): void {
-  if (hasWarnedLegacyOptions) {
-    return;
-  }
   const hasLegacyInput =
     !!options.textureValueMap ||
     !!options.textureReferenceComponentMap ||
     !!options.imageSourceKindMap;
 
   if (!hasLegacyInput) {
+    return;
+  }
+
+  if (shouldThrowOnDeprecatedUsage()) {
+    throw new Error(
+      '[deprecated-strict] buildImageAssetContext legacy options are forbidden. Use imageAssetInfoMap-based inputs.'
+    );
+  }
+
+  if (hasWarnedLegacyOptions) {
     return;
   }
 

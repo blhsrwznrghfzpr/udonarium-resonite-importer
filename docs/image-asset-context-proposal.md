@@ -149,6 +149,7 @@ export type ImageAssetContext = {
    `BuildImageAssetContextOptions` の legacy 項目（`textureValueMap` / `textureReferenceComponentMap` / `imageSourceKindMap`）は `@deprecated` + 実行時 warning で維持。
 2. Phase B（次マイナー）:
    CLI/GUI/Importer からの legacy オプション利用を禁止し、`imageAssetInfoMap` を唯一の推奨入力としてドキュメント更新。
+   先行措置として `UDONARIUM_IMPORTER_STRICT_DEPRECATIONS=1` で deprecated API/オプション使用時に例外化する strict モードを提供。
 3. Phase C（次メジャー）:
    `BuildImageAssetContextOptions` から legacy 項目を削除し、`buildImageAssetContext(...)` は `imageAssetInfoMap` ベース API のみを公開。
 4. 互換性方針:
@@ -195,6 +196,8 @@ export type ImageAssetContext = {
 - `AssetImporter` は `ImageAssetInfo` を一次情報として保持し、shared texture 作成時は `SlotBuilder.createTextureAssetsWithUpdater(...)` と `applyTextureReference(...)` で直接更新する構成へ移行済み。
 - 旧API `AssetImporter.applyTextureReferences(...)` は後方互換のため残置しつつ `@deprecated` 化済み。
 - 旧API（`AssetImporter.applyTextureReferences(...)` / `SlotBuilder.createTextureAssets(...)`）は実行時に one-time warning を出す実装へ移行済み。
+- `SlotBuilder.createTextureAssets(...)` は `@deprecated` を付与し、`createTextureAssetsWithUpdater(...)` への移行を明示済み。
+- `UDONARIUM_IMPORTER_STRICT_DEPRECATIONS=1` の場合、deprecated API/オプション使用時は warning ではなく例外を投げる。
 - ランタイム経路（CLI/GUI の importer context 経路）で legacy warning が発火しないことをテストで固定済み。
 - dry-run も `buildDryRunImageAssetInfoMap(...)` で `ImageAssetInfo` を生成し、通常 import と同じ context 入力形式で処理する構成へ移行済み。
 - `BuildImageAssetContextOptions` の legacy 項目には deprecate 注釈と実行時 warning を追加済み。

@@ -73,6 +73,7 @@ export class SlotBuilder {
   private meshesSlotId?: string;
   private materialsSlotId?: string;
   private hasWarnedCreateTextureAssets = false;
+  private readonly strictDeprecations = process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS === '1';
 
   constructor(client: ResoniteLinkClient, rootSlotId = 'Root') {
     this.client = client;
@@ -239,6 +240,11 @@ export class SlotBuilder {
    * @deprecated Prefer createTextureAssetsWithUpdater to avoid exposing component-id maps.
    */
   async createTextureAssets(textureMap: Map<string, string>): Promise<Map<string, string>> {
+    if (this.strictDeprecations) {
+      throw new Error(
+        '[deprecated-strict] SlotBuilder.createTextureAssets is forbidden. Use createTextureAssetsWithUpdater.'
+      );
+    }
     if (!this.hasWarnedCreateTextureAssets) {
       this.hasWarnedCreateTextureAssets = true;
       console.warn(

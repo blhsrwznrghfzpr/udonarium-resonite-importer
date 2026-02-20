@@ -511,6 +511,23 @@ describe('SlotBuilder', () => {
       warnSpy.mockRestore();
     });
 
+    it('throws when strict deprecation mode is enabled', async () => {
+      const original = process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS;
+      process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS = '1';
+      const strictBuilder = new SlotBuilder(mockClient as unknown as ResoniteLinkClient);
+      const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
+
+      await expect(strictBuilder.createTextureAssets(textureMap)).rejects.toThrow(
+        /deprecated-strict/
+      );
+
+      if (original === undefined) {
+        delete process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS;
+      } else {
+        process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS = original;
+      }
+    });
+
     it('can apply texture references via updater callback without exposing map', async () => {
       const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
       const updateTextureReference = vi.fn();

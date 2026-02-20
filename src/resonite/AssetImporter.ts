@@ -34,6 +34,7 @@ export class AssetImporter {
   private importedImageAssetInfoMap: Map<string, ImageAssetInfo> = new Map();
   private tempDir: string | null = null;
   private hasWarnedApplyTextureReferences = false;
+  private readonly strictDeprecations = process.env.UDONARIUM_IMPORTER_STRICT_DEPRECATIONS === '1';
 
   constructor(client: ResoniteLinkClient) {
     this.client = client;
@@ -190,6 +191,11 @@ export class AssetImporter {
    * @deprecated Prefer applyTextureReference(identifier, componentId) from updater callback.
    */
   applyTextureReferences(textureReferenceComponentMap: Map<string, string>): void {
+    if (this.strictDeprecations) {
+      throw new Error(
+        '[deprecated-strict] AssetImporter.applyTextureReferences is forbidden. Use applyTextureReference via SlotBuilder updater callback.'
+      );
+    }
     if (!this.hasWarnedApplyTextureReferences) {
       this.hasWarnedApplyTextureReferences = true;
       console.warn(
