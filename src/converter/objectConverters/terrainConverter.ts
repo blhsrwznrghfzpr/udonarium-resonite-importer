@@ -1,19 +1,7 @@
 import { Terrain } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from '../textureUtils';
-import { lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
-
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Opaque';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Opaque';
-}
 
 function buildWallSlot(
   id: string,
@@ -21,13 +9,20 @@ function buildWallSlot(
   position: Vector3,
   rotation: Vector3,
   size: { x: number; y: number },
-  textureValue: string | undefined,
-  blendMode: BlendModeValue
+  textureIdentifier: string | undefined,
+  textureMap?: Map<string, string>,
+  imageBlendModeMap?: Map<string, ImageBlendMode>
 ): ResoniteObject {
   return ResoniteObjectBuilder.create({ id, name })
     .setPosition(position)
     .setRotation(rotation)
-    .addQuadMesh(textureValue, false, size, blendMode)
+    .addQuadMesh({
+      textureIdentifier,
+      dualSided: false,
+      size,
+      imageBlendModeMap,
+      textureMap,
+    })
     .build();
 }
 
@@ -47,10 +42,6 @@ export function convertTerrain(
     udonObj.wallImage?.identifier ??
     udonObj.floorImage?.identifier ??
     udonObj.images[0]?.identifier;
-  const topTextureValue = resolveTextureValue(topTextureIdentifier, textureMap);
-  const sideTextureValue = resolveTextureValue(sideTextureIdentifier, textureMap);
-  const topBlendMode = resolveBlendMode(topTextureIdentifier, imageBlendModeMap);
-  const sideBlendMode = resolveBlendMode(sideTextureIdentifier, imageBlendModeMap);
 
   const mainBuilder = ResoniteObjectBuilder.create({
     id: slotId,
@@ -80,7 +71,13 @@ export function convertTerrain(
   })
     .setPosition({ x: 0, y: hideWalls ? 0 : udonObj.height / 2, z: 0 })
     .setRotation({ x: 90, y: 0, z: 0 })
-    .addQuadMesh(topTextureValue, false, { x: udonObj.width, y: udonObj.depth }, topBlendMode)
+    .addQuadMesh({
+      textureIdentifier: topTextureIdentifier,
+      dualSided: false,
+      size: { x: udonObj.width, y: udonObj.depth },
+      imageBlendModeMap,
+      textureMap,
+    })
     .build();
   const bottomLikeSurface = ResoniteObjectBuilder.create({
     id: hideWalls ? topBackId : bottomId,
@@ -88,7 +85,13 @@ export function convertTerrain(
   })
     .setPosition({ x: 0, y: hideWalls ? 0 : -udonObj.height / 2, z: 0 })
     .setRotation({ x: -90, y: 0, z: 0 })
-    .addQuadMesh(topTextureValue, false, { x: udonObj.width, y: udonObj.depth }, topBlendMode)
+    .addQuadMesh({
+      textureIdentifier: topTextureIdentifier,
+      dualSided: false,
+      size: { x: udonObj.width, y: udonObj.depth },
+      imageBlendModeMap,
+      textureMap,
+    })
     .build();
 
   const wallsContainer = ResoniteObjectBuilder.create({
@@ -105,8 +108,9 @@ export function convertTerrain(
         { x: 0, y: 0, z: -udonObj.depth / 2 },
         { x: 0, y: 0, z: 0 },
         { x: udonObj.width, y: udonObj.height },
-        sideTextureValue,
-        sideBlendMode
+        sideTextureIdentifier,
+        textureMap,
+        imageBlendModeMap
       )
     )
     .addChild(
@@ -116,8 +120,9 @@ export function convertTerrain(
         { x: 0, y: 0, z: udonObj.depth / 2 },
         { x: 0, y: 180, z: 0 },
         { x: udonObj.width, y: udonObj.height },
-        sideTextureValue,
-        sideBlendMode
+        sideTextureIdentifier,
+        textureMap,
+        imageBlendModeMap
       )
     )
     .addChild(
@@ -127,8 +132,9 @@ export function convertTerrain(
         { x: -udonObj.width / 2, y: 0, z: 0 },
         { x: 0, y: 90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
-        sideTextureValue,
-        sideBlendMode
+        sideTextureIdentifier,
+        textureMap,
+        imageBlendModeMap
       )
     )
     .addChild(
@@ -138,8 +144,9 @@ export function convertTerrain(
         { x: udonObj.width / 2, y: 0, z: 0 },
         { x: 0, y: -90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
-        sideTextureValue,
-        sideBlendMode
+        sideTextureIdentifier,
+        textureMap,
+        imageBlendModeMap
       )
     )
     .build();

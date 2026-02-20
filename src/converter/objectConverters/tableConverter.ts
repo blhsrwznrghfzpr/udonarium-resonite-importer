@@ -1,19 +1,7 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from '../textureUtils';
-import { lookupImageBlendMode } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
-
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Opaque';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Opaque';
-}
 
 export function convertTable(
   udonObj: GameTable,
@@ -34,15 +22,19 @@ export function convertTable(
 
   const surfaceId = `${parentBuilder.getId()}-surface`;
   const textureIdentifier = udonObj.images[0]?.identifier;
-  const textureValue = resolveTextureValue(textureIdentifier, textureMap);
-  const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
   const tableVisual = ResoniteObjectBuilder.create({
     id: surfaceId,
     name: `${udonObj.name}-surface`,
   })
     .setPosition({ x: udonObj.width / 2, y: 0, z: -udonObj.height / 2 })
     .setRotation({ x: 90, y: 0, z: 0 })
-    .addQuadMesh(textureValue, true, { x: udonObj.width, y: udonObj.height }, blendMode)
+    .addQuadMesh({
+      textureIdentifier,
+      dualSided: true,
+      size: { x: udonObj.width, y: udonObj.height },
+      imageBlendModeMap,
+      textureMap,
+    })
     .addBoxCollider(
       { x: udonObj.width, y: udonObj.height, z: 0 },
       { characterCollider: options?.enableCharacterColliderOnLockedTerrain ?? false }

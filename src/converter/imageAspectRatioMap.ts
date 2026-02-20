@@ -255,7 +255,7 @@ export function lookupImageAspectRatio(
   return undefined;
 }
 
-export function lookupImageBlendMode(
+function findImageBlendMode(
   imageBlendModeMap: Map<string, ImageBlendMode>,
   identifier: string | undefined
 ): ImageBlendMode | undefined {
@@ -283,6 +283,17 @@ export function lookupImageBlendMode(
   }
 
   return undefined;
+}
+
+export function lookupImageBlendMode(
+  imageBlendModeMap: Map<string, ImageBlendMode> | undefined,
+  identifier: string | undefined
+): ImageBlendMode {
+  if (!imageBlendModeMap) {
+    return 'Cutout';
+  }
+
+  return findImageBlendMode(imageBlendModeMap, identifier) ?? 'Cutout';
 }
 
 /**
@@ -422,11 +433,11 @@ export async function buildImageBlendModeMap(
   const externalProbeTasks: Array<Promise<void>> = [];
   for (const identifier of collectImageIdentifiers(objects)) {
     const knownBlendMode = resolveKnownBlendMode(identifier);
-    if (knownBlendMode && lookupImageBlendMode(map, identifier) === undefined) {
+    if (knownBlendMode && findImageBlendMode(map, identifier) === undefined) {
       setBlendModeForIdentifier(map, identifier, knownBlendMode);
       continue;
     }
-    if (lookupImageBlendMode(map, identifier) !== undefined) {
+    if (findImageBlendMode(map, identifier) !== undefined) {
       continue;
     }
     const probeUrl = buildExternalProbeUrl(identifier);

@@ -1,23 +1,12 @@
 import { Card } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from '../textureUtils';
-import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
+import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const CARD_Y_OFFSET = 0.001;
 const CARD_FACE_SEPARATION = 0.0001;
 const DEFAULT_CARD_ASPECT_RATIO = 1;
-
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Cutout';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Cutout';
-}
 
 function resolveFrontTextureIdentifier(card: Card): string | undefined {
   return card.frontImage?.identifier ?? card.backImage?.identifier ?? card.images[0]?.identifier;
@@ -97,10 +86,6 @@ export function convertCard(
   const backZOffset = (parentHeight - backHeight) / 2;
   const frontTextureIdentifier = resolveFrontTextureIdentifier(udonObj);
   const backTextureIdentifier = resolveBackTextureIdentifier(udonObj);
-  const frontTextureValue = resolveTextureValue(frontTextureIdentifier, textureMap);
-  const backTextureValue = resolveTextureValue(backTextureIdentifier, textureMap);
-  const frontBlendMode = resolveBlendMode(frontTextureIdentifier, imageBlendModeMap);
-  const backBlendMode = resolveBlendMode(backTextureIdentifier, imageBlendModeMap);
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   // Slight Y offset so cards don't z-fight with the table surface.
@@ -130,7 +115,13 @@ export function convertCard(
     // Align top edges when front/back heights differ.
     .setPosition({ x: 0, y: CARD_FACE_SEPARATION, z: frontZOffset })
     .setRotation({ x: 90, y: 0, z: 0 })
-    .addQuadMesh(frontTextureValue, false, { x: cardWidth, y: frontHeight }, frontBlendMode)
+    .addQuadMesh({
+      textureIdentifier: frontTextureIdentifier,
+      dualSided: false,
+      size: { x: cardWidth, y: frontHeight },
+      imageBlendModeMap,
+      textureMap,
+    })
     .build();
 
   const backSlot = ResoniteObjectBuilder.create({
@@ -140,7 +131,13 @@ export function convertCard(
     // Align top edges when front/back heights differ.
     .setPosition({ x: 0, y: -CARD_FACE_SEPARATION, z: backZOffset })
     .setRotation({ x: -90, y: 180, z: 0 })
-    .addQuadMesh(backTextureValue, false, { x: cardWidth, y: backHeight }, backBlendMode)
+    .addQuadMesh({
+      textureIdentifier: backTextureIdentifier,
+      dualSided: false,
+      size: { x: cardWidth, y: backHeight },
+      imageBlendModeMap,
+      textureMap,
+    })
     .build();
 
   return (

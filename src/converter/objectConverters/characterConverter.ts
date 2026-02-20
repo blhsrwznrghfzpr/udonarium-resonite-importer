@@ -1,21 +1,10 @@
 import { GameCharacter } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { BlendModeValue, resolveTextureValue } from '../textureUtils';
-import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
+import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const DEFAULT_CHARACTER_ASPECT_RATIO = 1;
-
-function resolveBlendMode(
-  identifier: string | undefined,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
-): BlendModeValue {
-  if (!imageBlendModeMap) {
-    return 'Opaque';
-  }
-  return lookupImageBlendMode(imageBlendModeMap, identifier) ?? 'Opaque';
-}
 
 export function convertCharacter(
   udonObj: GameCharacter,
@@ -51,10 +40,14 @@ export function convertCharacter(
     .setLocationName(udonObj.locationName);
 
   if (hasCharacterImage) {
-    const textureValue = resolveTextureValue(textureIdentifier, textureMap);
-    const blendMode = resolveBlendMode(textureIdentifier, imageBlendModeMap);
     builder
-      .addQuadMesh(textureValue, true, { x: meshWidth, y: meshHeight }, blendMode)
+      .addQuadMesh({
+        textureIdentifier,
+        dualSided: true,
+        size: { x: meshWidth, y: meshHeight },
+        imageBlendModeMap,
+        textureMap,
+      })
       .addBoxCollider({ x: meshWidth, y: meshHeight, z: 0.05 });
   } else {
     builder.addBoxCollider({ x: meshWidth, y: size.y, z: 0.05 });

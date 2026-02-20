@@ -95,7 +95,7 @@ Udonarium の `card` を Resonite の親 Slot + 表裏子 Slot 構成へ変換�
 BlendMode:
 
 - 各面のテクスチャ識別子に対して `lookupImageBlendMode(...)` で解決
-- 未解決時のデフォルト: `Cutout`（character / dice-symbol の `Opaque` とは異なる）
+- 未解決時のデフォルト: `Cutout`
 
 ## 7. 検証ポイント
 

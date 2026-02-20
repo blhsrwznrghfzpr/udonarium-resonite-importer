@@ -27,7 +27,13 @@ describe('convertTableMask', () => {
       isActive: true,
     };
 
-    const result = convertTableMask(udonObj, resoniteObj.position, undefined, resoniteObj.id);
+    const result = convertTableMask(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     expect(result.rotation).toEqual({ x: 90, y: 0, z: 0 });
     expect(result.position).toEqual({ x: 3.5, y: 2.002, z: 1.5 });
@@ -81,16 +87,78 @@ describe('convertTableMask', () => {
       isActive: true,
     };
 
-    const result = convertTableMask(udonObj, resoniteObj.position, undefined, resoniteObj.id);
+    const result = convertTableMask(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     const material = result.components.find(
       (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
     );
     expect(material?.fields).toMatchObject({
+      BlendMode: { $type: 'enum', value: 'Alpha', enumType: 'BlendMode' },
       Color: {
         $type: 'colorX',
         value: { r: 1, g: 1, b: 1, a: 0.7, profile: 'Linear' },
       },
+    });
+  });
+
+  it('uses lookupImageBlendMode when opacity is 100', () => {
+    const udonObj: TableMask = {
+      id: 'mask-opacity-100',
+      type: 'table-mask',
+      name: 'Mask Opacity 100',
+      position: { x: 0, y: 0, z: 0 },
+      isLock: false,
+      width: 4,
+      height: 2,
+      images: [{ identifier: 'mask.png', name: 'mask' }],
+      opacity: 100,
+    };
+
+    const result = convertTableMask(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      undefined,
+      new Map([['mask.png', 'Opaque' as const]])
+    );
+
+    const material = result.components.find(
+      (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
+    );
+    expect(material?.fields).toMatchObject({
+      BlendMode: { $type: 'enum', value: 'Opaque', enumType: 'BlendMode' },
+      Color: {
+        $type: 'colorX',
+        value: { r: 1, g: 1, b: 1, a: 1, profile: 'Linear' },
+      },
+    });
+  });
+
+  it('falls back to Cutout at opacity 100 when blend mode map is not available', () => {
+    const udonObj: TableMask = {
+      id: 'mask-opacity-100-no-map',
+      type: 'table-mask',
+      name: 'Mask Opacity 100 No Map',
+      position: { x: 0, y: 0, z: 0 },
+      isLock: false,
+      width: 4,
+      height: 2,
+      images: [{ identifier: 'mask.png', name: 'mask' }],
+      opacity: 100,
+    };
+
+    const result = convertTableMask(udonObj, { x: 0, y: 0, z: 0 });
+
+    const material = result.components.find(
+      (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
+    );
+    expect(material?.fields).toMatchObject({
+      BlendMode: { $type: 'enum', value: 'Cutout', enumType: 'BlendMode' },
     });
   });
 
@@ -116,7 +184,13 @@ describe('convertTableMask', () => {
       isActive: true,
     };
 
-    const result = convertTableMask(udonObj, resoniteObj.position, undefined, resoniteObj.id);
+    const result = convertTableMask(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     const grabbable = result.components.find(
       (component) => component.type === COMPONENT_TYPES.GRABBABLE
@@ -150,7 +224,13 @@ describe('convertTableMask', () => {
       isActive: true,
     };
 
-    const result = convertTableMask(udonObj, resoniteObj.position, undefined, resoniteObj.id);
+    const result = convertTableMask(
+      udonObj,
+      resoniteObj.position,
+      undefined,
+      undefined,
+      resoniteObj.id
+    );
 
     const grabbable = result.components.find(
       (component) => component.type === COMPONENT_TYPES.GRABBABLE
