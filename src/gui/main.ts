@@ -8,6 +8,7 @@ import { extractZip } from '../parser/ZipExtractor';
 import { parseXmlFiles } from '../parser/XmlParser';
 import { convertObjectsWithImageAssetContext } from '../converter/ObjectConverter';
 import { buildImageAspectRatioMap, buildImageBlendModeMap } from '../converter/imageAspectRatioMap';
+import { buildImageAssetContext } from '../converter/imageAssetContext';
 import { prepareSharedMeshDefinitions, resolveSharedMeshReferences } from '../converter/sharedMesh';
 import {
   prepareSharedMaterialDefinitions,
@@ -241,7 +242,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       }
     );
 
-    const imageAssetContext = assetImporter.buildImageAssetContext({
+    const imageAssetContext = buildImageAssetContext({
+      imageAssetInfoMap: assetImporter.getImportedImageAssetInfoMap(),
       imageAspectRatioMap,
       imageBlendModeMap,
     });

@@ -323,7 +323,8 @@ async function run(options: CLIOptions): Promise<void> {
     );
 
     // Build objects after texture asset creation so materials reference shared StaticTexture2D components.
-    const imageAssetContext = assetImporter.buildImageAssetContext({
+    const imageAssetContext = buildImageAssetContext({
+      imageAssetInfoMap: assetImporter.getImportedImageAssetInfoMap(),
       imageAspectRatioMap,
       imageBlendModeMap,
     });

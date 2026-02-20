@@ -8,19 +8,8 @@ import * as os from 'os';
 import sharp from 'sharp';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ExtractedFile } from '../parser/ZipExtractor';
-import {
-  buildImageAssetContext,
-  ImageAssetContext,
-  ImageAssetInfo,
-  ImageSourceKind,
-} from '../converter/imageAssetContext';
+import { ImageAssetInfo, ImageSourceKind } from '../converter/imageAssetContext';
 import { isGifTexture, toTextureReference } from '../converter/textureUtils';
-import { ImageBlendMode } from '../config/MappingConfig';
-
-export interface BuildImporterImageAssetContextOptions {
-  imageAspectRatioMap?: Map<string, number>;
-  imageBlendModeMap?: Map<string, ImageBlendMode>;
-}
 
 export interface AssetImportResult {
   identifier: string;
@@ -157,14 +146,6 @@ export class AssetImporter {
     this.importedImageAssetInfoMap.set(identifier, {
       ...info,
       textureValue: toTextureReference(componentId),
-    });
-  }
-
-  buildImageAssetContext(options: BuildImporterImageAssetContextOptions = {}): ImageAssetContext {
-    return buildImageAssetContext({
-      imageAssetInfoMap: this.getImportedImageAssetInfoMap(),
-      imageAspectRatioMap: options.imageAspectRatioMap,
-      imageBlendModeMap: options.imageBlendModeMap,
     });
   }
 

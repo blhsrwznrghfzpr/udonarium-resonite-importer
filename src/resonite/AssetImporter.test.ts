@@ -4,6 +4,7 @@ import * as path from 'path';
 import { AssetImporter } from './AssetImporter';
 import { ResoniteLinkClient } from './ResoniteLinkClient';
 import { ExtractedFile } from '../parser/ZipExtractor';
+import { buildImageAssetContext } from '../converter/imageAssetContext';
 
 // Mock ResoniteLinkClient
 vi.mock('./ResoniteLinkClient', () => {
@@ -371,14 +372,15 @@ describe('AssetImporter', () => {
     });
   });
 
-  describe('buildImageAssetContext', () => {
+  describe('imageAssetContext integration', () => {
     it('builds context from importer state', async () => {
       await assetImporter.importImage(
         createExtractedFile({ path: 'images/context.png', name: 'context.png' })
       );
       assetImporter.applyTextureReference('context.png', 'shared-context-component');
 
-      const context = assetImporter.buildImageAssetContext({
+      const context = buildImageAssetContext({
+        imageAssetInfoMap: assetImporter.getImportedImageAssetInfoMap(),
         imageAspectRatioMap: new Map([['context.png', 1.25]]),
         imageBlendModeMap: new Map([['context.png', 'Opaque']]),
       });
@@ -388,20 +390,6 @@ describe('AssetImporter', () => {
       );
       expect(context.lookupAspectRatio('context.png')).toBe(1.25);
       expect(context.lookupBlendMode('context.png')).toBe('Opaque');
-    });
-
-    it('builds importer context without warning', async () => {
-      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-      await assetImporter.importImage(
-        createExtractedFile({ path: 'images/context2.png', name: 'context2.png' })
-      );
-
-      assetImporter.buildImageAssetContext({
-        imageAspectRatioMap: new Map([['context2.png', 1.0]]),
-      });
-
-      expect(warnSpy).not.toHaveBeenCalled();
-      warnSpy.mockRestore();
     });
   });
 
