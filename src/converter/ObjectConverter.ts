@@ -96,7 +96,7 @@ export function convertObjectWithTextures(
         options
       );
     case 'table-mask':
-      return convertTableMask(udonObj, position, textureMap);
+      return convertTableMask(udonObj, position, textureMap, imageBlendModeMap);
     case 'card':
       return convertCard(udonObj, position, textureMap, imageAspectRatioMap, imageBlendModeMap);
     case 'card-stack':

@@ -66,7 +66,9 @@ Additional placement:
 
 ## 6. Material Rules
 
-- `BlendMode = Alpha`
+- `BlendMode` depends on opacity:
+  - `opacity < 100`: `Alpha`
+  - `opacity >= 100`: resolved via `lookupImageBlendMode(...)` (fallback: `Cutout`)
 - `Color.profile = Linear`
 - `Color.a = clamp(opacity / 100, 0..1)`
 - Color RGB depends on image presence:

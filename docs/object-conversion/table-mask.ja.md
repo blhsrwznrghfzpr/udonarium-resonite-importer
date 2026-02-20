@@ -66,7 +66,9 @@ Udonarium の `table-mask` を Resonite の slot/component へ変換する仕様
 
 ## 6. マテリアル仕様
 
-- `BlendMode = Alpha`
+- `BlendMode` は opacity に応じて決定:
+  - `opacity < 100`: `Alpha`
+  - `opacity >= 100`: `lookupImageBlendMode(...)` で解決（未解決時は `Cutout`）
 - `Color.profile = Linear`
 - `Color.a = clamp(opacity / 100, 0..1)`
 - RGB は画像有無で切替
