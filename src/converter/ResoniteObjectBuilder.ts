@@ -41,19 +41,6 @@ type QuadMaterialOptions = {
   blendMode?: BlendModeValue;
 };
 
-function normalizeQuadMaterialOptions(
-  blendModeOrOptions?: BlendModeValue | QuadMaterialOptions,
-  color?: ColorXValue
-): QuadMaterialOptions {
-  if (!blendModeOrOptions) {
-    return color ? { color } : {};
-  }
-  if (typeof blendModeOrOptions === 'string') {
-    return { blendMode: blendModeOrOptions, color };
-  }
-  return blendModeOrOptions;
-}
-
 function resolveBlendMode(options?: QuadMaterialOptions): BlendModeValue {
   if (options?.blendMode) {
     return options.blendMode;
@@ -88,8 +75,7 @@ function buildQuadMeshComponents(
   textureValue?: string,
   dualSided: boolean = false,
   size: QuadSize = { x: 1, y: 1 },
-  blendModeOrOptions?: BlendModeValue | QuadMaterialOptions,
-  color?: ColorXValue
+  options?: QuadMaterialOptions
 ): ResoniteComponent[] {
   const meshId = `${slotId}-mesh`;
   const materialId = `${slotId}-mat`;
@@ -102,7 +88,7 @@ function buildQuadMeshComponents(
       ? toSharedTexturePropertyBlockId(sharedTextureId)
       : textureBlockId
     : undefined;
-  const materialOptions = normalizeQuadMaterialOptions(blendModeOrOptions, color);
+  const materialOptions = options;
 
   const components: ResoniteComponent[] = [
     {
@@ -127,7 +113,7 @@ function buildQuadMeshComponents(
     type: COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
     fields: buildXiexeToonMaterialFields(
       resolveBlendMode(materialOptions),
-      materialOptions.color,
+      materialOptions?.color,
       dualSided
     ),
   });
@@ -263,18 +249,10 @@ export class ResoniteObjectBuilder {
     textureValue?: string,
     dualSided = false,
     size: QuadSize = { x: 1, y: 1 },
-    blendModeOrOptions?: BlendModeValue | QuadMaterialOptions,
-    color?: ColorXValue
+    options?: QuadMaterialOptions
   ): this {
     this.obj.components.push(
-      ...buildQuadMeshComponents(
-        this.obj.id,
-        textureValue,
-        dualSided,
-        size,
-        blendModeOrOptions,
-        color
-      )
+      ...buildQuadMeshComponents(this.obj.id, textureValue, dualSided, size, options)
     );
     return this;
   }

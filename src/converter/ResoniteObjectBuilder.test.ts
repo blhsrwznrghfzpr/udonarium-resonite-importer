@@ -103,7 +103,7 @@ describe('ResoniteObjectBuilder', () => {
 
     it('applies the given blendMode to the material', () => {
       const result = makeBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, { blendMode: 'Alpha' })
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -200,13 +200,21 @@ describe('ResoniteObjectBuilder', () => {
   describe('addQuadMesh() color option', () => {
     it('adds a Color field to the XiexeToonMaterial when color is given', () => {
       const result = makeBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha', {
-          r: 0.5,
-          g: 0.5,
-          b: 0.5,
-          a: 0.8,
-          profile: 'Linear',
-        })
+        .addQuadMesh(
+          undefined,
+          false,
+          { x: 1, y: 1 },
+          {
+            blendMode: 'Alpha',
+            color: {
+              r: 0.5,
+              g: 0.5,
+              b: 0.5,
+              a: 0.8,
+              profile: 'Linear',
+            },
+          }
+        )
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -218,13 +226,21 @@ describe('ResoniteObjectBuilder', () => {
 
     it('preserves existing material fields (e.g. BlendMode) alongside color', () => {
       const result = makeBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha', {
-          r: 0,
-          g: 0,
-          b: 0,
-          a: 1,
-          profile: 'Linear',
-        })
+        .addQuadMesh(
+          undefined,
+          false,
+          { x: 1, y: 1 },
+          {
+            blendMode: 'Alpha',
+            color: {
+              r: 0,
+              g: 0,
+              b: 0,
+              a: 1,
+              profile: 'Linear',
+            },
+          }
+        )
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -237,7 +253,7 @@ describe('ResoniteObjectBuilder', () => {
 
     it('does not add Color field when color is not given', () => {
       const result = makeBuilder(makeSpec())
-        .addQuadMesh(undefined, false, { x: 1, y: 1 }, 'Alpha')
+        .addQuadMesh(undefined, false, { x: 1, y: 1 }, { blendMode: 'Alpha' })
         .build();
 
       const mat = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
@@ -284,7 +300,7 @@ describe('ResoniteObjectBuilder', () => {
   describe('method chaining', () => {
     it('produces the correct component order when chaining multiple add methods', () => {
       const result = makeBuilder(makeSpec('s5'))
-        .addQuadMesh('img.png', true, { x: 2, y: 3 }, 'Opaque')
+        .addQuadMesh('img.png', true, { x: 2, y: 3 }, { blendMode: 'Opaque' })
         .addBoxCollider({ x: 2, y: 3, z: 0.05 })
         .addGrabbable()
         .build();
