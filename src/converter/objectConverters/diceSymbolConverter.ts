@@ -1,7 +1,6 @@
 import { DiceSymbol } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { resolveTextureValue } from '../textureUtils';
 import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
@@ -50,7 +49,6 @@ export function convertDiceSymbol(
   const faceSlots = udonObj.faceImages.map((faceImage, index) => {
     const childId = `${parentId}-face-${index}`;
     const childHeight = faceHeights[index] ?? faceWidth * DEFAULT_DICE_ASPECT_RATIO;
-    const childTextureValue = resolveTextureValue(faceImage.identifier, textureMap);
     return (
       ResoniteObjectBuilder.create({
         id: childId,
@@ -61,12 +59,13 @@ export function convertDiceSymbol(
         .setRotation({ x: 0, y: 0, z: 0 })
         .setActive(faceImage.name === activeFaceName)
         .addQuadMesh(
-          childTextureValue,
+          faceImage.identifier,
           true,
           { x: faceWidth, y: childHeight },
           {
             textureIdentifier: faceImage.identifier,
             imageBlendModeMap,
+            textureMap,
           }
         )
         .build()

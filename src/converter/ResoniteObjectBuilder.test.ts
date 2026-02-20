@@ -101,6 +101,29 @@ describe('ResoniteObjectBuilder', () => {
       expect(quad?.fields.Size).toEqual({ $type: 'float2', value: { x: 2, y: 3 } });
     });
 
+    it('resolves textureValue from textureMap while using textureIdentifier for blend lookup', () => {
+      const result = makeBuilder(makeSpec('s-map'))
+        .addQuadMesh(
+          'front.png',
+          false,
+          { x: 1, y: 1 },
+          {
+            textureIdentifier: 'front.png',
+            textureMap: new Map([['front.png', 'texture-ref://shared-front-static-texture']]),
+            imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
+          }
+        )
+        .build();
+
+      expect(result.components.find((c) => c.type.endsWith('StaticTexture2D'))).toBeUndefined();
+      const material = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(material?.fields.BlendMode).toEqual({
+        $type: 'enum',
+        value: 'Opaque',
+        enumType: 'BlendMode',
+      });
+    });
+
     it('applies the given blendMode to the material', () => {
       const result = makeBuilder(makeSpec())
         .addQuadMesh(undefined, false, { x: 1, y: 1 }, { blendMode: 'Alpha' })

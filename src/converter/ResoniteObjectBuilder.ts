@@ -6,6 +6,7 @@ import {
   ColorXValue,
   isGifTexture,
   parseTextureReferenceId,
+  resolveTextureValue,
   toSharedTexturePropertyBlockId,
 } from './textureUtils';
 import { ImageBlendMode, SLOT_ID_PREFIX } from '../config/MappingConfig';
@@ -36,10 +37,11 @@ type XiexeToonMaterialFields = {
 
 type QuadMeshOptions = {
   textureValue?: string;
+  textureIdentifier?: string;
+  textureMap?: Map<string, string>;
   dualSided?: boolean;
   size?: QuadSize;
   color?: ColorXValue;
-  textureIdentifier?: string;
   imageBlendModeMap?: Map<string, ImageBlendMode>;
   blendMode?: BlendModeValue;
 };
@@ -90,7 +92,10 @@ function buildQuadMeshComponents(
   slotId: string,
   options: QuadMeshOptions = {}
 ): ResoniteComponent[] {
-  const textureValue = options.textureValue;
+  const textureValue = resolveTextureValue(
+    options.textureIdentifier ?? options.textureValue,
+    options.textureMap
+  );
   const dualSided = options.dualSided ?? false;
   const size = options.size ?? { x: 1, y: 1 };
   const meshId = `${slotId}-mesh`;
@@ -265,6 +270,8 @@ export class ResoniteObjectBuilder {
     this.obj.components.push(
       ...buildQuadMeshComponents(this.obj.id, {
         textureValue,
+        textureIdentifier: options?.textureIdentifier ?? textureValue,
+        textureMap: options?.textureMap,
         dualSided,
         size,
         ...options,

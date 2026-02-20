@@ -1,7 +1,6 @@
 import { TableMask } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { resolveTextureValue } from '../textureUtils';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const TABLE_MASK_Y_OFFSET = 0.002;
@@ -23,7 +22,6 @@ export function convertTableMask(
   slotId?: string
 ): ResoniteObject {
   const hasMaskImage = !!udonObj.images[0]?.identifier;
-  const textureValue = resolveTextureValue(udonObj.images[0]?.identifier, textureMap);
   const opacity = resolveMaskOpacity(udonObj);
   const colorValue = hasMaskImage ? 1 : 0;
 
@@ -40,12 +38,13 @@ export function convertTableMask(
     })
     .setSourceType(udonObj.type)
     .addQuadMesh(
-      textureValue,
+      udonObj.images[0]?.identifier,
       true,
       { x: udonObj.width, y: udonObj.height },
       {
         textureIdentifier: udonObj.images[0]?.identifier,
         imageBlendModeMap,
+        textureMap,
         color: {
           r: colorValue,
           g: colorValue,

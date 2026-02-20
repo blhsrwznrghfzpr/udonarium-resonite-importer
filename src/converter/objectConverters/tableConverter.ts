@@ -1,7 +1,6 @@
 import { GameTable, UdonariumObject } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { resolveTextureValue } from '../textureUtils';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 export function convertTable(
@@ -23,7 +22,6 @@ export function convertTable(
 
   const surfaceId = `${parentBuilder.getId()}-surface`;
   const textureIdentifier = udonObj.images[0]?.identifier;
-  const textureValue = resolveTextureValue(textureIdentifier, textureMap);
   const tableVisual = ResoniteObjectBuilder.create({
     id: surfaceId,
     name: `${udonObj.name}-surface`,
@@ -31,12 +29,13 @@ export function convertTable(
     .setPosition({ x: udonObj.width / 2, y: 0, z: -udonObj.height / 2 })
     .setRotation({ x: 90, y: 0, z: 0 })
     .addQuadMesh(
-      textureValue,
+      textureIdentifier,
       true,
       { x: udonObj.width, y: udonObj.height },
       {
         textureIdentifier,
         imageBlendModeMap,
+        textureMap,
       }
     )
     .addBoxCollider(

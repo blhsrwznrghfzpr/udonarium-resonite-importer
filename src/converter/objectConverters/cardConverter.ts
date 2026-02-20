@@ -1,7 +1,6 @@
 import { Card } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { resolveTextureValue } from '../textureUtils';
 import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
@@ -87,8 +86,6 @@ export function convertCard(
   const backZOffset = (parentHeight - backHeight) / 2;
   const frontTextureIdentifier = resolveFrontTextureIdentifier(udonObj);
   const backTextureIdentifier = resolveBackTextureIdentifier(udonObj);
-  const frontTextureValue = resolveTextureValue(frontTextureIdentifier, textureMap);
-  const backTextureValue = resolveTextureValue(backTextureIdentifier, textureMap);
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   // Slight Y offset so cards don't z-fight with the table surface.
@@ -119,12 +116,13 @@ export function convertCard(
     .setPosition({ x: 0, y: CARD_FACE_SEPARATION, z: frontZOffset })
     .setRotation({ x: 90, y: 0, z: 0 })
     .addQuadMesh(
-      frontTextureValue,
+      frontTextureIdentifier,
       false,
       { x: cardWidth, y: frontHeight },
       {
         textureIdentifier: frontTextureIdentifier,
         imageBlendModeMap,
+        textureMap,
       }
     )
     .build();
@@ -137,12 +135,13 @@ export function convertCard(
     .setPosition({ x: 0, y: -CARD_FACE_SEPARATION, z: backZOffset })
     .setRotation({ x: -90, y: 180, z: 0 })
     .addQuadMesh(
-      backTextureValue,
+      backTextureIdentifier,
       false,
       { x: cardWidth, y: backHeight },
       {
         textureIdentifier: backTextureIdentifier,
         imageBlendModeMap,
+        textureMap,
       }
     )
     .build();

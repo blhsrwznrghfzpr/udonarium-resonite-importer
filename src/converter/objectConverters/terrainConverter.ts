@@ -1,7 +1,6 @@
 import { Terrain } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { resolveTextureValue } from '../textureUtils';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 function buildWallSlot(
@@ -10,14 +9,18 @@ function buildWallSlot(
   position: Vector3,
   rotation: Vector3,
   size: { x: number; y: number },
-  textureValue: string | undefined,
   textureIdentifier: string | undefined,
+  textureMap?: Map<string, string>,
   imageBlendModeMap?: Map<string, ImageBlendMode>
 ): ResoniteObject {
   return ResoniteObjectBuilder.create({ id, name })
     .setPosition(position)
     .setRotation(rotation)
-    .addQuadMesh(textureValue, false, size, { textureIdentifier, imageBlendModeMap })
+    .addQuadMesh(textureIdentifier, false, size, {
+      textureIdentifier,
+      imageBlendModeMap,
+      textureMap,
+    })
     .build();
 }
 
@@ -37,8 +40,6 @@ export function convertTerrain(
     udonObj.wallImage?.identifier ??
     udonObj.floorImage?.identifier ??
     udonObj.images[0]?.identifier;
-  const topTextureValue = resolveTextureValue(topTextureIdentifier, textureMap);
-  const sideTextureValue = resolveTextureValue(sideTextureIdentifier, textureMap);
 
   const mainBuilder = ResoniteObjectBuilder.create({
     id: slotId,
@@ -69,12 +70,13 @@ export function convertTerrain(
     .setPosition({ x: 0, y: hideWalls ? 0 : udonObj.height / 2, z: 0 })
     .setRotation({ x: 90, y: 0, z: 0 })
     .addQuadMesh(
-      topTextureValue,
+      topTextureIdentifier,
       false,
       { x: udonObj.width, y: udonObj.depth },
       {
         textureIdentifier: topTextureIdentifier,
         imageBlendModeMap,
+        textureMap,
       }
     )
     .build();
@@ -85,12 +87,13 @@ export function convertTerrain(
     .setPosition({ x: 0, y: hideWalls ? 0 : -udonObj.height / 2, z: 0 })
     .setRotation({ x: -90, y: 0, z: 0 })
     .addQuadMesh(
-      topTextureValue,
+      topTextureIdentifier,
       false,
       { x: udonObj.width, y: udonObj.depth },
       {
         textureIdentifier: topTextureIdentifier,
         imageBlendModeMap,
+        textureMap,
       }
     )
     .build();
@@ -109,8 +112,8 @@ export function convertTerrain(
         { x: 0, y: 0, z: -udonObj.depth / 2 },
         { x: 0, y: 0, z: 0 },
         { x: udonObj.width, y: udonObj.height },
-        sideTextureValue,
         sideTextureIdentifier,
+        textureMap,
         imageBlendModeMap
       )
     )
@@ -121,8 +124,8 @@ export function convertTerrain(
         { x: 0, y: 0, z: udonObj.depth / 2 },
         { x: 0, y: 180, z: 0 },
         { x: udonObj.width, y: udonObj.height },
-        sideTextureValue,
         sideTextureIdentifier,
+        textureMap,
         imageBlendModeMap
       )
     )
@@ -133,8 +136,8 @@ export function convertTerrain(
         { x: -udonObj.width / 2, y: 0, z: 0 },
         { x: 0, y: 90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
-        sideTextureValue,
         sideTextureIdentifier,
+        textureMap,
         imageBlendModeMap
       )
     )
@@ -145,8 +148,8 @@ export function convertTerrain(
         { x: udonObj.width / 2, y: 0, z: 0 },
         { x: 0, y: -90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
-        sideTextureValue,
         sideTextureIdentifier,
+        textureMap,
         imageBlendModeMap
       )
     )
