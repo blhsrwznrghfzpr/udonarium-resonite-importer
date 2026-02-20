@@ -1,19 +1,12 @@
 import { CardStack, UdonariumObject } from '../../domain/UdonariumObject';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
+import { ImageAssetContext } from '../imageAssetContext';
 
 const CARD_STACK_Y_OFFSET = 0.001;
 const DEFAULT_CARD_ASPECT_RATIO = 1;
 
-function resolveCardAspectRatio(
-  stack: CardStack,
-  imageAspectRatioMap?: Map<string, number>
-): number {
-  if (!imageAspectRatioMap) {
-    return DEFAULT_CARD_ASPECT_RATIO;
-  }
-
+function resolveCardAspectRatio(stack: CardStack, imageAssetContext: ImageAssetContext): number {
   const sampleCard = stack.cards[0];
   if (!sampleCard) {
     return DEFAULT_CARD_ASPECT_RATIO;
@@ -31,8 +24,8 @@ function resolveCardAspectRatio(
 
   const primaryIdentifier = sampleCard.isFaceUp ? frontIdentifier : backIdentifier;
   const secondaryIdentifier = sampleCard.isFaceUp ? backIdentifier : frontIdentifier;
-  const primaryAspect = lookupImageAspectRatio(imageAspectRatioMap, primaryIdentifier);
-  const secondaryAspect = lookupImageAspectRatio(imageAspectRatioMap, secondaryIdentifier);
+  const primaryAspect = imageAssetContext.lookupAspectRatio(primaryIdentifier);
+  const secondaryAspect = imageAssetContext.lookupAspectRatio(secondaryIdentifier);
 
   if (primaryAspect && Number.isFinite(primaryAspect) && primaryAspect > 0) {
     return primaryAspect;
@@ -47,18 +40,16 @@ export function convertCardStack(
   udonObj: CardStack,
   basePosition: Vector3,
   convertObject: (obj: UdonariumObject) => ResoniteObject,
-  imageAspectRatioMap?: Map<string, number>,
+  imageAssetContext: ImageAssetContext,
   slotId?: string
 ): ResoniteObject {
   const cardWidth = udonObj.cards[0]?.size ?? 1;
-  const cardHeight = cardWidth * resolveCardAspectRatio(udonObj, imageAspectRatioMap);
+  const cardHeight = cardWidth * resolveCardAspectRatio(udonObj, imageAssetContext);
   const stackedCards = [...udonObj.cards].reverse().map((card, i) => ({
     ...convertObject(card),
-    // Stack cards locally under the parent slot.
     position: { x: 0, y: i * 0.0005, z: 0 },
   }));
 
-  // Udonarium positions are edge-based; Resonite uses center-based transforms.
   return ResoniteObjectBuilder.create({
     id: slotId,
     name: udonObj.name,

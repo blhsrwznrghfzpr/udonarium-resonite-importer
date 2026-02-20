@@ -8,14 +8,14 @@ const SVG_URL_PATTERN = /\.svg$/i;
 async function tryRegister(identifier: string, assetImporter: AssetImporter): Promise<void> {
   if (identifier.startsWith('./')) {
     const url = UDONARIUM_BASE_URL + identifier.slice(2);
-    assetImporter.registerExternalUrl(identifier, url);
+    assetImporter.registerExternalUrl(identifier, url, 'udonarium-asset-url');
   } else if (KNOWN_IMAGES.has(identifier)) {
-    assetImporter.registerExternalUrl(identifier, KNOWN_IMAGES.get(identifier)!.url);
+    assetImporter.registerExternalUrl(identifier, KNOWN_IMAGES.get(identifier)!.url, 'known-id');
   } else if (identifier.startsWith('http://') || identifier.startsWith('https://')) {
     if (SVG_URL_PATTERN.test(identifier.split('?')[0])) {
       await assetImporter.importExternalSvgUrl(identifier, identifier);
     } else {
-      assetImporter.registerExternalUrl(identifier, identifier);
+      assetImporter.registerExternalUrl(identifier, identifier, 'external-url');
     }
   }
 }

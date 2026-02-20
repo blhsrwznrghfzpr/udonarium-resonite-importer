@@ -17,7 +17,7 @@ import {
   buildStaticTexture2DFields,
   buildMainTexturePropertyBlockFields,
 } from '../converter/componentFields';
-import { isGifTexture } from '../converter/textureUtils';
+import { buildImageFilterModeMap } from '../converter/imageAssetContext';
 import { ResoniteLinkClient, SlotTransform } from './ResoniteLinkClient';
 
 function isListField(value: unknown): boolean {
@@ -238,6 +238,7 @@ export class SlotBuilder {
     }
 
     const texturesSlotId = await this.ensureTexturesSlot();
+    const filterModeMap = buildImageFilterModeMap(textureMap);
 
     for (const [identifier, textureUrl] of importableTextures) {
       const textureSlotId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
@@ -253,7 +254,7 @@ export class SlotBuilder {
         id: textureComponentId,
         slotId: textureSlotId,
         componentType: COMPONENT_TYPES.STATIC_TEXTURE_2D,
-        fields: buildStaticTexture2DFields(textureUrl, isGifTexture(identifier, textureMap)),
+        fields: buildStaticTexture2DFields(textureUrl, filterModeMap.get(identifier) === 'Point'),
       });
       await this.client.addComponent({
         id: `${textureSlotId}-main-texture-property-block`,

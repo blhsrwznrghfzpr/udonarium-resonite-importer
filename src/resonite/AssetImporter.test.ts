@@ -311,6 +311,78 @@ describe('AssetImporter', () => {
     });
   });
 
+  describe('getImportedSourceKinds', () => {
+    it('tracks source kind for imported zip images', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/sample.png', name: 'sample.png' })
+      );
+
+      const sourceKinds = assetImporter.getImportedSourceKinds();
+      expect(sourceKinds.get('sample.png')).toBe('zip-image');
+    });
+
+    it('tracks source kind for registered external URLs', () => {
+      assetImporter.registerExternalUrl(
+        'https://example.com/a.png',
+        'https://example.com/a.png',
+        'external-url'
+      );
+
+      const sourceKinds = assetImporter.getImportedSourceKinds();
+      expect(sourceKinds.get('https://example.com/a.png')).toBe('external-url');
+    });
+  });
+
+  describe('getImportedImageAssetInfoMap', () => {
+    it('returns texture/source metadata per identifier', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/info.png', name: 'info.png' })
+      );
+
+      const infoMap = assetImporter.getImportedImageAssetInfoMap();
+      expect(infoMap.get('info.png')).toMatchObject({
+        identifier: 'info.png',
+        textureValue: 'texture-id-001',
+        sourceKind: 'zip-image',
+      });
+    });
+  });
+
+  describe('applyTextureReferences', () => {
+    it('overwrites textureValue with texture-ref for matching identifiers', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/ref.png', name: 'ref.png' })
+      );
+
+      assetImporter.applyTextureReferences(new Map([['ref.png', 'shared-ref-component']]));
+
+      expect(assetImporter.getTextureId('ref.png')).toBe('texture-ref://shared-ref-component');
+      expect(assetImporter.getImportedImageAssetInfoMap().get('ref.png')?.sourceKind).toBe(
+        'zip-image'
+      );
+    });
+  });
+
+  describe('buildImageAssetContext', () => {
+    it('builds context from importer state', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/context.png', name: 'context.png' })
+      );
+      assetImporter.applyTextureReferences(new Map([['context.png', 'shared-context-component']]));
+
+      const context = assetImporter.buildImageAssetContext({
+        imageAspectRatioMap: new Map([['context.png', 1.25]]),
+        imageBlendModeMap: new Map([['context.png', 'Opaque']]),
+      });
+
+      expect(context.resolveTextureValue('context.png')).toBe(
+        'texture-ref://shared-context-component'
+      );
+      expect(context.lookupAspectRatio('context.png')).toBe(1.25);
+      expect(context.lookupBlendMode('context.png')).toBe('Opaque');
+    });
+  });
+
   describe('cleanup', () => {
     it('should remove temp directory after cleanup', async () => {
       await assetImporter.importImage(createExtractedFile());

@@ -1,8 +1,7 @@
 import { DiceSymbol } from '../../domain/UdonariumObject';
-import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
-import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
+import { ImageAssetContext } from '../imageAssetContext';
 
 const DEFAULT_DICE_ASPECT_RATIO = 1;
 
@@ -10,20 +9,14 @@ export function convertDiceSymbol(
   udonObj: DiceSymbol,
   basePosition: Vector3,
   convertSize: (size: number) => Vector3,
-  textureMap?: Map<string, string>,
-  imageAspectRatioMap?: Map<string, number>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
+  imageAssetContext: ImageAssetContext,
   slotId?: string
 ): ResoniteObject {
   const size = convertSize(udonObj.size);
   const faceWidth = size.x;
   const faceHeights = udonObj.faceImages.map((faceImage) => {
-    if (!imageAspectRatioMap) {
-      return faceWidth * DEFAULT_DICE_ASPECT_RATIO;
-    }
     const ratio =
-      lookupImageAspectRatio(imageAspectRatioMap, faceImage.identifier) ??
-      DEFAULT_DICE_ASPECT_RATIO;
+      imageAssetContext.lookupAspectRatio(faceImage.identifier) ?? DEFAULT_DICE_ASPECT_RATIO;
     return faceWidth * ratio;
   });
   const maxFaceHeight = faceHeights.reduce(
@@ -62,8 +55,7 @@ export function convertDiceSymbol(
           textureIdentifier: faceImage.identifier,
           dualSided: true,
           size: { x: faceWidth, y: childHeight },
-          imageBlendModeMap,
-          textureMap,
+          imageAssetContext,
         })
         .build()
     );

@@ -4,8 +4,9 @@ import { ResoniteObject } from '../domain/ResoniteObject';
 import { extractZip } from '../parser/ZipExtractor';
 import { parseXmlFiles } from '../parser/XmlParser';
 import { buildImageAspectRatioMap, buildImageBlendModeMap } from './imageAspectRatioMap';
-import { convertObjectsWithTextureMap } from './ObjectConverter';
+import { convertObjectsWithImageAssetContext } from './ObjectConverter';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
+import { createImageAssetContext } from './imageAssetContext';
 
 const SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI = process.env.CI === 'true';
 const SAMPLE_DICE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-dice.zip');
@@ -36,12 +37,12 @@ async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> 
   const parsed = parseXmlFiles(extracted.xmlFiles.map((f) => ({ name: f.name, data: f.data })));
   const imageAspectRatioMap = await buildImageAspectRatioMap(extracted.imageFiles, parsed.objects);
   const imageBlendModeMap = await buildImageBlendModeMap(extracted.imageFiles, parsed.objects);
-  return convertObjectsWithTextureMap(
-    parsed.objects,
-    new Map(),
+  const imageAssetContext = createImageAssetContext({
+    textureMap: new Map(),
     imageAspectRatioMap,
-    imageBlendModeMap
-  );
+    imageBlendModeMap,
+  });
+  return convertObjectsWithImageAssetContext(parsed.objects, imageAssetContext);
 }
 
 function flattenObjects(objects: ResoniteObject[]): ResoniteObject[] {

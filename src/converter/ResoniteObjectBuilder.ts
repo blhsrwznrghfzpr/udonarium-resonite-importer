@@ -6,13 +6,12 @@ import {
   ColorXValue,
   isGifTexture,
   parseTextureReferenceId,
-  resolveTextureValue,
   toSharedTexturePropertyBlockId,
 } from './textureUtils';
-import { ImageBlendMode, SLOT_ID_PREFIX } from '../config/MappingConfig';
+import { SLOT_ID_PREFIX } from '../config/MappingConfig';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
 import { buildStaticTexture2DFields, buildMainTexturePropertyBlockFields } from './componentFields';
-import { lookupImageBlendMode } from './imageAspectRatioMap';
+import { ImageAssetContext } from './imageAssetContext';
 
 // ---- private types ----
 type QuadSize = { x: number; y: number };
@@ -37,12 +36,10 @@ type XiexeToonMaterialFields = {
 
 type QuadMeshOptions = {
   textureIdentifier?: string;
-  textureMap?: Map<string, string>;
+  imageAssetContext?: ImageAssetContext;
   dualSided?: boolean;
   size?: QuadSize;
   color?: ColorXValue;
-  imageBlendModeMap?: Map<string, ImageBlendMode>;
-  blendMode?: BlendModeValue;
 };
 
 function resolveBlendModeLookupIdentifier(options?: QuadMeshOptions): string | undefined {
@@ -54,16 +51,14 @@ function resolveBlendModeLookupIdentifier(options?: QuadMeshOptions): string | u
 }
 
 function resolveBlendMode(options?: QuadMeshOptions): BlendModeValue {
-  if (options?.blendMode) {
-    return options.blendMode;
-  }
   if (options?.color && options.color.a < 1) {
     return 'Alpha';
   }
-  return lookupImageBlendMode(
-    options?.imageBlendModeMap,
-    resolveBlendModeLookupIdentifier(options)
-  );
+  const lookupIdentifier = resolveBlendModeLookupIdentifier(options);
+  if (options?.imageAssetContext && lookupIdentifier) {
+    return options.imageAssetContext.lookupBlendMode(lookupIdentifier);
+  }
+  return 'Cutout';
 }
 
 // ---- private helpers ----
@@ -89,7 +84,9 @@ function buildQuadMeshComponents(
   slotId: string,
   options: QuadMeshOptions = {}
 ): ResoniteComponent[] {
-  const textureValue = resolveTextureValue(options.textureIdentifier, options.textureMap);
+  const textureValue = options.imageAssetContext
+    ? options.imageAssetContext.resolveTextureValue(options.textureIdentifier)
+    : options.textureIdentifier;
   const dualSided = options.dualSided ?? false;
   const size = options.size ?? { x: 1, y: 1 };
   const meshId = `${slotId}-mesh`;
@@ -115,10 +112,13 @@ function buildQuadMeshComponents(
   ];
 
   if (textureValue && !sharedTextureId) {
+    const usePointFilter = options.imageAssetContext
+      ? options.imageAssetContext.resolveUsePointFilter(options.textureIdentifier, textureValue)
+      : isGifTexture(textureValue);
     components.push({
       id: textureId,
       type: COMPONENT_TYPES.STATIC_TEXTURE_2D,
-      fields: buildStaticTexture2DFields(textureValue, isGifTexture(textureValue)),
+      fields: buildStaticTexture2DFields(textureValue, usePointFilter),
     });
   }
 

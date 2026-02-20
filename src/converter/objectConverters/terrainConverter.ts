@@ -1,7 +1,7 @@
 import { Terrain } from '../../domain/UdonariumObject';
-import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
+import { ImageAssetContext } from '../imageAssetContext';
 
 function buildWallSlot(
   id: string,
@@ -10,8 +10,7 @@ function buildWallSlot(
   rotation: Vector3,
   size: { x: number; y: number },
   textureIdentifier: string | undefined,
-  textureMap?: Map<string, string>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>
+  imageAssetContext: ImageAssetContext
 ): ResoniteObject {
   return ResoniteObjectBuilder.create({ id, name })
     .setPosition(position)
@@ -20,8 +19,7 @@ function buildWallSlot(
       textureIdentifier,
       dualSided: false,
       size,
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
     })
     .build();
 }
@@ -29,10 +27,9 @@ function buildWallSlot(
 export function convertTerrain(
   udonObj: Terrain,
   basePosition: Vector3,
-  textureMap?: Map<string, string>,
-  imageBlendModeMap?: Map<string, ImageBlendMode>,
-  slotId?: string,
-  options?: { enableCharacterColliderOnLockedTerrain?: boolean }
+  imageAssetContext: ImageAssetContext,
+  options?: { enableCharacterColliderOnLockedTerrain?: boolean },
+  slotId?: string
 ): ResoniteObject {
   const topTextureIdentifier =
     udonObj.floorImage?.identifier ??
@@ -75,8 +72,7 @@ export function convertTerrain(
       textureIdentifier: topTextureIdentifier,
       dualSided: false,
       size: { x: udonObj.width, y: udonObj.depth },
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
     })
     .build();
   const bottomLikeSurface = ResoniteObjectBuilder.create({
@@ -89,8 +85,7 @@ export function convertTerrain(
       textureIdentifier: topTextureIdentifier,
       dualSided: false,
       size: { x: udonObj.width, y: udonObj.depth },
-      imageBlendModeMap,
-      textureMap,
+      imageAssetContext,
     })
     .build();
 
@@ -109,8 +104,7 @@ export function convertTerrain(
         { x: 0, y: 0, z: 0 },
         { x: udonObj.width, y: udonObj.height },
         sideTextureIdentifier,
-        textureMap,
-        imageBlendModeMap
+        imageAssetContext
       )
     )
     .addChild(
@@ -121,8 +115,7 @@ export function convertTerrain(
         { x: 0, y: 180, z: 0 },
         { x: udonObj.width, y: udonObj.height },
         sideTextureIdentifier,
-        textureMap,
-        imageBlendModeMap
+        imageAssetContext
       )
     )
     .addChild(
@@ -133,8 +126,7 @@ export function convertTerrain(
         { x: 0, y: 90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
         sideTextureIdentifier,
-        textureMap,
-        imageBlendModeMap
+        imageAssetContext
       )
     )
     .addChild(
@@ -145,14 +137,11 @@ export function convertTerrain(
         { x: 0, y: -90, z: 0 },
         { x: udonObj.depth, y: udonObj.height },
         sideTextureIdentifier,
-        textureMap,
-        imageBlendModeMap
+        imageAssetContext
       )
     )
     .build();
 
-  // Axis mapping: width -> X, height -> Y, depth -> Z
-  // Udonarium positions are edge-based; Resonite uses center-based transforms.
   mainBuilder.addBoxCollider(
     { x: udonObj.width, y: hideWalls ? 0 : udonObj.height, z: udonObj.depth },
     {
