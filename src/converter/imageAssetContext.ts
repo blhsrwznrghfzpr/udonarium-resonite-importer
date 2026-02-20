@@ -141,8 +141,7 @@ function inferSourceKind(identifier: string, textureValue: string | undefined): 
     normalizedTextureValue?.startsWith('http://') ||
     normalizedTextureValue?.startsWith('https://')
   ) {
-    const isPathLike = normalizedIdentifier.includes('/') || normalizedIdentifier.includes('.');
-    return isPathLike ? 'external-url' : 'known-id';
+    return 'external-url';
   }
 
   return 'unknown';

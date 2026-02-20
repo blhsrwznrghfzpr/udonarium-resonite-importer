@@ -95,7 +95,7 @@ describe('imageAssetContext', () => {
     );
     expect(context.getAssetInfo('https://example.com/sprite.png')?.sourceKind).toBe('external-url');
     expect(context.getAssetInfo('https://example.com/logo.svg')?.sourceKind).toBe('external-svg');
-    expect(context.getAssetInfo('none_icon')?.sourceKind).toBe('known-id');
+    expect(context.getAssetInfo('none_icon')?.sourceKind).toBe('external-url');
   });
 
   it('uses textureReferenceComponentMap to resolve texture-ref values', () => {
