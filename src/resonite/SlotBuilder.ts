@@ -235,6 +235,9 @@ export class SlotBuilder {
     return groupId;
   }
 
+  /**
+   * @deprecated Prefer createTextureAssetsWithUpdater to avoid exposing component-id maps.
+   */
   async createTextureAssets(textureMap: Map<string, string>): Promise<Map<string, string>> {
     if (!this.hasWarnedCreateTextureAssets) {
       this.hasWarnedCreateTextureAssets = true;
