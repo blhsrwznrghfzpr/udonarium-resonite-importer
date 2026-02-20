@@ -125,4 +125,24 @@ describe('imageAssetContext', () => {
     expect(context.getAssetInfo('known_icon')?.sourceKind).toBe('known-id');
     expect(context.resolveTextureValue('known_icon')).toBe('texture-ref://shared-known-icon');
   });
+
+  it('prefers imageAssetInfoMap and does not fall back to legacy texture map entries', () => {
+    const context = createImageAssetContext({
+      imageAssetInfoMap: new Map([
+        [
+          'known_icon',
+          {
+            identifier: 'known_icon',
+            textureValue: 'texture-ref://shared-known-icon',
+            sourceKind: 'known-id',
+          },
+        ],
+      ]),
+      textureMap: new Map([['legacy_only.png', 'resdb:///legacy']]),
+    });
+
+    expect(context.resolveTextureValue('known_icon')).toBe('texture-ref://shared-known-icon');
+    expect(context.resolveTextureValue('legacy_only.png')).toBeUndefined();
+    expect(context.getAssetInfo('legacy_only.png')?.sourceKind).toBe('unknown');
+  });
 });

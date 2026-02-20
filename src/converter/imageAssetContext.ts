@@ -198,6 +198,7 @@ export function buildImageAssetContext(
 
 export function createImageAssetContext(options: ImageAssetContextOptions = {}): ImageAssetContext {
   const byIdentifier = new Map<string, ImageAssetInfo>();
+  const preferImageAssetInfo = (options.imageAssetInfoMap?.size ?? 0) > 0;
 
   for (const identifier of buildIdentifierSet(options)) {
     const seed = lookupByKeys(options.imageAssetInfoMap, identifier);
@@ -208,11 +209,11 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
     const textureValueFromMap = options.textureMap
       ? resolveTextureValueFromMap(identifier, options.textureMap)
       : undefined;
-    const textureValue = textureValueFromRef ?? textureValueFromMap ?? seed?.textureValue;
+    const textureValue = textureValueFromRef ?? seed?.textureValue ?? textureValueFromMap;
 
     byIdentifier.set(identifier, {
       identifier,
-      textureValue,
+      textureValue: preferImageAssetInfo && !seed ? undefined : textureValue,
       aspectRatio:
         (options.imageAspectRatioMap
           ? lookupImageAspectRatio(options.imageAspectRatioMap, identifier)
@@ -225,7 +226,7 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
       sourceKind:
         lookupByKeys(options.imageSourceKindMap, identifier) ??
         seed?.sourceKind ??
-        inferSourceKind(identifier, textureValue),
+        (preferImageAssetInfo ? 'unknown' : inferSourceKind(identifier, textureValue)),
     });
   }
 
@@ -249,6 +250,9 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
       const info = getAssetInfo(identifier);
       if (info?.textureValue) {
         return info.textureValue;
+      }
+      if (preferImageAssetInfo) {
+        return undefined;
       }
       return resolveTextureValueFromMap(identifier, options.textureMap);
     },
@@ -274,7 +278,7 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
       if (info?.filterMode) {
         return info.filterMode === 'Point';
       }
-      if (identifier) {
+      if (identifier && !preferImageAssetInfo) {
         return isGifTexture(identifier, options.textureMap);
       }
       if (resolvedTextureValue) {
