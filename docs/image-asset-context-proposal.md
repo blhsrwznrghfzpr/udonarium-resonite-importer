@@ -140,14 +140,14 @@ export type ImageAssetContext = {
 ### ローカル作業向け TODO（次の実装順）
 - [x] `AssetImporter` で `sourceKind` を推定依存にせず、登録/取り込みイベント（ZIP・known-id・外部URL・外部SVG）起点で必ず確定させる
 - [x] dry-run 経路でも `ImageAssetInfo` を一時生成できる共通ヘルパーを追加し、通常 import と同一の context 入力形式に揃える
-- [x] `createImageAssetContext` の map フォールバック（`textureMap` / `imageSourceKindMap`）を縮小し、`imageAssetInfoMap` 優先の API に段階移行する
+- [x] context 生成時の map フォールバック（`textureMap` / `imageSourceKindMap`）を縮小し、`imageAssetInfoMap` 優先の API に段階移行する
 - [x] `SlotBuilder` の `createTextureAssets` 戻り値を段階的に `Map<string, ImageAssetInfo>` 更新APIへ置き換え、componentId map を外部に露出しない形へ寄せる
 - [x] `BuildImageAssetContextOptions` の legacy 項目（`textureValueMap` など）を削除し、`imageAssetInfoMap` ベース API に一本化する
 
 ### Legacy削除計画（完了）
 1. `BuildImageAssetContextOptions` の legacy 項目（`textureValueMap` / `textureReferenceComponentMap` / `imageSourceKindMap`）を削除し、`buildImageAssetContext(...)` は `imageAssetInfoMap` ベース API のみを公開。
 2. `AssetImporter.applyTextureReferences(...)` / `SlotBuilder.createTextureAssets(...)` は削除済み。
-3. `createImageAssetContext` の legacy フォールバック検証を削除し、`imageAssetInfoMap` 前提ケースに統一。
+3. context 生成時の legacy フォールバック検証を削除し、`imageAssetInfoMap` 前提ケースに統一。
 
 ---
 
@@ -190,5 +190,5 @@ export type ImageAssetContext = {
 - `AssetImporter` は `ImageAssetInfo` を一次情報として保持し、shared texture 作成時は `SlotBuilder.createTextureAssetsWithUpdater(...)` と `applyTextureReference(...)` で直接更新する構成へ移行済み。
 - 旧API `AssetImporter.applyTextureReferences(...)` と `SlotBuilder.createTextureAssets(...)` は削除済み。
 - `BuildImageAssetContextOptions` は `imageAssetInfoMap` ベース API のみを受け付ける構成に移行済み。
-- `createImageAssetContext` も legacy 入力を廃止し、`imageAssetInfoMap` ベースで統一済み。
+- context 生成 API は `buildImageAssetContext` に一本化し、`imageAssetInfoMap` ベースで統一済み。
 - dry-run も `buildDryRunImageAssetInfoMap(...)` で `ImageAssetInfo` を生成し、通常 import と同じ context 入力形式で処理する構成へ移行済み。

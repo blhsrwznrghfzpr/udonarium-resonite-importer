@@ -22,13 +22,6 @@ export type ImageAssetInfo = {
   sourceKind?: ImageSourceKind;
 };
 
-export interface ImageAssetContextOptions {
-  imageAssetInfoMap?: Map<string, ImageAssetInfo>;
-  imageAspectRatioMap?: Map<string, number>;
-  imageBlendModeMap?: Map<string, ImageBlendMode>;
-  imageFilterModeMap?: Map<string, ImageFilterMode>;
-}
-
 export interface ImageAssetContext {
   byIdentifier: Map<string, ImageAssetInfo>;
   getAssetInfo(identifier?: string): ImageAssetInfo | undefined;
@@ -80,7 +73,7 @@ function lookupImageFilterMode(
   return lookupByKeys(imageFilterModeMap, identifier);
 }
 
-function buildIdentifierSet(options: ImageAssetContextOptions): Set<string> {
+function buildIdentifierSet(options: BuildImageAssetContextOptions): Set<string> {
   const identifiers = new Set<string>();
   for (const key of options.imageAssetInfoMap?.keys() ?? []) identifiers.add(key);
   for (const key of options.imageAspectRatioMap?.keys() ?? []) {
@@ -131,31 +124,24 @@ export interface BuildImageAssetContextOptions {
 export function buildImageAssetContext(
   options: BuildImageAssetContextOptions = {}
 ): ImageAssetContext {
-  const contextOptions: ImageAssetContextOptions = {
-    imageAssetInfoMap: options.imageAssetInfoMap,
-    imageAspectRatioMap: options.imageAspectRatioMap,
-    imageBlendModeMap: options.imageBlendModeMap,
-    imageFilterModeMap: options.imageFilterModeMap,
-  };
   const byIdentifier = new Map<string, ImageAssetInfo>();
 
-  for (const identifier of buildIdentifierSet(contextOptions)) {
-    const seed = lookupByKeys(contextOptions.imageAssetInfoMap, identifier);
+  for (const identifier of buildIdentifierSet(options)) {
+    const seed = lookupByKeys(options.imageAssetInfoMap, identifier);
     const textureValue = seed?.textureValue;
 
     byIdentifier.set(identifier, {
       identifier,
       textureValue,
       aspectRatio:
-        (contextOptions.imageAspectRatioMap
-          ? lookupImageAspectRatio(contextOptions.imageAspectRatioMap, identifier)
+        (options.imageAspectRatioMap
+          ? lookupImageAspectRatio(options.imageAspectRatioMap, identifier)
           : undefined) ?? seed?.aspectRatio,
       blendMode:
-        (contextOptions.imageBlendModeMap
-          ? lookupImageBlendMode(contextOptions.imageBlendModeMap, identifier)
+        (options.imageBlendModeMap
+          ? lookupImageBlendMode(options.imageBlendModeMap, identifier)
           : undefined) ?? seed?.blendMode,
-      filterMode:
-        lookupImageFilterMode(contextOptions.imageFilterModeMap, identifier) ?? seed?.filterMode,
+      filterMode: lookupImageFilterMode(options.imageFilterModeMap, identifier) ?? seed?.filterMode,
       sourceKind: seed?.sourceKind ?? inferSourceKind(identifier, textureValue),
     });
   }
@@ -185,17 +171,17 @@ export function buildImageAssetContext(
       if (info?.aspectRatio !== undefined) {
         return info.aspectRatio;
       }
-      if (!contextOptions.imageAspectRatioMap) {
+      if (!options.imageAspectRatioMap) {
         return undefined;
       }
-      return lookupImageAspectRatio(contextOptions.imageAspectRatioMap, identifier);
+      return lookupImageAspectRatio(options.imageAspectRatioMap, identifier);
     },
     lookupBlendMode(identifier?: string): ImageBlendMode {
       const info = getAssetInfo(identifier);
       if (info?.blendMode) {
         return info.blendMode;
       }
-      return lookupImageBlendMode(contextOptions.imageBlendModeMap, identifier);
+      return lookupImageBlendMode(options.imageBlendModeMap, identifier);
     },
     resolveUsePointFilter(identifier?: string, resolvedTextureValue?: string): boolean {
       const info = getAssetInfo(identifier);
