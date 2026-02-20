@@ -44,6 +44,16 @@ type QuadMeshOptions = {
   blendMode?: BlendModeValue;
 };
 
+function resolveBlendModeLookupIdentifier(options?: QuadMeshOptions): string | undefined {
+  if (options?.textureIdentifier) {
+    return options.textureIdentifier;
+  }
+  if (!options?.textureValue || options.textureValue.startsWith('texture-ref://')) {
+    return undefined;
+  }
+  return options.textureValue;
+}
+
 function resolveBlendMode(options?: QuadMeshOptions): BlendModeValue {
   if (options?.blendMode) {
     return options.blendMode;
@@ -51,7 +61,10 @@ function resolveBlendMode(options?: QuadMeshOptions): BlendModeValue {
   if (options?.color && options.color.a < 1) {
     return 'Alpha';
   }
-  return lookupImageBlendMode(options?.imageBlendModeMap, options?.textureIdentifier);
+  return lookupImageBlendMode(
+    options?.imageBlendModeMap,
+    resolveBlendModeLookupIdentifier(options)
+  );
 }
 
 // ---- private helpers ----

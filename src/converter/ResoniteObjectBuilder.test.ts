@@ -330,6 +330,27 @@ describe('ResoniteObjectBuilder', () => {
   });
 
   describe('addQuadMesh() with shared texture reference', () => {
+    it('uses textureIdentifier for blend lookup when textureValue is a shared reference', () => {
+      const result = makeBuilder(makeSpec('slot-lookup'))
+        .addQuadMesh(
+          toTextureReference('shared-texture-id'),
+          false,
+          { x: 1, y: 1 },
+          {
+            textureIdentifier: 'front.png',
+            imageBlendModeMap: new Map([['front.png', 'Opaque' as const]]),
+          }
+        )
+        .build();
+
+      const material = result.components.find((c) => c.type.endsWith('XiexeToonMaterial'));
+      expect(material?.fields.BlendMode).toEqual({
+        $type: 'enum',
+        value: 'Opaque',
+        enumType: 'BlendMode',
+      });
+    });
+
     it('uses shared StaticTexture2D references without creating local texture components', () => {
       const result = makeBuilder(makeSpec('slot-1'))
         .addQuadMesh(toTextureReference('shared-texture-id'))
