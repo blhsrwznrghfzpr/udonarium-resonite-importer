@@ -77,7 +77,7 @@ Surface slot (`-surface`):
   - local placeholder: `texture://<identifier>`
   - shared reference: `texture-ref://<identifier>`
 - `BlendMode` is resolved from image alpha metadata (`lookupImageBlendMode(...)`)
-  - default: `Opaque`
+  - default: `Cutout`
 
 ## 7. Multi-Table Visibility Rule
 
@@ -97,5 +97,5 @@ This ensures only selected table(s) are visible when multiple tables are present
 2. table root rotation remains `(0,0,0)`
 3. surface has `QuadMesh` + `BoxCollider`
 4. child objects under the source table are converted as root children after `-surface`
-5. blend mode follows image alpha map, fallback `Opaque`
+5. blend mode follows image alpha map, fallback `Cutout`
 6. in multi-table data, `selected=true` table is active and others are hidden

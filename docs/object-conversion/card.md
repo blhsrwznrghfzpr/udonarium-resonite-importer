@@ -95,7 +95,7 @@ Texture selection (back):
 Blend mode:
 
 - Resolved per face via `lookupImageBlendMode(...)`
-- Default fallback: `Cutout` (differs from character / dice-symbol which use `Opaque`)
+- Default fallback: `Cutout`
 
 ## 7. Validation Points
 

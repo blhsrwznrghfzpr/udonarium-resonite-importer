@@ -89,7 +89,7 @@ Texture resolution:
 Blend mode:
 
 - Resolved from image alpha metadata (`lookupImageBlendMode(...)`)
-- Fallback `Opaque` when unresolved
+- Fallback `Cutout` when unresolved
 
 ## 7. Inventory Placement (SlotBuilder)
 

@@ -62,8 +62,8 @@ Parent slot rotation:
 - Texture identifier per child face comes from `faceImages[index].identifier`
 - Material `BlendMode` is selected from image blend mode metadata:
   - known mapping/prefix value if configured (e.g. dice defaults to `Cutout`)
-  - otherwise, metadata-based fallback (`Alpha` or `Opaque`)
-  - unresolved fallback: `Opaque`
+  - otherwise, metadata-based inference (`Alpha` or `Opaque`)
+  - unresolved fallback: `Cutout`
 
 ## 7. Validation Points
 

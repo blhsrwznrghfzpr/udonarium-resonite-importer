@@ -89,7 +89,7 @@ Udonarium の `character` を Resonite の slot/component に変換する仕様�
 BlendMode:
 
 - 画像 alpha 情報（`lookupImageBlendMode(...)`）に従う
-- 未解決時は `Opaque`
+- 未解決時は `Cutout`
 
 ## 7. Inventory への振り分け（SlotBuilder）
 

@@ -77,7 +77,7 @@ table ルート slot:
   - ローカルプレースホルダ: `texture://<identifier>`
   - 共有参照: `texture-ref://<identifier>`
 - `BlendMode` は画像 alpha 情報（`lookupImageBlendMode(...)`）から決定
-  - 見つからない場合は `Opaque`
+  - 見つからない場合は `Cutout`
 
 ## 7. 複数テーブル時の表示制御
 
@@ -97,5 +97,5 @@ table ルート slot:
 2. table ルート回転が `(0,0,0)` に固定される
 3. `-surface` に `QuadMesh` と `BoxCollider` が付与される
 4. table 配下オブジェクトが `-surface` の後続子として変換される
-5. `BlendMode` が画像 alpha 情報に従い、未定義時は `Opaque`
+5. `BlendMode` が画像 alpha 情報に従い、未定義時は `Cutout`
 6. 複数 table データで `selected=true` の table が表示、他は非表示になる
