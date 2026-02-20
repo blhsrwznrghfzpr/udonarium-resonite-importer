@@ -157,71 +157,20 @@ export function buildImageFilterModeMap(
 }
 
 export interface BuildImageAssetContextOptions {
-  /** @deprecated Prefer imageAssetInfoMap. */
-  textureValueMap?: Map<string, string>;
-  /** @deprecated Prefer updating imageAssetInfoMap via AssetImporter.applyTextureReferences. */
-  textureReferenceComponentMap?: Map<string, string>;
   imageAssetInfoMap?: Map<string, ImageAssetInfo>;
-  /** @deprecated Prefer supplying precomputed filterMode in imageAssetInfoMap when possible. */
-  filterModeSourceTextureMap?: Map<string, string>;
   imageAspectRatioMap?: Map<string, number>;
   imageBlendModeMap?: Map<string, ImageBlendMode>;
   imageFilterModeMap?: Map<string, ImageFilterMode>;
-  /** @deprecated Prefer sourceKind set in imageAssetInfoMap. */
-  imageSourceKindMap?: Map<string, ImageSourceKind>;
-}
-
-let hasWarnedLegacyOptions = false;
-const STRICT_DEPRECATIONS_ENV = 'UDONARIUM_IMPORTER_STRICT_DEPRECATIONS';
-
-function shouldThrowOnDeprecatedUsage(): boolean {
-  return process.env[STRICT_DEPRECATIONS_ENV] === '1';
-}
-
-function warnLegacyBuildOptions(options: BuildImageAssetContextOptions): void {
-  const hasLegacyInput =
-    !!options.textureValueMap ||
-    !!options.textureReferenceComponentMap ||
-    !!options.imageSourceKindMap;
-
-  if (!hasLegacyInput) {
-    return;
-  }
-
-  if (shouldThrowOnDeprecatedUsage()) {
-    throw new Error(
-      '[deprecated-strict] buildImageAssetContext legacy options are forbidden. Use imageAssetInfoMap-based inputs.'
-    );
-  }
-
-  if (hasWarnedLegacyOptions) {
-    return;
-  }
-
-  hasWarnedLegacyOptions = true;
-  console.warn(
-    '[deprecated] buildImageAssetContext legacy options are in use. Prefer imageAssetInfoMap-based inputs.'
-  );
 }
 
 export function buildImageAssetContext(
   options: BuildImageAssetContextOptions = {}
 ): ImageAssetContext {
-  warnLegacyBuildOptions(options);
-  const resolvedImageFilterModeMap =
-    options.imageFilterModeMap ??
-    (options.filterModeSourceTextureMap
-      ? buildImageFilterModeMap(options.filterModeSourceTextureMap)
-      : undefined);
-
   return createImageAssetContext({
-    textureMap: options.textureValueMap,
-    textureReferenceComponentMap: options.textureReferenceComponentMap,
     imageAssetInfoMap: options.imageAssetInfoMap,
     imageAspectRatioMap: options.imageAspectRatioMap,
     imageBlendModeMap: options.imageBlendModeMap,
-    imageFilterModeMap: resolvedImageFilterModeMap,
-    imageSourceKindMap: options.imageSourceKindMap,
+    imageFilterModeMap: options.imageFilterModeMap,
   });
 }
 
@@ -317,8 +266,4 @@ export function createImageAssetContext(options: ImageAssetContextOptions = {}):
       return false;
     },
   };
-}
-
-export function __resetLegacyBuildOptionWarningForTests(): void {
-  hasWarnedLegacyOptions = false;
 }

@@ -1,54 +1,12 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-  __resetLegacyBuildOptionWarningForTests,
   buildImageFilterModeMap,
   buildImageAssetContext,
   createImageAssetContext,
   ImageFilterMode,
 } from './imageAssetContext';
 
-const STRICT_ENV_KEY = 'UDONARIUM_IMPORTER_STRICT_DEPRECATIONS';
-
 describe('imageAssetContext', () => {
-  const originalStrictEnv = process.env[STRICT_ENV_KEY];
-
-  function restoreStrictEnv(): void {
-    if (originalStrictEnv === undefined) {
-      delete process.env[STRICT_ENV_KEY];
-      return;
-    }
-    process.env[STRICT_ENV_KEY] = originalStrictEnv;
-  }
-
-  it('warns once when legacy build options are used', () => {
-    delete process.env[STRICT_ENV_KEY];
-    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
-    __resetLegacyBuildOptionWarningForTests();
-
-    buildImageAssetContext({
-      textureValueMap: new Map([['front.png', 'resdb:///front']]),
-    });
-    buildImageAssetContext({
-      textureReferenceComponentMap: new Map([['front.png', 'shared-front']]),
-    });
-
-    expect(warnSpy).toHaveBeenCalledTimes(1);
-    warnSpy.mockRestore();
-    restoreStrictEnv();
-  });
-
-  it('throws when strict deprecation mode is enabled and legacy options are used', () => {
-    process.env[STRICT_ENV_KEY] = '1';
-    __resetLegacyBuildOptionWarningForTests();
-
-    expect(() =>
-      buildImageAssetContext({
-        textureValueMap: new Map([['front.png', 'resdb:///front']]),
-      })
-    ).toThrow(/deprecated-strict/);
-    restoreStrictEnv();
-  });
-
   it('buildImageFilterModeMap marks gif identifiers as Point filter', () => {
     const map = buildImageFilterModeMap(
       new Map([
@@ -97,16 +55,22 @@ describe('imageAssetContext', () => {
     expect(context.byIdentifier.size).toBeGreaterThan(0);
   });
 
-  it('buildImageAssetContext composes filter mode map from source texture map', () => {
-    delete process.env[STRICT_ENV_KEY];
+  it('buildImageAssetContext resolves texture/filter from imageAssetInfoMap', () => {
     const context = buildImageAssetContext({
-      textureValueMap: new Map([['anim.gif', 'texture-ref://anim']]),
-      filterModeSourceTextureMap: new Map([['anim.gif', 'resdb:///anim.gif']]),
+      imageAssetInfoMap: new Map([
+        [
+          'anim.gif',
+          {
+            identifier: 'anim.gif',
+            textureValue: 'texture-ref://anim',
+            filterMode: 'Point',
+          },
+        ],
+      ]),
     });
 
     expect(context.resolveUsePointFilter('anim.gif')).toBe(true);
     expect(context.resolveTextureValue('anim.gif')).toBe('texture-ref://anim');
-    restoreStrictEnv();
   });
 
   it('prefers explicit source kind from imageAssetInfoMap over inferred source kind', () => {
