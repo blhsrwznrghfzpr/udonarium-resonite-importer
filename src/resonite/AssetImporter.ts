@@ -172,18 +172,25 @@ export class AssetImporter {
   }
 
   /**
+   * Replace a single texture value with shared texture reference.
+   */
+  applyTextureReference(identifier: string, componentId: string): void {
+    const info = this.importedImageAssetInfoMap.get(identifier);
+    if (!info) {
+      return;
+    }
+    this.importedImageAssetInfoMap.set(identifier, {
+      ...info,
+      textureValue: toTextureReference(componentId),
+    });
+  }
+
+  /**
    * Replace texture values with shared texture references when components are created.
    */
   applyTextureReferences(textureReferenceComponentMap: Map<string, string>): void {
     for (const [identifier, componentId] of textureReferenceComponentMap) {
-      const info = this.importedImageAssetInfoMap.get(identifier);
-      if (!info) {
-        continue;
-      }
-      this.importedImageAssetInfoMap.set(identifier, {
-        ...info,
-        textureValue: toTextureReference(componentId),
-      });
+      this.applyTextureReference(identifier, componentId);
     }
   }
 

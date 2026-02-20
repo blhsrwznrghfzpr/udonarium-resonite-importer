@@ -56,6 +56,11 @@ export interface SlotBuildResult {
   error?: string;
 }
 
+export type TextureReferenceUpdater = (
+  identifier: string,
+  textureComponentId: string
+) => void | Promise<void>;
+
 export class SlotBuilder {
   private client: ResoniteLinkClient;
   private rootSlotId: string;
@@ -231,10 +236,20 @@ export class SlotBuilder {
 
   async createTextureAssets(textureMap: Map<string, string>): Promise<Map<string, string>> {
     const textureReferenceMap = new Map<string, string>();
+    await this.createTextureAssetsWithUpdater(textureMap, (identifier, textureComponentId) => {
+      textureReferenceMap.set(identifier, textureComponentId);
+    });
+    return textureReferenceMap;
+  }
+
+  async createTextureAssetsWithUpdater(
+    textureMap: Map<string, string>,
+    updateTextureReference: TextureReferenceUpdater
+  ): Promise<void> {
     const importableTextures = Array.from(textureMap.entries());
 
     if (importableTextures.length === 0) {
-      return textureReferenceMap;
+      return;
     }
 
     const texturesSlotId = await this.ensureTexturesSlot();
@@ -263,10 +278,8 @@ export class SlotBuilder {
         fields: buildMainTexturePropertyBlockFields(textureComponentId),
       });
 
-      textureReferenceMap.set(identifier, textureComponentId);
+      await updateTextureReference(identifier, textureComponentId);
     }
-
-    return textureReferenceMap;
   }
 
   async createMeshAssets(meshDefinitions: SharedMeshDefinition[]): Promise<Map<string, string>> {

@@ -349,6 +349,18 @@ describe('AssetImporter', () => {
   });
 
   describe('applyTextureReferences', () => {
+    it('updates a single identifier via applyTextureReference', async () => {
+      await assetImporter.importImage(
+        createExtractedFile({ path: 'images/single-ref.png', name: 'single-ref.png' })
+      );
+
+      assetImporter.applyTextureReference('single-ref.png', 'shared-single-ref-component');
+
+      expect(assetImporter.getTextureId('single-ref.png')).toBe(
+        'texture-ref://shared-single-ref-component'
+      );
+    });
+
     it('overwrites textureValue with texture-ref for matching identifiers', async () => {
       await assetImporter.importImage(
         createExtractedFile({ path: 'images/ref.png', name: 'ref.png' })

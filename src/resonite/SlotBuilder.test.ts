@@ -500,6 +500,19 @@ describe('SlotBuilder', () => {
   });
 
   describe('createTextureAssets', () => {
+    it('can apply texture references via updater callback without exposing map', async () => {
+      const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
+      const updateTextureReference = vi.fn();
+
+      await slotBuilder.createTextureAssetsWithUpdater(textureMap, updateTextureReference);
+
+      expect(updateTextureReference).toHaveBeenCalledTimes(1);
+      expect(updateTextureReference).toHaveBeenCalledWith(
+        'card-front.png',
+        expect.stringMatching(/-static-texture$/)
+      );
+    });
+
     it('should create shared texture slots under Assets/Textures', async () => {
       const textureMap = new Map<string, string>([['card-front.png', 'resdb:///card-front']]);
 

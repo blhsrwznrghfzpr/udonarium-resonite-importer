@@ -322,8 +322,12 @@ async function run(options: CLIOptions): Promise<void> {
     }
 
     const importedTextures = assetImporter.getImportedTextures();
-    const textureReferenceComponentMap = await slotBuilder.createTextureAssets(importedTextures);
-    assetImporter.applyTextureReferences(textureReferenceComponentMap);
+    await slotBuilder.createTextureAssetsWithUpdater(
+      importedTextures,
+      (identifier, componentId) => {
+        assetImporter.applyTextureReference(identifier, componentId);
+      }
+    );
 
     // Build objects after texture asset creation so materials reference shared StaticTexture2D components.
     const imageAssetContext = assetImporter.buildImageAssetContext({
