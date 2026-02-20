@@ -73,11 +73,7 @@ export type ImageFilterMode = 'Default' | 'Point';
 
 export type ImageAssetInfo = {
   identifier: string;
-  sourcePath?: string;
-
-  // texture source
-  textureUrl?: string;          // resdb://... or external URL
-  textureReference?: string;    // texture-ref://...
+  textureValue?: string; // resdb://... | https://... | texture-ref://...
 
   // render metadata
   aspectRatio?: number;
@@ -101,12 +97,10 @@ export type ImageAssetContext = {
 
 ### Context API イメージ
 
-- `getTextureValue(identifier)`
-  - `textureReference` があればそれを優先
-  - なければ `textureUrl`
-- `getAspectRatio(identifier)`
-- `getBlendMode(identifier)`
-- `getFilterMode(identifier)`
+- `resolveTextureValue(identifier)`
+- `lookupAspectRatio(identifier)`
+- `lookupBlendMode(identifier)`
+- `resolveUsePointFilter(identifier)`
 
 ### filterMode を context に持たせる理由
 - 現状は GIF 判定と FilterMode 決定が `buildStaticTexture2DFields` 呼び出し時に散在している。
@@ -125,9 +119,9 @@ export type ImageAssetContext = {
 - `ObjectConverter` / `ResoniteObjectBuilder` / `SlotBuilder` は context API だけを参照する。
 
 ### 目指すデータフロー
-1. 取り込み時に `AssetImporter` が `identifier` ごとに `sourceKind` / `textureUrl` を確定
-2. shared texture 化後に `textureReference` を同じ `ImageAssetInfo` に反映
-3. `ImageAssetContext` が `getTextureValue/getAspectRatio/getBlendMode/getFilterMode` を提供
+1. 取り込み時に `AssetImporter` が `identifier` ごとに `sourceKind` / `textureValue` を確定
+2. shared texture 化後に `textureValue` を `texture-ref://...` へ更新
+3. `ImageAssetContext` が `resolveTextureValue/lookupAspectRatio/lookupBlendMode/resolveUsePointFilter` を提供
 4. converter/builder は map を意識せず context から取得
 
 ### 残タスク（理想形との差分）
@@ -153,15 +147,14 @@ export type ImageAssetContext = {
 
 ## 実装方針（段階移行）
 
-### Phase 1: Context 生成を追加（互換維持）
+### Phase 1: Context 生成を追加（互換維持・完了）
 - `buildImageAssetContext(...)` を追加。
-- 既存の `buildImageAspectRatioMap` / `buildImageBlendModeMap` / `textureComponentMap` 生成は残す。
-- まずは context と旧 map を並行生成し、差分ログで検証可能にする。
+- `buildImageAspectRatioMap` / `buildImageBlendModeMap` と組み合わせて context を組み立てる。
 
 ### Phase 2: Builder/Converter 参照先の置換
 - `convertObjectsWithImageAssetContext` の内部で context を使う経路を追加。
 - `addQuadMesh` オプションを `textureIdentifier + imageAssetContext` ベースへ移行。
-- `isGifTexture(...)` 依存を `getFilterMode(...)` 参照に置き換える。
+- `isGifTexture(...)` 依存を `resolveUsePointFilter(...)` 参照に置き換える。
 
 ### Phase 3: 旧 map API 廃止
 - map 個別引数を削除し、context に一本化。
