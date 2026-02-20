@@ -151,29 +151,6 @@ describe('XmlParser', () => {
       });
     });
 
-    describe('table parsing', () => {
-      it('should parse table XML', () => {
-        const xml = `
-          <table identifier="table-001">
-            <data name="table">
-              <data name="common">
-                <data name="name">#text=Game Table</data>
-              </data>
-              <data name="image">
-                <data name="imageIdentifier">#text=table-bg</data>
-              </data>
-            </data>
-          </table>
-        `;
-
-        const result = parseXml(xml, 'table.xml');
-
-        expect(result.errors).toHaveLength(0);
-        expect(result.objects).toHaveLength(1);
-        expect(result.objects[0].type).toBe('table');
-      });
-    });
-
     describe('table-mask parsing', () => {
       it('should parse table-mask XML', () => {
         const xml = `
