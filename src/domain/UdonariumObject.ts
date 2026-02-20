@@ -78,14 +78,7 @@ export interface Terrain extends BaseUdonariumObject {
  * Types that can be children of a GameTable.
  * Excludes GameTable itself to avoid circular type reference.
  */
-export type GameTableChild =
-  | GameCharacter
-  | DiceSymbol
-  | Card
-  | CardStack
-  | Terrain
-  | TableMask
-  | TextNote;
+export type GameTableChild = Terrain | TableMask;
 
 export interface GameTable extends BaseUdonariumObject {
   type: 'table';
