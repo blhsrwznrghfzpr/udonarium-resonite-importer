@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
-import { createImageAssetContext } from './imageAssetContext';
+import { buildImageAssetContext } from './imageAssetContext';
 
 function makeSpec(id = 'slot-abc') {
   return {
@@ -106,7 +106,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('resolves textureValue from imageAssetInfoMap while using textureIdentifier for blend lookup', () => {
-      const imageAssetContext = createImageAssetContext({
+      const imageAssetContext = buildImageAssetContext({
         imageAssetInfoMap: new Map([
           [
             'front.png',
@@ -137,7 +137,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('applies blendMode from imageAssetContext to the material', () => {
-      const imageAssetContext = createImageAssetContext({
+      const imageAssetContext = buildImageAssetContext({
         imageBlendModeMap: new Map([['front.png', 'Alpha' as const]]),
       });
       const result = makeBuilder(makeSpec())
@@ -258,7 +258,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('preserves existing material fields (e.g. BlendMode) alongside color', () => {
-      const imageAssetContext = createImageAssetContext({
+      const imageAssetContext = buildImageAssetContext({
         imageBlendModeMap: new Map([['front.png', 'Alpha' as const]]),
       });
       const result = makeBuilder(makeSpec())
@@ -285,7 +285,7 @@ describe('ResoniteObjectBuilder', () => {
     });
 
     it('does not add Color field when color is not given', () => {
-      const imageAssetContext = createImageAssetContext({
+      const imageAssetContext = buildImageAssetContext({
         imageBlendModeMap: new Map([['front.png', 'Alpha' as const]]),
       });
       const result = makeBuilder(makeSpec())
@@ -375,7 +375,7 @@ describe('ResoniteObjectBuilder', () => {
 
   describe('addQuadMesh() with shared texture reference', () => {
     it('uses textureIdentifier for blend lookup when textureValue is a shared reference', () => {
-      const imageAssetContext = createImageAssetContext({
+      const imageAssetContext = buildImageAssetContext({
         imageAssetInfoMap: new Map([
           [
             'front.png',

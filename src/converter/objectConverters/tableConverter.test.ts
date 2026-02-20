@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { convertTable } from './tableConverter';
 import { GameTable, Terrain } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
-import { createImageAssetContext } from '../imageAssetContext';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertTable', () => {
   it('keeps the table container unrotated and builds visual quad as a child slot', () => {
@@ -60,7 +60,7 @@ describe('convertTable', () => {
     const result = convertTable(
       udonObj,
       resoniteObj.position,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       () => convertedTerrain,
       undefined,
       resoniteObj.id
@@ -110,7 +110,7 @@ describe('convertTable', () => {
     const result = convertTable(
       udonObj,
       { x: 0, y: 0, z: 0 },
-      createImageAssetContext(),
+      buildImageAssetContext(),
       undefined,
       { enableCharacterColliderOnLockedTerrain: true },
       'slot-table-2'

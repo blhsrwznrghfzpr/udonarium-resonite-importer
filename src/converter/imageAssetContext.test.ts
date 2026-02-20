@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
-import { buildImageAssetContext, createImageAssetContext } from './imageAssetContext';
+﻿import { describe, expect, it } from 'vitest';
+import { buildImageAssetContext } from './imageAssetContext';
 
 describe('imageAssetContext', () => {
   it('context resolves texture value and filter mode via provided maps', () => {
-    const context = createImageAssetContext({
+    const context = buildImageAssetContext({
       imageAssetInfoMap: new Map([
         [
           'front.png',
@@ -34,7 +34,7 @@ describe('imageAssetContext', () => {
   });
 
   it('stores asset info in byIdentifier and can lookup normalized keys', () => {
-    const context = createImageAssetContext({
+    const context = buildImageAssetContext({
       imageAssetInfoMap: new Map([
         [
           'assets/images/trump/c01.gif',
@@ -94,7 +94,7 @@ describe('imageAssetContext', () => {
   });
 
   it('infers sourceKind from identifier and texture value', () => {
-    const context = createImageAssetContext({
+    const context = buildImageAssetContext({
       imageAssetInfoMap: new Map([
         ['character.png', { identifier: 'character.png', textureValue: 'resdb:///zip-png' }],
         ['board.svg', { identifier: 'board.svg', textureValue: 'resdb:///zip-svg' }],
@@ -151,7 +151,7 @@ describe('imageAssetContext', () => {
   });
 
   it('resolves only values stored in imageAssetInfoMap', () => {
-    const context = createImageAssetContext({
+    const context = buildImageAssetContext({
       imageAssetInfoMap: new Map([
         [
           'known_icon',

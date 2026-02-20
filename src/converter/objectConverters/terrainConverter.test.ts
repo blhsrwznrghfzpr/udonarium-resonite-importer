@@ -1,9 +1,9 @@
-import { describe, expect, it } from 'vitest';
+﻿import { describe, expect, it } from 'vitest';
 import { convertTerrain } from './terrainConverter';
 import { Terrain } from '../../domain/UdonariumObject';
 import { ResoniteObject } from '../../domain/ResoniteObject';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
-import { createImageAssetContext } from '../imageAssetContext';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertTerrain', () => {
   it('terrain (unlocked) has BoxCollider + Grabbable and creates five QuadMesh faces', () => {
@@ -35,7 +35,7 @@ describe('convertTerrain', () => {
     const result = convertTerrain(
       udonObj,
       resoniteObj.position,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       undefined,
       resoniteObj.id
     );
@@ -147,7 +147,7 @@ describe('convertTerrain', () => {
     const result = convertTerrain(
       udonObj,
       resoniteObj.position,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       undefined,
       resoniteObj.id
     );
@@ -189,7 +189,7 @@ describe('convertTerrain', () => {
     const result = convertTerrain(
       udonObj,
       { x: 0, y: 0, z: 0 },
-      createImageAssetContext(),
+      buildImageAssetContext(),
       { enableCharacterColliderOnLockedTerrain: false },
       'slot-terrain-2-no-character-collider'
     );
@@ -236,7 +236,7 @@ describe('convertTerrain', () => {
     const result = convertTerrain(
       udonObj,
       resoniteObj.position,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       undefined,
       resoniteObj.id
     );
@@ -296,7 +296,7 @@ describe('convertTerrain', () => {
     const result = convertTerrain(
       udonObj,
       resoniteObj.position,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       undefined,
       resoniteObj.id
     );

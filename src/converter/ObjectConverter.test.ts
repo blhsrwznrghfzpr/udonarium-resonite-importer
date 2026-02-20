@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+﻿import { describe, it, expect } from 'vitest';
 import {
   convertPosition,
   convertSize,
@@ -17,14 +17,14 @@ import type {
   TextNote,
 } from '../domain/UdonariumObject';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
-import { createImageAssetContext, ImageAssetInfo } from './imageAssetContext';
+import { buildImageAssetContext, ImageAssetInfo } from './imageAssetContext';
 
 function makeContext(options?: {
   imageAssetInfoMap?: Map<string, ImageAssetInfo>;
   imageAspectRatioMap?: Map<string, number>;
   imageBlendModeMap?: Map<string, 'Cutout' | 'Opaque' | 'Alpha'>;
-}): ReturnType<typeof createImageAssetContext> {
-  return createImageAssetContext({
+}): ReturnType<typeof buildImageAssetContext> {
+  return buildImageAssetContext({
     imageAssetInfoMap: options?.imageAssetInfoMap,
     imageAspectRatioMap: options?.imageAspectRatioMap,
     imageBlendModeMap: options?.imageBlendModeMap,

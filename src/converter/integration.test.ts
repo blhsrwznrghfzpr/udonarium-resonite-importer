@@ -1,4 +1,4 @@
-import * as path from 'path';
+﻿import * as path from 'path';
 import { describe, expect, it } from 'vitest';
 import { ResoniteObject } from '../domain/ResoniteObject';
 import { extractZip } from '../parser/ZipExtractor';
@@ -6,7 +6,7 @@ import { parseXmlFiles } from '../parser/XmlParser';
 import { buildImageAspectRatioMap, buildImageBlendModeMap } from './imageAspectRatioMap';
 import { convertObjectsWithImageAssetContext } from './ObjectConverter';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
-import { createImageAssetContext } from './imageAssetContext';
+import { buildImageAssetContext } from './imageAssetContext';
 
 const SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI = process.env.CI === 'true';
 const SAMPLE_DICE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-dice.zip');
@@ -37,7 +37,7 @@ async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> 
   const parsed = parseXmlFiles(extracted.xmlFiles.map((f) => ({ name: f.name, data: f.data })));
   const imageAspectRatioMap = await buildImageAspectRatioMap(extracted.imageFiles, parsed.objects);
   const imageBlendModeMap = await buildImageBlendModeMap(extracted.imageFiles, parsed.objects);
-  const imageAssetContext = createImageAssetContext({
+  const imageAssetContext = buildImageAssetContext({
     imageAspectRatioMap,
     imageBlendModeMap,
   });

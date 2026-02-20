@@ -3,7 +3,7 @@ import { convertCharacter } from './characterConverter';
 import { GameCharacter } from '../../domain/UdonariumObject';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
-import { createImageAssetContext } from '../imageAssetContext';
+import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertCharacter', () => {
   it('converts character and generates quad mesh, material, and collider', () => {
@@ -34,7 +34,7 @@ describe('convertCharacter', () => {
       udonObj,
       resoniteObj.position,
       convertSize,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -108,7 +108,7 @@ describe('convertCharacter', () => {
       udonObj,
       resoniteObj.position,
       convertSize,
-      createImageAssetContext(),
+      buildImageAssetContext(),
       resoniteObj.id
     );
 
@@ -146,7 +146,7 @@ describe('convertCharacter', () => {
       udonObj,
       resoniteObj.position,
       convertSize,
-      createImageAssetContext({ imageAspectRatioMap }),
+      buildImageAssetContext({ imageAspectRatioMap }),
       resoniteObj.id
     );
 
