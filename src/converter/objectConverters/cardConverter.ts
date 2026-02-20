@@ -2,7 +2,7 @@ import { Card } from '../../domain/UdonariumObject';
 import { ImageBlendMode } from '../../config/MappingConfig';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { resolveTextureValue } from '../textureUtils';
-import { lookupImageAspectRatio, lookupImageBlendMode } from '../imageAspectRatioMap';
+import { lookupImageAspectRatio } from '../imageAspectRatioMap';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 
 const CARD_Y_OFFSET = 0.001;
@@ -89,8 +89,6 @@ export function convertCard(
   const backTextureIdentifier = resolveBackTextureIdentifier(udonObj);
   const frontTextureValue = resolveTextureValue(frontTextureIdentifier, textureMap);
   const backTextureValue = resolveTextureValue(backTextureIdentifier, textureMap);
-  const frontBlendMode = lookupImageBlendMode(imageBlendModeMap, frontTextureIdentifier);
-  const backBlendMode = lookupImageBlendMode(imageBlendModeMap, backTextureIdentifier);
 
   // Udonarium positions are edge-based; Resonite uses center-based transforms.
   // Slight Y offset so cards don't z-fight with the table surface.
@@ -120,7 +118,15 @@ export function convertCard(
     // Align top edges when front/back heights differ.
     .setPosition({ x: 0, y: CARD_FACE_SEPARATION, z: frontZOffset })
     .setRotation({ x: 90, y: 0, z: 0 })
-    .addQuadMesh(frontTextureValue, false, { x: cardWidth, y: frontHeight }, frontBlendMode)
+    .addQuadMesh(
+      frontTextureValue,
+      false,
+      { x: cardWidth, y: frontHeight },
+      {
+        textureIdentifier: frontTextureIdentifier,
+        imageBlendModeMap,
+      }
+    )
     .build();
 
   const backSlot = ResoniteObjectBuilder.create({
@@ -130,7 +136,15 @@ export function convertCard(
     // Align top edges when front/back heights differ.
     .setPosition({ x: 0, y: -CARD_FACE_SEPARATION, z: backZOffset })
     .setRotation({ x: -90, y: 180, z: 0 })
-    .addQuadMesh(backTextureValue, false, { x: cardWidth, y: backHeight }, backBlendMode)
+    .addQuadMesh(
+      backTextureValue,
+      false,
+      { x: cardWidth, y: backHeight },
+      {
+        textureIdentifier: backTextureIdentifier,
+        imageBlendModeMap,
+      }
+    )
     .build();
 
   return (

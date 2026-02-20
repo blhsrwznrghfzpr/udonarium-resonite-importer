@@ -8,9 +8,10 @@ import {
   parseTextureReferenceId,
   toSharedTexturePropertyBlockId,
 } from './textureUtils';
-import { SLOT_ID_PREFIX } from '../config/MappingConfig';
+import { ImageBlendMode, SLOT_ID_PREFIX } from '../config/MappingConfig';
 import { COMPONENT_TYPES } from '../config/ResoniteComponentTypes';
 import { buildStaticTexture2DFields, buildMainTexturePropertyBlockFields } from './componentFields';
+import { lookupImageBlendMode } from './imageAspectRatioMap';
 
 // ---- private types ----
 type QuadSize = { x: number; y: number };
@@ -32,6 +33,36 @@ type XiexeToonMaterialFields = {
   Culling?: { $type: 'enum'; value: 'Off'; enumType: 'Culling' };
   Color?: { $type: 'colorX'; value: ColorXValue };
 };
+
+type QuadMaterialOptions = {
+  color?: ColorXValue;
+  textureIdentifier?: string;
+  imageBlendModeMap?: Map<string, ImageBlendMode>;
+  blendMode?: BlendModeValue;
+};
+
+function normalizeQuadMaterialOptions(
+  blendModeOrOptions?: BlendModeValue | QuadMaterialOptions,
+  color?: ColorXValue
+): QuadMaterialOptions {
+  if (!blendModeOrOptions) {
+    return color ? { color } : {};
+  }
+  if (typeof blendModeOrOptions === 'string') {
+    return { blendMode: blendModeOrOptions, color };
+  }
+  return blendModeOrOptions;
+}
+
+function resolveBlendMode(options?: QuadMaterialOptions): BlendModeValue {
+  if (options?.blendMode) {
+    return options.blendMode;
+  }
+  if (options?.color && options.color.a < 1) {
+    return 'Alpha';
+  }
+  return lookupImageBlendMode(options?.imageBlendModeMap, options?.textureIdentifier);
+}
 
 // ---- private helpers ----
 function createBlendModeField(blendMode: BlendModeValue): BlendModeField {
@@ -57,7 +88,7 @@ function buildQuadMeshComponents(
   textureValue?: string,
   dualSided: boolean = false,
   size: QuadSize = { x: 1, y: 1 },
-  blendMode: BlendModeValue = 'Cutout',
+  blendModeOrOptions?: BlendModeValue | QuadMaterialOptions,
   color?: ColorXValue
 ): ResoniteComponent[] {
   const meshId = `${slotId}-mesh`;
@@ -71,6 +102,7 @@ function buildQuadMeshComponents(
       ? toSharedTexturePropertyBlockId(sharedTextureId)
       : textureBlockId
     : undefined;
+  const materialOptions = normalizeQuadMaterialOptions(blendModeOrOptions, color);
 
   const components: ResoniteComponent[] = [
     {
@@ -93,7 +125,11 @@ function buildQuadMeshComponents(
   components.push({
     id: materialId,
     type: COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
-    fields: buildXiexeToonMaterialFields(blendMode, color, dualSided),
+    fields: buildXiexeToonMaterialFields(
+      resolveBlendMode(materialOptions),
+      materialOptions.color,
+      dualSided
+    ),
   });
 
   if (textureValue && !sharedTextureId) {
@@ -227,11 +263,18 @@ export class ResoniteObjectBuilder {
     textureValue?: string,
     dualSided = false,
     size: QuadSize = { x: 1, y: 1 },
-    blendMode: BlendModeValue = 'Cutout',
+    blendModeOrOptions?: BlendModeValue | QuadMaterialOptions,
     color?: ColorXValue
   ): this {
     this.obj.components.push(
-      ...buildQuadMeshComponents(this.obj.id, textureValue, dualSided, size, blendMode, color)
+      ...buildQuadMeshComponents(
+        this.obj.id,
+        textureValue,
+        dualSided,
+        size,
+        blendModeOrOptions,
+        color
+      )
     );
     return this;
   }
