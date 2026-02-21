@@ -3,6 +3,7 @@
  */
 
 import { Terrain, ImageRef } from '../../domain/UdonariumObject';
+import { TerrainLilyExtension } from '../extensions/ObjectExtensions';
 import {
   findDataByName,
   getTextValue,
@@ -61,5 +62,17 @@ export function parseTerrain(data: unknown, fileName: string): Terrain {
     images,
     wallImage,
     floorImage,
+  };
+}
+
+export function parseTerrainLilyExtension(data: unknown): TerrainLilyExtension {
+  const root = data as Record<string, unknown>;
+  const terrainData = findDataByName(root.data, 'terrain');
+  const commonData = findDataByName(terrainData, 'common');
+
+  return {
+    altitude: getNumberValue(findDataByName(commonData, 'altitude')) ?? 0,
+    isSlope: getBooleanValue(root['@_isSlope']) ?? false,
+    slopeDirection: getNumberValue(root['@_slopeDirection']) ?? 0,
   };
 }

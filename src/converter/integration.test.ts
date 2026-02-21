@@ -23,6 +23,12 @@ const SAMPLE_TERRAIN_ZIP_PATH = path.join(
   '__fixtures__',
   'sample-terrain.zip'
 );
+const SAMPLE_TERRAIN_LILY_ZIP_PATH = path.join(
+  process.cwd(),
+  'src',
+  '__fixtures__',
+  'sample-terrain-lily.zip'
+);
 const SAMPLE_TABLE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-table.zip');
 const SAMPLE_CHARACTER_ZIP_PATH = path.join(
   process.cwd(),
@@ -41,7 +47,12 @@ async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> 
     imageAspectRatioMap,
     imageBlendModeMap,
   });
-  return convertObjectsWithImageAssetContext(parsed.objects, imageAssetContext);
+  return convertObjectsWithImageAssetContext(
+    parsed.objects,
+    imageAssetContext,
+    undefined,
+    parsed.extensions
+  );
 }
 
 function flattenObjects(objects: ResoniteObject[]): ResoniteObject[] {
@@ -171,6 +182,30 @@ describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
             terrain.components.some((c) => c.type === COMPONENT_TYPES.GRABBABLE)
           )
         ).toBe(true);
+      },
+      CONVERTER_INTEGRATION_TIMEOUT
+    );
+  }
+);
+
+describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
+  'Converter integration (sample-terrain-lily.zip)',
+  () => {
+    it(
+      'applies lily altitude extension to converted terrain root position',
+      async () => {
+        const converted = await loadConvertedFromZip(SAMPLE_TERRAIN_LILY_ZIP_PATH);
+        const flattened = flattenObjects(converted);
+
+        const altitudeTerrain = flattened.find(
+          (obj) =>
+            obj.sourceType === 'terrain' &&
+            obj.position.x === 16 &&
+            obj.position.y === 0.5 &&
+            obj.position.z === -8
+        );
+
+        expect(altitudeTerrain).toBeDefined();
       },
       CONVERTER_INTEGRATION_TIMEOUT
     );

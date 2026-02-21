@@ -376,4 +376,33 @@ describe('convertTerrain', () => {
     expect(result.children.some((child) => child.id.endsWith('-left'))).toBe(false);
     expect(result.children.some((child) => child.id.endsWith('-right'))).toBe(false);
   });
+
+  it('applies lily altitude extension to root Y position', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-altitude',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      name: 'Altitude Terrain',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-altitude',
+      { altitude: -0.5, isSlope: false, slopeDirection: 0 }
+    );
+
+    expect(result.position).toEqual({ x: 1, y: 0.5, z: -1 });
+  });
 });

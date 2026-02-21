@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseTerrain } from './TerrainParser';
+import { parseTerrain, parseTerrainLilyExtension } from './TerrainParser';
 
 describe('TerrainParser', () => {
   describe('parseTerrain', () => {
@@ -357,6 +357,49 @@ describe('TerrainParser', () => {
       expect(result.wallImage).toBeNull();
       expect(result.floorImage).toBeNull();
       expect(result.images).toHaveLength(0);
+    });
+  });
+
+  describe('parseTerrainLilyExtension', () => {
+    it('should parse altitude/isSlope/slopeDirection', () => {
+      const data = {
+        '@_isSlope': 'true',
+        '@_slopeDirection': '4',
+        data: [
+          {
+            '@_name': 'terrain',
+            data: [
+              {
+                '@_name': 'common',
+                data: [{ '@_name': 'altitude', '#text': '-0.5' }],
+              },
+            ],
+          },
+        ],
+      };
+
+      const result = parseTerrainLilyExtension(data);
+
+      expect(result.altitude).toBe(-0.5);
+      expect(result.isSlope).toBe(true);
+      expect(result.slopeDirection).toBe(4);
+    });
+
+    it('should default to 0/false/0 when not provided', () => {
+      const data = {
+        data: [
+          {
+            '@_name': 'terrain',
+            data: [],
+          },
+        ],
+      };
+
+      const result = parseTerrainLilyExtension(data);
+
+      expect(result.altitude).toBe(0);
+      expect(result.isSlope).toBe(false);
+      expect(result.slopeDirection).toBe(0);
     });
   });
 });

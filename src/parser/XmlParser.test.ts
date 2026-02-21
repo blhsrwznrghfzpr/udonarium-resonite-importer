@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseXml, parseXmlFiles } from './XmlParser';
 import { Terrain, GameCharacter, TextNote } from '../domain/UdonariumObject';
+import { buildTerrainExtensionKey } from './extensions/ObjectExtensions';
 
 describe('XmlParser', () => {
   describe('parseXml', () => {
@@ -148,6 +149,34 @@ describe('XmlParser', () => {
         expect(result.errors).toHaveLength(0);
         expect(result.objects).toHaveLength(1);
         expect(result.objects[0].type).toBe('terrain');
+      });
+
+      it('should collect lily terrain extension metadata', () => {
+        const xml = `
+          <terrain identifier="terrain-lily-001" isSlope="true" slopeDirection="2">
+            <data name="terrain">
+              <data name="common">
+                <data name="name">#text=Lily Terrain</data>
+                <data name="altitude">-0.5</data>
+              </data>
+            </data>
+          </terrain>
+        `;
+
+        const result = parseXml(xml, 'terrain-lily.xml');
+        const terrain = result.objects[0];
+        expect(terrain?.type).toBe('terrain');
+        if (terrain?.type !== 'terrain') {
+          throw new Error('Expected terrain');
+        }
+
+        expect(result.extensions.terrainLilyByObjectKey[buildTerrainExtensionKey(terrain)]).toEqual(
+          {
+            altitude: -0.5,
+            isSlope: true,
+            slopeDirection: 2,
+          }
+        );
       });
     });
 

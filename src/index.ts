@@ -224,7 +224,8 @@ async function run(options: CLIOptions): Promise<void> {
       imageAssetContext,
       {
         enableCharacterColliderOnLockedTerrain: options.enableCharacterColliderOnLockedTerrain,
-      }
+      },
+      parseResult.extensions
     );
 
     console.log();
@@ -333,7 +334,8 @@ async function run(options: CLIOptions): Promise<void> {
       imageAssetContext,
       {
         enableCharacterColliderOnLockedTerrain: options.enableCharacterColliderOnLockedTerrain,
-      }
+      },
+      parseResult.extensions
     );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);

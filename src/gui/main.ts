@@ -253,7 +253,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     const resoniteObjects = convertObjectsWithImageAssetContext(
       parseResult.objects,
       imageAssetContext,
-      { enableCharacterColliderOnLockedTerrain }
+      { enableCharacterColliderOnLockedTerrain },
+      parseResult.extensions
     );
     const sharedMeshDefinitions = prepareSharedMeshDefinitions(resoniteObjects);
     const meshReferenceMap = await slotBuilder.createMeshAssets(sharedMeshDefinitions);

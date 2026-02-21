@@ -9,6 +9,12 @@ import { parseXml, parseXmlFiles } from './XmlParser';
 
 // Use process.cwd() since Vitest runs from project root
 const SAMPLE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-all-object.zip');
+const SAMPLE_TERRAIN_LILY_ZIP_PATH = path.join(
+  process.cwd(),
+  'src',
+  '__fixtures__',
+  'sample-terrain-lily.zip'
+);
 
 describe('Integration: Sample Save Data', () => {
   describe('extractZip with sample data', () => {
@@ -170,6 +176,23 @@ describe('Integration: Sample Save Data', () => {
 
       // Should find objects from data.xml (some are nested in game-table children)
       expect(result.objects.length).toBeGreaterThanOrEqual(3);
+    });
+  });
+
+  describe('parseXmlFiles with sample-terrain-lily.zip', () => {
+    it('collects terrain lily extension metadata including altitude and slope', () => {
+      const extracted = extractZip(SAMPLE_TERRAIN_LILY_ZIP_PATH);
+      const result = parseXmlFiles(
+        extracted.xmlFiles.map((f) => ({
+          name: f.name,
+          data: f.data,
+        }))
+      );
+
+      const terrainExtensions = Object.values(result.extensions.terrainLilyByObjectKey);
+      expect(terrainExtensions.length).toBeGreaterThan(0);
+      expect(terrainExtensions.some((extension) => extension.altitude === -0.5)).toBe(true);
+      expect(terrainExtensions.some((extension) => extension.isSlope === true)).toBe(true);
     });
   });
 

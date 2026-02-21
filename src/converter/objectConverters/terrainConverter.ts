@@ -2,6 +2,7 @@ import { Terrain } from '../../domain/UdonariumObject';
 import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 import { ImageAssetContext } from '../imageAssetContext';
+import { TerrainLilyExtension } from '../../parser/extensions/ObjectExtensions';
 
 function hasPositiveSize(size: { x: number; y: number }): boolean {
   return size.x > 0 && size.y > 0;
@@ -38,7 +39,8 @@ export function convertTerrain(
   basePosition: Vector3,
   imageAssetContext: ImageAssetContext,
   options?: { enableCharacterColliderOnLockedTerrain?: boolean },
-  slotId?: string
+  slotId?: string,
+  terrainLilyExtension?: TerrainLilyExtension
 ): ResoniteObject {
   const topTextureIdentifier =
     udonObj.floorImage?.identifier ??
@@ -64,9 +66,10 @@ export function convertTerrain(
   const leftId = `${mainBuilder.getId()}-left`;
   const rightId = `${mainBuilder.getId()}-right`;
   const hideWalls = udonObj.mode === 1;
+  const altitude = terrainLilyExtension?.altitude ?? 0;
   mainBuilder.setPosition({
     x: basePosition.x + udonObj.width / 2,
-    y: basePosition.y + (hideWalls ? udonObj.height : udonObj.height / 2),
+    y: basePosition.y + altitude + (hideWalls ? udonObj.height : udonObj.height / 2),
     z: basePosition.z - udonObj.depth / 2,
   });
 
