@@ -313,6 +313,23 @@ function buildBoxColliderComponent(
   };
 }
 
+function buildTriangleColliderComponent(
+  slotId: string,
+  vertices: [TriangleVertex, TriangleVertex, TriangleVertex],
+  options?: { characterCollider?: boolean }
+): ResoniteComponent {
+  return {
+    id: `${slotId}-collider`,
+    type: COMPONENT_TYPES.TRIANGLE_COLLIDER,
+    fields: {
+      A: { $type: 'float3', value: vertices[0] },
+      B: { $type: 'float3', value: vertices[1] },
+      C: { $type: 'float3', value: vertices[2] },
+      ...(options?.characterCollider ? { CharacterCollider: { $type: 'bool', value: true } } : {}),
+    },
+  };
+}
+
 function buildGrabbableComponent(slotId: string): ResoniteComponent {
   return {
     id: `${slotId}-grabbable`,
@@ -411,6 +428,14 @@ export class ResoniteObjectBuilder {
 
   addBoxCollider(size: BoxSize, options?: { characterCollider?: boolean }): this {
     this.obj.components.push(buildBoxColliderComponent(this.obj.id, size, options));
+    return this;
+  }
+
+  addTriangleCollider(
+    vertices: [TriangleVertex, TriangleVertex, TriangleVertex],
+    options?: { characterCollider?: boolean }
+  ): this {
+    this.obj.components.push(buildTriangleColliderComponent(this.obj.id, vertices, options));
     return this;
   }
 

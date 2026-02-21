@@ -419,12 +419,27 @@ describe('convertTerrain', () => {
 
     const topFace = result.children.find((child) => child.id.endsWith('-top'));
     const topMesh = topFace?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(
+      result.components.some((component) => component.type === COMPONENT_TYPES.BOX_COLLIDER)
+    ).toBe(false);
     expect(topFace?.rotation).toEqual({ x: 90, y: 0, z: 0 });
     expect(topMesh?.rotation.x).toBeCloseTo(45, 4);
     expect(topFace?.position.y).toBe(0);
-    expect(topMesh?.components[0].fields).toEqual({
+    const topMeshQuad = topMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.QUAD_MESH
+    );
+    expect(topMeshQuad?.fields).toEqual({
       Size: { $type: 'float2', value: { x: 2, y: 2.8284 } },
     });
+    const topMeshCollider = topMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.BOX_COLLIDER
+    );
+    const topMeshColliderSize = topMeshCollider?.fields.Size as
+      | { value?: { x?: number; y?: number; z?: number } }
+      | undefined;
+    expect(topMeshColliderSize?.value?.x).toBe(2);
+    expect(topMeshColliderSize?.value?.y).toBeCloseTo(2.8284, 4);
+    expect(topMeshColliderSize?.value?.z).toBe(0.01);
     const topMeshMaterial = topMesh?.components.find(
       (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
     );
@@ -435,8 +450,20 @@ describe('convertTerrain', () => {
     });
     const leftWall = result.children.find((child) => child.id.endsWith('-left'));
     const rightWall = result.children.find((child) => child.id.endsWith('-right'));
-    expect(leftWall?.components[0].type).toBe(COMPONENT_TYPES.TRIANGLE_MESH);
-    expect(rightWall?.components[0].type).toBe(COMPONENT_TYPES.TRIANGLE_MESH);
+    expect(
+      leftWall?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      leftWall?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER)
+    ).toBe(true);
+    expect(
+      rightWall?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      rightWall?.components.some(
+        (component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER
+      )
+    ).toBe(true);
     expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
     expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(true);
   });
@@ -497,14 +524,31 @@ describe('convertTerrain', () => {
     );
     const bottomTop = bottom.children.find((child) => child.id.endsWith('-top'));
     const bottomTopMesh = bottomTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(
+      bottom.components.some((component) => component.type === COMPONENT_TYPES.BOX_COLLIDER)
+    ).toBe(false);
     expect(bottomTopMesh?.rotation.x).toBeCloseTo(-45, 4);
     expect(bottom.children.some((child) => child.id.endsWith('-front'))).toBe(false);
-    expect(bottom.children.find((child) => child.id.endsWith('-left'))?.components[0].type).toBe(
-      COMPONENT_TYPES.TRIANGLE_MESH
-    );
-    expect(bottom.children.find((child) => child.id.endsWith('-right'))?.components[0].type).toBe(
-      COMPONENT_TYPES.TRIANGLE_MESH
-    );
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-left'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-left'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER)
+    ).toBe(true);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-right'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-right'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER)
+    ).toBe(true);
 
     const left = convertTerrain(
       baseTerrain,
@@ -517,23 +561,31 @@ describe('convertTerrain', () => {
     const leftTop = left.children.find((child) => child.id.endsWith('-top'));
     const leftTopMesh = leftTop?.children.find((child) => child.id.endsWith('-top-mesh'));
     expect(leftTopMesh?.rotation.y).toBeCloseTo(45, 4);
-    expect(leftTopMesh?.components[0].fields).toEqual({
+    const leftTopQuad = leftTopMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.QUAD_MESH
+    );
+    expect(leftTopQuad?.fields).toEqual({
       Size: { $type: 'float2', value: { x: 2.8284, y: 2 } },
     });
     expect(left.children.some((child) => child.id.endsWith('-left'))).toBe(false);
-    expect(left.children.find((child) => child.id.endsWith('-front'))?.components[0].type).toBe(
-      COMPONENT_TYPES.TRIANGLE_MESH
-    );
-    expect(left.children.find((child) => child.id.endsWith('-back'))?.components[0].type).toBe(
-      COMPONENT_TYPES.TRIANGLE_MESH
-    );
+    expect(
+      left.children
+        .find((child) => child.id.endsWith('-front'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      left.children
+        .find((child) => child.id.endsWith('-back'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
     expect(left.children.find((child) => child.id.endsWith('-back'))?.scale).toEqual({
       x: -1,
       y: 1,
       z: 1,
     });
-    const leftBackTriangle = left.children.find((child) => child.id.endsWith('-back'))
-      ?.components[0] as {
+    const leftBackTriangle = left.children
+      .find((child) => child.id.endsWith('-back'))
+      ?.components.find((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH) as {
       fields?: { Vertex2?: { members?: { Position?: { value?: { x?: number } } } } };
     };
     expect(leftBackTriangle.fields?.Vertex2?.members?.Position?.value?.x).toBe(1);
@@ -550,19 +602,24 @@ describe('convertTerrain', () => {
     const rightTopMesh = rightTop?.children.find((child) => child.id.endsWith('-top-mesh'));
     expect(rightTopMesh?.rotation.y).toBeCloseTo(-45, 4);
     expect(right.children.some((child) => child.id.endsWith('-right'))).toBe(false);
-    expect(right.children.find((child) => child.id.endsWith('-front'))?.components[0].type).toBe(
-      COMPONENT_TYPES.TRIANGLE_MESH
-    );
-    expect(right.children.find((child) => child.id.endsWith('-back'))?.components[0].type).toBe(
-      COMPONENT_TYPES.TRIANGLE_MESH
-    );
+    expect(
+      right.children
+        .find((child) => child.id.endsWith('-front'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      right.children
+        .find((child) => child.id.endsWith('-back'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
     expect(right.children.find((child) => child.id.endsWith('-back'))?.scale).toEqual({
       x: -1,
       y: 1,
       z: 1,
     });
-    const rightBackTriangle = right.children.find((child) => child.id.endsWith('-back'))
-      ?.components[0] as {
+    const rightBackTriangle = right.children
+      .find((child) => child.id.endsWith('-back'))
+      ?.components.find((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH) as {
       fields?: { Vertex2?: { members?: { Position?: { value?: { x?: number } } } } };
     };
     expect(rightBackTriangle.fields?.Vertex2?.members?.Position?.value?.x).toBe(-1);
@@ -571,8 +628,9 @@ describe('convertTerrain', () => {
       y: 1,
       z: 1,
     });
-    const bottomLeftTriangle = bottom.children.find((child) => child.id.endsWith('-left'))
-      ?.components[0] as {
+    const bottomLeftTriangle = bottom.children
+      .find((child) => child.id.endsWith('-left'))
+      ?.components.find((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH) as {
       fields?: { Vertex2?: { members?: { Position?: { value?: { x?: number } } } } };
     };
     expect(bottomLeftTriangle.fields?.Vertex2?.members?.Position?.value?.x).toBe(1);

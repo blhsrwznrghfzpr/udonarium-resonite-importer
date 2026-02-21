@@ -252,6 +252,29 @@ describe('ResoniteObjectBuilder', () => {
     });
   });
 
+  describe('addTriangleCollider()', () => {
+    it('adds TriangleCollider with A/B/C vertices', () => {
+      const result = makeBuilder(makeSpec('tri-col'))
+        .addTriangleCollider(
+          [
+            { x: -1, y: -1, z: 0 },
+            { x: 1, y: -1, z: 0 },
+            { x: 0, y: 1, z: 0 },
+          ],
+          { characterCollider: true }
+        )
+        .build();
+
+      const collider = result.components.find((c) => c.type === COMPONENT_TYPES.TRIANGLE_COLLIDER);
+      expect(collider?.fields).toEqual({
+        A: { $type: 'float3', value: { x: -1, y: -1, z: 0 } },
+        B: { $type: 'float3', value: { x: 1, y: -1, z: 0 } },
+        C: { $type: 'float3', value: { x: 0, y: 1, z: 0 } },
+        CharacterCollider: { $type: 'bool', value: true },
+      });
+    });
+  });
+
   describe('addGrabbable()', () => {
     it('derives the component ID from the slot ID', () => {
       const result = makeBuilder(makeSpec('s3')).addGrabbable().build();
