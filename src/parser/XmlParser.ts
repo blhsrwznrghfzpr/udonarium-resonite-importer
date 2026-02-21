@@ -8,9 +8,15 @@ import { SUPPORTED_TAGS } from '../config/MappingConfig';
 import { parseCharacter } from './objects/CharacterParser';
 import { parseDiceSymbol } from './objects/DiceSymbolParser';
 import { parseCard, parseCardStack } from './objects/CardParser';
-import { parseTerrain } from './objects/TerrainParser';
+import { parseTerrain, parseTerrainLilyExtension } from './objects/TerrainParser';
 import { parseGameTable, parseTableMask } from './objects/TableParser';
 import { parseTextNote } from './objects/TextNoteParser';
+import {
+  ParsedObjectExtensions,
+  buildTerrainExtensionKey,
+  createEmptyParsedObjectExtensions,
+  mergeParsedObjectExtensions,
+} from './extensions/ObjectExtensions';
 
 /**
  * Container tags whose XML children should not be recursed into.
@@ -32,6 +38,7 @@ const parser = new XMLParser({
 export interface ParseResult {
   objects: UdonariumObject[];
   errors: ParseError[];
+  extensions: ParsedObjectExtensions;
 }
 
 export interface ParseError {
@@ -67,10 +74,21 @@ function findObjectsRecursively(data: unknown, fileName: string, result: ParseRe
       if (parsed) {
         // game-table: collect child objects into GameTable.children
         if (tag === 'game-table') {
-          const childResult: ParseResult = { objects: [], errors: [] };
+          const childResult: ParseResult = {
+            objects: [],
+            errors: [],
+            extensions: createEmptyParsedObjectExtensions(),
+          };
           findObjectsRecursively(item, fileName, childResult);
           (parsed as GameTable).children = childResult.objects as GameTableChild[];
           result.errors.push(...childResult.errors);
+          mergeParsedObjectExtensions(result.extensions, childResult.extensions);
+        }
+        if (tag === 'terrain') {
+          if (parsed.type === 'terrain') {
+            result.extensions.terrainLilyByObjectKey[buildTerrainExtensionKey(parsed)] =
+              parseTerrainLilyExtension(item);
+          }
         }
         result.objects.push(parsed);
       }
@@ -105,6 +123,7 @@ export function parseXml(xmlContent: string, fileName: string): ParseResult {
   const result: ParseResult = {
     objects: [],
     errors: [],
+    extensions: createEmptyParsedObjectExtensions(),
   };
 
   try {
@@ -165,6 +184,7 @@ export function parseXmlFiles(files: { name: string; data: Buffer }[]): ParseRes
   const result: ParseResult = {
     objects: [],
     errors: [],
+    extensions: createEmptyParsedObjectExtensions(),
   };
 
   for (const file of files) {
@@ -172,6 +192,7 @@ export function parseXmlFiles(files: { name: string; data: Buffer }[]): ParseRes
     const parsed = parseXml(xmlContent, file.name);
     result.objects.push(...parsed.objects);
     result.errors.push(...parsed.errors);
+    mergeParsedObjectExtensions(result.extensions, parsed.extensions);
   }
 
   return result;

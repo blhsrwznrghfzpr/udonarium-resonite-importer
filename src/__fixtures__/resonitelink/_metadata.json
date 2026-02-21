@@ -1,12 +1,12 @@
 {
-  "collectedAt": "2026-02-19T12:53:30.923Z",
+  "collectedAt": "2026-02-21T13:08:29.898Z",
   "resoniteLinkVersion": "0.8.3.0",
   "responses": {
-    "totalFiles": 44,
+    "totalFiles": 48,
     "categories": {
       "root": 8,
-      "components": 16,
-      "reflection": 20
+      "components": 18,
+      "reflection": 22
     },
     "files": [
       {
@@ -15,7 +15,7 @@
       },
       {
         "path": "reflection/getComponentTypeList-root-response.json",
-        "bytes": 713
+        "bytes": 672
       },
       {
         "path": "reflection/getComponentTypeList-all-response.json",
@@ -40,6 +40,10 @@
       {
         "path": "reflection/getComponentDefinition-BoxMesh-response.json",
         "bytes": 3506
+      },
+      {
+        "path": "reflection/getComponentDefinition-TriangleMesh-response.json",
+        "bytes": 4198
       },
       {
         "path": "reflection/getComponentDefinition-MeshRenderer-response.json",
@@ -74,6 +78,10 @@
         "bytes": 3356
       },
       {
+        "path": "reflection/getComponentDefinition-TriangleCollider-response.json",
+        "bytes": 3681
+      },
+      {
         "path": "reflection/getComponentDefinition-SimpleAvatarProtection-response.json",
         "bytes": 2686
       },
@@ -99,11 +107,11 @@
       },
       {
         "path": "getSlot-response.json",
-        "bytes": 1133
+        "bytes": 1124
       },
       {
         "path": "getSlot-depth-response.json",
-        "bytes": 1133
+        "bytes": 1124
       },
       {
         "path": "updateSlot-response.json",
@@ -115,67 +123,75 @@
       },
       {
         "path": "components/QuadMesh.json",
-        "bytes": 3732
+        "bytes": 3714
       },
       {
         "path": "components/BoxMesh.json",
-        "bytes": 2197
+        "bytes": 2187
+      },
+      {
+        "path": "components/TriangleMesh.json",
+        "bytes": 7602
       },
       {
         "path": "components/MeshRenderer.json",
-        "bytes": 1883
+        "bytes": 1874
       },
       {
         "path": "components/MainTexturePropertyBlock.json",
-        "bytes": 1383
+        "bytes": 1378
       },
       {
         "path": "components/XiexeToonMaterial.json",
-        "bytes": 13241
+        "bytes": 13162
       },
       {
         "path": "components/PBS_Metallic.json",
-        "bytes": 5537
+        "bytes": 5508
       },
       {
         "path": "components/UnlitMaterial.json",
-        "bytes": 6576
+        "bytes": 6538
       },
       {
         "path": "components/StaticTexture2D.json",
-        "bytes": 3608
+        "bytes": 3585
       },
       {
         "path": "components/Grabbable.json",
-        "bytes": 3402
+        "bytes": 3381
       },
       {
         "path": "components/BoxCollider.json",
-        "bytes": 1849
+        "bytes": 1840
+      },
+      {
+        "path": "components/TriangleCollider.json",
+        "bytes": 2212
       },
       {
         "path": "components/SimpleAvatarProtection.json",
-        "bytes": 1682
+        "bytes": 1675
       },
       {
         "path": "components/Canvas.json",
-        "bytes": 3568
+        "bytes": 3543
       },
       {
         "path": "components/Text.json",
-        "bytes": 4662
+        "bytes": 4635
       },
       {
         "path": "components/VerticalLayout.json",
-        "bytes": 2170
+        "bytes": 2158
       },
       {
         "path": "components/Image.json",
-        "bytes": 2708
+        "bytes": 2695
       },
       {
         "path": "components/_summary.json",
-        "bytes": 1292
+        "bytes": 1448
       },
       {
         "path": "importTexture2DRawData-response.json",

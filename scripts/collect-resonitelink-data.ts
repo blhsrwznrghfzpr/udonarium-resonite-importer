@@ -45,7 +45,11 @@ const savedFiles: SavedFileInfo[] = [];
  */
 const REQUIRED_COMPONENTS = {
   // Mesh components (FrooxEngine namespace)
-  mesh: ['[FrooxEngine]FrooxEngine.QuadMesh', '[FrooxEngine]FrooxEngine.BoxMesh'],
+  mesh: [
+    '[FrooxEngine]FrooxEngine.QuadMesh',
+    '[FrooxEngine]FrooxEngine.BoxMesh',
+    '[FrooxEngine]FrooxEngine.TriangleMesh',
+  ],
   // Rendering components (FrooxEngine namespace)
   rendering: [
     '[FrooxEngine]FrooxEngine.MeshRenderer',
@@ -63,6 +67,7 @@ const REQUIRED_COMPONENTS = {
   interaction: [
     '[FrooxEngine]FrooxEngine.Grabbable',
     '[FrooxEngine]FrooxEngine.BoxCollider',
+    '[FrooxEngine]FrooxEngine.TriangleCollider',
     '[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection',
   ],
   // UIX components (FrooxEngine.UIX namespace)

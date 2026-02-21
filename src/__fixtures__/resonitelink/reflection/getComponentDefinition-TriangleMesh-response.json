@@ -2,13 +2,13 @@
   "$type": "componentDefinitionData",
   "definition": {
     "baseTypeIsComponent": true,
-    "categoryPath": "UIX/Layout",
+    "categoryPath": "Assets/Procedural Meshes",
     "type": {
       "baseType": null,
-      "fullTypeName": "[FrooxEngine]FrooxEngine.UIX.VerticalLayout",
+      "fullTypeName": "[FrooxEngine]FrooxEngine.TriangleMesh",
       "assemblyName": "FrooxEngine",
-      "namespace": "FrooxEngine.UIX",
-      "name": "VerticalLayout",
+      "namespace": "FrooxEngine",
+      "name": "TriangleMesh",
       "isAbstract": false,
       "isInterface": false,
       "isGenericType": false,
@@ -54,70 +54,7 @@
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
       },
-      "PaddingTop": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "PaddingRight": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "PaddingBottom": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "PaddingLeft": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "Spacing": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "HorizontalAlign": {
-        "$type": "field",
-        "valueType": {
-          "type": "[FrooxEngine]FrooxEngine.UIX.LayoutHorizontalAlignment",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<[FrooxEngine]FrooxEngine.UIX.LayoutHorizontalAlignment>"
-      },
-      "VerticalAlign": {
-        "$type": "field",
-        "valueType": {
-          "type": "[FrooxEngine]FrooxEngine.UIX.LayoutVerticalAlignment",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<[FrooxEngine]FrooxEngine.UIX.LayoutVerticalAlignment>"
-      },
-      "ForceExpandWidth": {
+      "HighPriorityIntegration": {
         "$type": "field",
         "valueType": {
           "type": "bool",
@@ -126,7 +63,76 @@
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
       },
-      "ForceExpandHeight": {
+      "OverrideBoundingBox": {
+        "$type": "field",
+        "valueType": {
+          "type": "bool",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
+      },
+      "OverridenBoundingBox": {
+        "$type": "field",
+        "valueType": {
+          "type": "BoundingBox",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<BoundingBox>"
+      },
+      "Profile": {
+        "$type": "field",
+        "valueType": {
+          "type": "[Renderite.Shared]Renderite.Shared.ColorProfile",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<[Renderite.Shared]Renderite.Shared.ColorProfile>"
+      },
+      "Vertex0": {
+        "$type": "syncObject",
+        "type": {
+          "type": "[FrooxEngine]FrooxEngine.ProceduralMeshVertex",
+          "isGenericParameter": false,
+          "genericArguments": null
+        }
+      },
+      "Vertex1": {
+        "$type": "syncObject",
+        "type": {
+          "type": "[FrooxEngine]FrooxEngine.ProceduralMeshVertex",
+          "isGenericParameter": false,
+          "genericArguments": null
+        }
+      },
+      "Vertex2": {
+        "$type": "syncObject",
+        "type": {
+          "type": "[FrooxEngine]FrooxEngine.ProceduralMeshVertex",
+          "isGenericParameter": false,
+          "genericArguments": null
+        }
+      },
+      "AutoNormals": {
+        "$type": "field",
+        "valueType": {
+          "type": "bool",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
+      },
+      "AutoTangents": {
+        "$type": "field",
+        "valueType": {
+          "type": "bool",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
+      },
+      "DualSided": {
         "$type": "field",
         "valueType": {
           "type": "bool",
@@ -137,7 +143,7 @@
       }
     }
   },
-  "sourceMessageId": "tsrl_f67zmo0qq15_l",
+  "sourceMessageId": "tsrl_f67zmo0qq15_8",
   "success": true,
   "errorInfo": null
 }

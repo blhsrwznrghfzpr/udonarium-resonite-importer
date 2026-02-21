@@ -16,6 +16,7 @@ import { ImageAssetContext } from './imageAssetContext';
 // ---- private types ----
 type QuadSize = { x: number; y: number };
 type BoxSize = { x: number; y: number; z: number };
+type TriangleVertex = { x: number; y: number; z: number };
 
 export type NewResoniteObjectSpec = {
   id?: string;
@@ -41,6 +42,37 @@ type QuadMeshOptions = {
   size?: QuadSize;
   color?: ColorXValue;
 };
+
+type TriangleMeshOptions = {
+  textureIdentifier?: string;
+  imageAssetContext?: ImageAssetContext;
+  dualSided?: boolean;
+  vertices: [TriangleVertex, TriangleVertex, TriangleVertex];
+  uv0?: [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }];
+  color?: ColorXValue;
+};
+
+function roundTo4(value: number): number {
+  return Math.round(value * 10000) / 10000;
+}
+
+function deriveTriangleUv0(
+  vertices: [TriangleVertex, TriangleVertex, TriangleVertex]
+): [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }] {
+  const xs = vertices.map((vertex) => vertex.x);
+  const ys = vertices.map((vertex) => vertex.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const width = maxX - minX || 1;
+  const height = maxY - minY || 1;
+
+  return vertices.map((vertex) => ({
+    x: roundTo4((vertex.x - minX) / width),
+    y: roundTo4((vertex.y - minY) / height),
+  })) as [{ x: number; y: number }, { x: number; y: number }, { x: number; y: number }];
+}
 
 function resolveBlendModeLookupIdentifier(options?: QuadMeshOptions): string | undefined {
   const identifier = options?.textureIdentifier;
@@ -89,7 +121,8 @@ function buildQuadMeshComponents(
       options.textureIdentifier)
     : options.textureIdentifier;
   const dualSided = options.dualSided ?? false;
-  const size = options.size ?? { x: 1, y: 1 };
+  const sizeInput = options.size ?? { x: 1, y: 1 };
+  const size = { x: roundTo4(sizeInput.x), y: roundTo4(sizeInput.y) };
   const meshId = `${slotId}-mesh`;
   const materialId = `${slotId}-mat`;
   const textureBlockId = `${slotId}-texture-block`;
@@ -161,6 +194,110 @@ function buildQuadMeshComponents(
   return components;
 }
 
+function buildTriangleMeshComponents(
+  slotId: string,
+  options: TriangleMeshOptions
+): ResoniteComponent[] {
+  const textureValue = options.imageAssetContext
+    ? (options.imageAssetContext.resolveTextureValue(options.textureIdentifier) ??
+      options.textureIdentifier)
+    : options.textureIdentifier;
+  const dualSided = options.dualSided ?? false;
+  const meshId = `${slotId}-mesh`;
+  const materialId = `${slotId}-mat`;
+  const textureBlockId = `${slotId}-texture-block`;
+  const textureId = `${slotId}-tex`;
+  const sharedTextureId = parseTextureReferenceId(textureValue);
+  const localTextureId = sharedTextureId ? undefined : textureId;
+  const texturePropertyBlockTargetId = textureValue
+    ? sharedTextureId
+      ? toSharedTexturePropertyBlockId(sharedTextureId)
+      : textureBlockId
+    : undefined;
+  const uv0 = options.uv0 ?? deriveTriangleUv0(options.vertices);
+
+  const components: ResoniteComponent[] = [
+    {
+      id: meshId,
+      type: COMPONENT_TYPES.TRIANGLE_MESH,
+      fields: {
+        Vertex0: {
+          $type: 'syncObject',
+          members: {
+            Position: { $type: 'float3', value: options.vertices[0] },
+            UV0: { $type: 'float2', value: uv0[0] },
+          },
+        },
+        Vertex1: {
+          $type: 'syncObject',
+          members: {
+            Position: { $type: 'float3', value: options.vertices[1] },
+            UV0: { $type: 'float2', value: uv0[1] },
+          },
+        },
+        Vertex2: {
+          $type: 'syncObject',
+          members: {
+            Position: { $type: 'float3', value: options.vertices[2] },
+            UV0: { $type: 'float2', value: uv0[2] },
+          },
+        },
+        AutoNormals: { $type: 'bool', value: true },
+        AutoTangents: { $type: 'bool', value: false },
+        ...(dualSided ? { DualSided: { $type: 'bool', value: true } } : {}),
+      },
+    },
+  ];
+
+  if (textureValue && !sharedTextureId) {
+    const usePointFilter = options.imageAssetContext
+      ? options.imageAssetContext.resolveUsePointFilter(options.textureIdentifier, textureValue)
+      : isGifTexture(textureValue);
+    components.push({
+      id: textureId,
+      type: COMPONENT_TYPES.STATIC_TEXTURE_2D,
+      fields: buildStaticTexture2DFields(textureValue, usePointFilter),
+    });
+  }
+
+  components.push({
+    id: materialId,
+    type: COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
+    fields: buildXiexeToonMaterialFields(resolveBlendMode(options), options.color, dualSided),
+  });
+
+  if (textureValue && !sharedTextureId) {
+    const textureProviderId = sharedTextureId ?? localTextureId!;
+    components.push({
+      id: textureBlockId,
+      type: COMPONENT_TYPES.MAIN_TEXTURE_PROPERTY_BLOCK,
+      fields: buildMainTexturePropertyBlockFields(textureProviderId),
+    });
+  }
+
+  components.push({
+    id: `${slotId}-renderer`,
+    type: COMPONENT_TYPES.MESH_RENDERER,
+    fields: {
+      Mesh: { $type: 'reference', targetId: meshId },
+      Materials: {
+        $type: 'list',
+        elements: [{ $type: 'reference', targetId: materialId }],
+      },
+      ...(texturePropertyBlockTargetId
+        ? {
+            MaterialPropertyBlocks: {
+              $type: 'list',
+              elements: [{ $type: 'reference', targetId: texturePropertyBlockTargetId }],
+            },
+          }
+        : {}),
+    },
+  });
+
+  return components;
+}
+
 function buildBoxColliderComponent(
   slotId: string,
   size: BoxSize,
@@ -171,6 +308,23 @@ function buildBoxColliderComponent(
     type: COMPONENT_TYPES.BOX_COLLIDER,
     fields: {
       Size: { $type: 'float3', value: size },
+      ...(options?.characterCollider ? { CharacterCollider: { $type: 'bool', value: true } } : {}),
+    },
+  };
+}
+
+function buildTriangleColliderComponent(
+  slotId: string,
+  vertices: [TriangleVertex, TriangleVertex, TriangleVertex],
+  options?: { characterCollider?: boolean }
+): ResoniteComponent {
+  return {
+    id: `${slotId}-collider`,
+    type: COMPONENT_TYPES.TRIANGLE_COLLIDER,
+    fields: {
+      A: { $type: 'float3', value: vertices[0] },
+      B: { $type: 'float3', value: vertices[1] },
+      C: { $type: 'float3', value: vertices[2] },
       ...(options?.characterCollider ? { CharacterCollider: { $type: 'bool', value: true } } : {}),
     },
   };
@@ -267,8 +421,21 @@ export class ResoniteObjectBuilder {
     return this;
   }
 
+  addTriangleMesh(options: TriangleMeshOptions): this {
+    this.obj.components.push(...buildTriangleMeshComponents(this.obj.id, options));
+    return this;
+  }
+
   addBoxCollider(size: BoxSize, options?: { characterCollider?: boolean }): this {
     this.obj.components.push(buildBoxColliderComponent(this.obj.id, size, options));
+    return this;
+  }
+
+  addTriangleCollider(
+    vertices: [TriangleVertex, TriangleVertex, TriangleVertex],
+    options?: { characterCollider?: boolean }
+  ): this {
+    this.obj.components.push(buildTriangleColliderComponent(this.obj.id, vertices, options));
     return this;
   }
 

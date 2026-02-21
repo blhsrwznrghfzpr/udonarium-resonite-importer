@@ -23,6 +23,12 @@ const SAMPLE_TERRAIN_ZIP_PATH = path.join(
   '__fixtures__',
   'sample-terrain.zip'
 );
+const SAMPLE_TERRAIN_LILY_ZIP_PATH = path.join(
+  process.cwd(),
+  'src',
+  '__fixtures__',
+  'sample-terrain-lily.zip'
+);
 const SAMPLE_TABLE_ZIP_PATH = path.join(process.cwd(), 'src', '__fixtures__', 'sample-table.zip');
 const SAMPLE_CHARACTER_ZIP_PATH = path.join(
   process.cwd(),
@@ -41,7 +47,12 @@ async function loadConvertedFromZip(zipPath: string): Promise<ResoniteObject[]> 
     imageAspectRatioMap,
     imageBlendModeMap,
   });
-  return convertObjectsWithImageAssetContext(parsed.objects, imageAssetContext);
+  return convertObjectsWithImageAssetContext(
+    parsed.objects,
+    imageAssetContext,
+    undefined,
+    parsed.extensions
+  );
 }
 
 function flattenObjects(objects: ResoniteObject[]): ResoniteObject[] {
@@ -171,6 +182,60 @@ describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
             terrain.components.some((c) => c.type === COMPONENT_TYPES.GRABBABLE)
           )
         ).toBe(true);
+      },
+      CONVERTER_INTEGRATION_TIMEOUT
+    );
+  }
+);
+
+describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
+  'Converter integration (sample-terrain-lily.zip)',
+  () => {
+    it(
+      'applies lily altitude extension to converted terrain root position',
+      async () => {
+        const converted = await loadConvertedFromZip(SAMPLE_TERRAIN_LILY_ZIP_PATH);
+        const flattened = flattenObjects(converted);
+
+        const altitudeTerrain = flattened.find(
+          (obj) =>
+            obj.sourceType === 'terrain' &&
+            obj.position.x === 16 &&
+            obj.position.y === 0.5 &&
+            obj.position.z === -8
+        );
+
+        expect(altitudeTerrain).toBeDefined();
+      },
+      CONVERTER_INTEGRATION_TIMEOUT
+    );
+
+    it(
+      'creates slope terrains with tilted top and one omitted wall',
+      async () => {
+        const converted = await loadConvertedFromZip(SAMPLE_TERRAIN_LILY_ZIP_PATH);
+        const flattened = flattenObjects(converted);
+
+        const slopeTerrains = flattened.filter((obj) => {
+          if (obj.sourceType !== 'terrain') return false;
+          const top = obj.children.find((c) => c.id.endsWith('-top'));
+          if (!top) return false;
+          const topMesh = top.children.find((c) => c.id.endsWith('-top-mesh'));
+          if (!topMesh) return false;
+          const wallCount = ['-front', '-back', '-left', '-right'].filter((suffix) =>
+            obj.children.some((c) => c.id.endsWith(suffix))
+          ).length;
+          const triangleWallCount = obj.children.filter((wall) =>
+            wall.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+          ).length;
+          return (
+            wallCount === 3 &&
+            triangleWallCount === 2 &&
+            (topMesh.rotation.x !== 0 || topMesh.rotation.y !== 0 || topMesh.rotation.z !== 0)
+          );
+        });
+
+        expect(slopeTerrains.length).toBeGreaterThanOrEqual(4);
       },
       CONVERTER_INTEGRATION_TIMEOUT
     );

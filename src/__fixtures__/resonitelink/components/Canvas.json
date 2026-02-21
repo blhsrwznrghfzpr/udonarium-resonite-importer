@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.UIX.Canvas",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_UIX_Canvas_1771505610879",
-    "sourceMessageId": "tsrl_98l5vohy4ib_2a",
+    "entityId": "test_[FrooxEngine]FrooxEngine_UIX_Canvas_1771679309855",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2m",
     "success": true,
     "errorInfo": null
   },
@@ -15,17 +15,17 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F55"
+          "id": "Reso_B5E2"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 100000,
-          "id": "Reso_17F56"
+          "id": "Reso_B5E3"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F57"
+          "id": "Reso_B5E4"
         },
         "Size": {
           "$type": "float2",
@@ -33,103 +33,103 @@
             "x": 1920,
             "y": 1080
           },
-          "id": "Reso_17F58"
+          "id": "Reso_B5E5"
         },
         "EditModeOnly": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F59"
+          "id": "Reso_B5E6"
         },
         "AcceptRemoteTouch": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F5A"
+          "id": "Reso_B5E7"
         },
         "AcceptPhysicalTouch": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F5B"
+          "id": "Reso_B5E8"
         },
         "AcceptExistingTouch": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F5C"
+          "id": "Reso_B5E9"
         },
         "HighPriorityIntegration": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F5D"
+          "id": "Reso_B5EA"
         },
         "IgnoreTouchesFromBehind": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F5E"
+          "id": "Reso_B5EB"
         },
         "BlockAllInteractions": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F5F"
+          "id": "Reso_B5EC"
         },
         "LaserPassThrough": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F60"
+          "id": "Reso_B5ED"
         },
         "PixelScale": {
           "$type": "float",
           "value": 1,
-          "id": "Reso_17F61"
+          "id": "Reso_B5EE"
         },
         "UnitScale": {
           "$type": "float",
           "value": 1,
-          "id": "Reso_17F62"
+          "id": "Reso_B5EF"
         },
         "_rootRect": {
           "$type": "reference",
-          "targetId": "Reso_17F63",
+          "targetId": "Reso_B5F0",
           "targetType": "[FrooxEngine]FrooxEngine.UIX.RectTransform",
-          "id": "Reso_17F64"
+          "id": "Reso_B5F1"
         },
         "Collider": {
           "$type": "reference",
-          "targetId": "Reso_17F65",
+          "targetId": "Reso_B5F2",
           "targetType": "[FrooxEngine]FrooxEngine.BoxCollider",
-          "id": "Reso_17F66"
+          "id": "Reso_B5F3"
         },
         "DefaultCulling": {
           "$type": "enum",
           "value": "Back",
           "enumType": "Culling",
-          "id": "Reso_17F67"
+          "id": "Reso_B5F4"
         },
         "_colliderSize": {
           "$type": "reference",
-          "targetId": "Reso_17F68",
+          "targetId": "Reso_B5F5",
           "targetType": "[FrooxEngine]FrooxEngine.IField<float3>",
-          "id": "Reso_17F69"
+          "id": "Reso_B5F6"
         },
         "_colliderOffset": {
           "$type": "reference",
-          "targetId": "Reso_17F6A",
+          "targetId": "Reso_B5F7",
           "targetType": "[FrooxEngine]FrooxEngine.IField<float3>",
-          "id": "Reso_17F6B"
+          "id": "Reso_B5F8"
         },
         "StartingOffset": {
           "$type": "int",
           "value": -32000,
-          "id": "Reso_17F6C"
+          "id": "Reso_B5F9"
         },
         "StartingMaskDepth": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_17F6D"
+          "id": "Reso_B5FA"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_UIX_Canvas_1771505610879",
+      "id": "test_[FrooxEngine]FrooxEngine_UIX_Canvas_1771679309855",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_98l5vohy4ib_2b",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2n",
     "success": true,
     "errorInfo": null
   }

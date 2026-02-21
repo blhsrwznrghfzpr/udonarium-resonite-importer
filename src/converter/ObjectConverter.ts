@@ -15,6 +15,10 @@ import { convertTableMask } from './objectConverters/tableMaskConverter';
 import { convertTextNote } from './objectConverters/textNoteConverter';
 import { ResoniteObjectBuilder } from './ResoniteObjectBuilder';
 import { ImageAssetContext } from './imageAssetContext';
+import {
+  ParsedObjectExtensions,
+  getTerrainLilyExtension,
+} from '../parser/extensions/ObjectExtensions';
 
 interface ConverterOptions {
   enableCharacterColliderOnLockedTerrain?: boolean;
@@ -39,7 +43,8 @@ export function convertSize(size: number): Vector3 {
 export function convertObjectWithTextures(
   udonObj: UdonariumObject,
   imageAssetContext: ImageAssetContext,
-  options?: ConverterOptions
+  options?: ConverterOptions,
+  extensions?: ParsedObjectExtensions
 ): ResoniteObject {
   const position = convertPosition(udonObj.position.x, udonObj.position.y, udonObj.position.z);
 
@@ -49,13 +54,21 @@ export function convertObjectWithTextures(
     case 'dice-symbol':
       return convertDiceSymbol(udonObj, position, convertSize, imageAssetContext);
     case 'terrain':
-      return convertTerrain(udonObj, position, imageAssetContext, options);
+      return convertTerrain(
+        udonObj,
+        position,
+        imageAssetContext,
+        options,
+        undefined,
+        getTerrainLilyExtension(extensions, udonObj)
+      );
     case 'table':
       return convertTable(
         udonObj,
         position,
         imageAssetContext,
-        (obj: UdonariumObject) => convertObjectWithTextures(obj, imageAssetContext, options),
+        (obj: UdonariumObject) =>
+          convertObjectWithTextures(obj, imageAssetContext, options, extensions),
         options
       );
     case 'table-mask':
@@ -66,7 +79,8 @@ export function convertObjectWithTextures(
       return convertCardStack(
         udonObj,
         position,
-        (obj: UdonariumObject) => convertObjectWithTextures(obj, imageAssetContext, options),
+        (obj: UdonariumObject) =>
+          convertObjectWithTextures(obj, imageAssetContext, options, extensions),
         imageAssetContext
       );
     case 'text-note':
@@ -112,10 +126,11 @@ function applyGameTableVisibility(
 export function convertObjectsWithImageAssetContext(
   udonObjects: UdonariumObject[],
   imageAssetContext: ImageAssetContext,
-  options?: ConverterOptions
+  options?: ConverterOptions,
+  extensions?: ParsedObjectExtensions
 ): ResoniteObject[] {
   const converted = udonObjects.map((obj) =>
-    convertObjectWithTextures(obj, imageAssetContext, options)
+    convertObjectWithTextures(obj, imageAssetContext, options, extensions)
   );
   return applyGameTableVisibility(converted, udonObjects);
 }

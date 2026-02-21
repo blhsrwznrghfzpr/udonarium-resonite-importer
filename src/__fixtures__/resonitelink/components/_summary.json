@@ -1,13 +1,16 @@
 {
-  "testedAt": "2026-02-19T12:53:30.912Z",
-  "totalComponents": 15,
-  "successful": 15,
+  "testedAt": "2026-02-21T13:08:29.883Z",
+  "totalComponents": 17,
+  "successful": 17,
   "failed": 0,
   "results": {
     "[FrooxEngine]FrooxEngine.QuadMesh": {
       "success": true
     },
     "[FrooxEngine]FrooxEngine.BoxMesh": {
+      "success": true
+    },
+    "[FrooxEngine]FrooxEngine.TriangleMesh": {
       "success": true
     },
     "[FrooxEngine]FrooxEngine.MeshRenderer": {
@@ -32,6 +35,9 @@
       "success": true
     },
     "[FrooxEngine]FrooxEngine.BoxCollider": {
+      "success": true
+    },
+    "[FrooxEngine]FrooxEngine.TriangleCollider": {
       "success": true
     },
     "[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection": {

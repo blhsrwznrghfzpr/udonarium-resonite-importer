@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.UIX.Text",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_UIX_Text_1771505610887",
-    "sourceMessageId": "tsrl_98l5vohy4ib_2f",
+    "entityId": "test_[FrooxEngine]FrooxEngine_UIX_Text_1771679309860",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2r",
     "success": true,
     "errorInfo": null
   },
@@ -15,61 +15,61 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F6E"
+          "id": "Reso_B5FB"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_17F6F"
+          "id": "Reso_B5FC"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F70"
+          "id": "Reso_B5FD"
         },
         "Font": {
           "$type": "reference",
           "targetId": "Reso_10",
           "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.FontSet>",
-          "id": "Reso_17F71"
+          "id": "Reso_B5FE"
         },
         "Content": {
           "$type": "string",
           "value": null,
-          "id": "Reso_17F72"
+          "id": "Reso_B5FF"
         },
         "ParseRichText": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F73"
+          "id": "Reso_B600"
         },
         "NullContent": {
           "$type": "string",
           "value": null,
-          "id": "Reso_17F74"
+          "id": "Reso_B601"
         },
         "Size": {
           "$type": "float",
           "value": 64,
-          "id": "Reso_17F75"
+          "id": "Reso_B602"
         },
         "HorizontalAlign": {
           "$type": "enum",
           "value": "Left",
           "enumType": "TextHorizontalAlignment",
-          "id": "Reso_17F76"
+          "id": "Reso_B603"
         },
         "VerticalAlign": {
           "$type": "enum",
           "value": "Top",
           "enumType": "TextVerticalAlignment",
-          "id": "Reso_17F77"
+          "id": "Reso_B604"
         },
         "AlignmentMode": {
           "$type": "enum",
           "value": "Geometric",
           "enumType": "AlignmentMode",
-          "id": "Reso_17F78"
+          "id": "Reso_B605"
         },
         "Color": {
           "$type": "colorX",
@@ -80,59 +80,59 @@
             "a": 1,
             "profile": "sRGB"
           },
-          "id": "Reso_17F79"
+          "id": "Reso_B606"
         },
         "Materials": {
           "$type": "list",
           "elements": [
             {
               "$type": "reference",
-              "targetId": "Reso_F54",
+              "targetId": "Reso_3EF",
               "targetType": "[FrooxEngine]FrooxEngine.IAssetProvider<[FrooxEngine]FrooxEngine.Material>",
-              "id": "Reso_17F7A"
+              "id": "Reso_B607"
             }
           ],
-          "id": "Reso_17F7B"
+          "id": "Reso_B608"
         },
         "LineHeight": {
           "$type": "float",
           "value": 0.8,
-          "id": "Reso_17F7C"
+          "id": "Reso_B609"
         },
         "MaskPattern": {
           "$type": "string",
           "value": null,
-          "id": "Reso_17F7D"
+          "id": "Reso_B60A"
         },
         "HorizontalAutoSize": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F7E"
+          "id": "Reso_B60B"
         },
         "VerticalAutoSize": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_17F7F"
+          "id": "Reso_B60C"
         },
         "AutoSizeMin": {
           "$type": "float",
           "value": 8,
-          "id": "Reso_17F80"
+          "id": "Reso_B60D"
         },
         "AutoSizeMax": {
           "$type": "float",
           "value": 64,
-          "id": "Reso_17F81"
+          "id": "Reso_B60E"
         },
         "CaretPosition": {
           "$type": "int",
           "value": -1,
-          "id": "Reso_17F82"
+          "id": "Reso_B60F"
         },
         "SelectionStart": {
           "$type": "int",
           "value": -1,
-          "id": "Reso_17F83"
+          "id": "Reso_B610"
         },
         "CaretColor": {
           "$type": "colorX",
@@ -143,7 +143,7 @@
             "a": 0,
             "profile": "Linear"
           },
-          "id": "Reso_17F84"
+          "id": "Reso_B611"
         },
         "SelectionColor": {
           "$type": "colorX",
@@ -154,30 +154,30 @@
             "a": 0,
             "profile": "Linear"
           },
-          "id": "Reso_17F85"
+          "id": "Reso_B612"
         },
         "InteractionTarget": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F86"
+          "id": "Reso_B613"
         },
         "_legacyFontMaterial": {
           "$type": "reference",
           "targetId": null,
           "targetType": "[FrooxEngine]FrooxEngine.FontMaterial",
-          "id": "Reso_17F87"
+          "id": "Reso_B614"
         },
         "_legacyAlign": {
           "$type": "enum",
           "value": "TopLeft",
           "enumType": "Alignment",
-          "id": "Reso_17F88"
+          "id": "Reso_B615"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_UIX_Text_1771505610887",
+      "id": "test_[FrooxEngine]FrooxEngine_UIX_Text_1771679309860",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_98l5vohy4ib_2g",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2s",
     "success": true,
     "errorInfo": null
   }

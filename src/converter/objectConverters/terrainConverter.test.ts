@@ -6,7 +6,7 @@ import { COMPONENT_TYPES } from '../../config/ResoniteComponentTypes';
 import { buildImageAssetContext } from '../imageAssetContext';
 
 describe('convertTerrain', () => {
-  it('terrain (unlocked) has BoxCollider + Grabbable and creates five QuadMesh faces', () => {
+  it('terrain (unlocked) has BoxCollider + Grabbable and creates top plus four wall faces', () => {
     const udonObj: Terrain = {
       id: 'terrain-1',
       type: 'terrain',
@@ -58,19 +58,12 @@ describe('convertTerrain', () => {
     expect(result.position.y).toBe(1);
     expect(result.position.z).toBe(-2);
 
-    expect(result.children).toHaveLength(6);
+    expect(result.children).toHaveLength(5);
     const topFace = result.children.find((child) => child.id === 'slot-terrain-1-top');
     const bottomFace = result.children.find((child) => child.id === 'slot-terrain-1-bottom');
     expect(topFace).toBeDefined();
-    expect(bottomFace).toBeDefined();
+    expect(bottomFace).toBeUndefined();
     expect(topFace?.components.map((c) => c.type)).toEqual([
-      COMPONENT_TYPES.QUAD_MESH,
-      COMPONENT_TYPES.STATIC_TEXTURE_2D,
-      COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
-      COMPONENT_TYPES.MAIN_TEXTURE_PROPERTY_BLOCK,
-      COMPONENT_TYPES.MESH_RENDERER,
-    ]);
-    expect(bottomFace?.components.map((c) => c.type)).toEqual([
       COMPONENT_TYPES.QUAD_MESH,
       COMPONENT_TYPES.STATIC_TEXTURE_2D,
       COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
@@ -101,11 +94,13 @@ describe('convertTerrain', () => {
     expect(topFace?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 10, y: 4 } },
     });
-    expect(bottomFace?.position).toEqual({ x: 0, y: -1, z: 0 });
-    expect(bottomFace?.scale).toEqual({ x: 1, y: -1, z: 1 });
-    expect(bottomFace?.rotation).toEqual({ x: -90, y: 0, z: 0 });
-    expect(bottomFace?.components[0].fields).toEqual({
-      Size: { $type: 'float2', value: { x: 10, y: 4 } },
+    const topMaterial = topFace?.components.find(
+      (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
+    );
+    expect(topMaterial?.fields.Culling).toEqual({
+      $type: 'enum',
+      value: 'Off',
+      enumType: 'Culling',
     });
 
     const frontFace = result.children.find((child) => child.id === 'slot-terrain-1-front');
@@ -251,20 +246,10 @@ describe('convertTerrain', () => {
     expect(result.components[0].fields).toEqual({
       Size: { $type: 'float3', value: { x: 6, y: 0, z: 4 } },
     });
-    expect(result.children).toHaveLength(2);
+    expect(result.children).toHaveLength(1);
     expect(result.children[0].id).toBe('slot-terrain-3-top');
     expect(result.children[0].position).toEqual({ x: 0, y: 0, z: 0 });
     expect(result.children[0].components.map((c) => c.type)).toEqual([
-      COMPONENT_TYPES.QUAD_MESH,
-      COMPONENT_TYPES.STATIC_TEXTURE_2D,
-      COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
-      COMPONENT_TYPES.MAIN_TEXTURE_PROPERTY_BLOCK,
-      COMPONENT_TYPES.MESH_RENDERER,
-    ]);
-    expect(result.children[1].id).toBe('slot-terrain-3-top-back');
-    expect(result.children[1].position).toEqual({ x: 0, y: 0, z: 0 });
-    expect(result.children[1].rotation).toEqual({ x: -90, y: 0, z: 0 });
-    expect(result.children[1].components.map((c) => c.type)).toEqual([
       COMPONENT_TYPES.QUAD_MESH,
       COMPONENT_TYPES.STATIC_TEXTURE_2D,
       COMPONENT_TYPES.XIEXE_TOON_MATERIAL,
@@ -370,10 +355,284 @@ describe('convertTerrain', () => {
     );
 
     expect(result.children.some((child) => child.id.endsWith('-top'))).toBe(true);
-    expect(result.children.some((child) => child.id.endsWith('-bottom'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-bottom'))).toBe(false);
     expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(false);
     expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
     expect(result.children.some((child) => child.id.endsWith('-left'))).toBe(false);
     expect(result.children.some((child) => child.id.endsWith('-right'))).toBe(false);
+  });
+
+  it('applies lily altitude extension to root Y position', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-altitude',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      name: 'Altitude Terrain',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-altitude',
+      { altitude: -0.5, isSlope: false, slopeDirection: 0 }
+    );
+
+    expect(result.position).toEqual({ x: 1, y: 0.5, z: -1 });
+  });
+
+  it('applies slope rotation and removes back wall for TOP direction', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-slope-top',
+      type: 'terrain',
+      isLocked: true,
+      mode: 3,
+      rotate: 0,
+      name: 'Slope Top',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-slope-top',
+      { altitude: 0, isSlope: true, slopeDirection: 1 }
+    );
+
+    const topFace = result.children.find((child) => child.id.endsWith('-top'));
+    const topMesh = topFace?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(
+      result.components.some((component) => component.type === COMPONENT_TYPES.BOX_COLLIDER)
+    ).toBe(false);
+    expect(topFace?.rotation).toEqual({ x: 90, y: 0, z: 0 });
+    expect(topMesh?.rotation.x).toBeCloseTo(45, 4);
+    expect(topFace?.position.y).toBe(0);
+    const topMeshQuad = topMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.QUAD_MESH
+    );
+    expect(topMeshQuad?.fields).toEqual({
+      Size: { $type: 'float2', value: { x: 2, y: 2.8284 } },
+    });
+    const topMeshCollider = topMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.BOX_COLLIDER
+    );
+    const topMeshColliderSize = topMeshCollider?.fields.Size as
+      | { value?: { x?: number; y?: number; z?: number } }
+      | undefined;
+    expect(topMeshColliderSize?.value?.x).toBe(2);
+    expect(topMeshColliderSize?.value?.y).toBeCloseTo(2.8284, 4);
+    expect(topMeshColliderSize?.value?.z).toBe(0.01);
+    const topMeshMaterial = topMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.XIEXE_TOON_MATERIAL
+    );
+    expect(topMeshMaterial?.fields.Culling).toEqual({
+      $type: 'enum',
+      value: 'Off',
+      enumType: 'Culling',
+    });
+    const leftWall = result.children.find((child) => child.id.endsWith('-left'));
+    const rightWall = result.children.find((child) => child.id.endsWith('-right'));
+    expect(
+      leftWall?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      leftWall?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER)
+    ).toBe(true);
+    expect(
+      rightWall?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      rightWall?.components.some(
+        (component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER
+      )
+    ).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(true);
+  });
+
+  it('uses half-height Y offset when mode=1 and slope is enabled', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-slope-mode1',
+      type: 'terrain',
+      isLocked: true,
+      mode: 1,
+      rotate: 0,
+      name: 'Slope Mode1',
+      position: { x: 0, y: 0, z: 100 },
+      images: [],
+      width: 1,
+      height: 7,
+      depth: 1,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 2, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-slope-mode1',
+      { altitude: 0, isSlope: true, slopeDirection: 1 }
+    );
+
+    expect(result.position.y).toBe(5.5);
+  });
+
+  it('removes front/left/right wall and adjusts slope size for BOTTOM/LEFT/RIGHT', () => {
+    const baseTerrain: Terrain = {
+      id: 'terrain-slope',
+      type: 'terrain',
+      isLocked: true,
+      mode: 3,
+      rotate: 0,
+      name: 'Slope',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 2,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const bottom = convertTerrain(
+      baseTerrain,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-slope-bottom',
+      { altitude: 0, isSlope: true, slopeDirection: 2 }
+    );
+    const bottomTop = bottom.children.find((child) => child.id.endsWith('-top'));
+    const bottomTopMesh = bottomTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(
+      bottom.components.some((component) => component.type === COMPONENT_TYPES.BOX_COLLIDER)
+    ).toBe(false);
+    expect(bottomTopMesh?.rotation.x).toBeCloseTo(-45, 4);
+    expect(bottom.children.some((child) => child.id.endsWith('-front'))).toBe(false);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-left'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-left'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER)
+    ).toBe(true);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-right'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      bottom.children
+        .find((child) => child.id.endsWith('-right'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_COLLIDER)
+    ).toBe(true);
+
+    const left = convertTerrain(
+      baseTerrain,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-slope-left',
+      { altitude: 0, isSlope: true, slopeDirection: 3 }
+    );
+    const leftTop = left.children.find((child) => child.id.endsWith('-top'));
+    const leftTopMesh = leftTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(leftTopMesh?.rotation.y).toBeCloseTo(45, 4);
+    const leftTopQuad = leftTopMesh?.components.find(
+      (component) => component.type === COMPONENT_TYPES.QUAD_MESH
+    );
+    expect(leftTopQuad?.fields).toEqual({
+      Size: { $type: 'float2', value: { x: 2.8284, y: 2 } },
+    });
+    expect(left.children.some((child) => child.id.endsWith('-left'))).toBe(false);
+    expect(
+      left.children
+        .find((child) => child.id.endsWith('-front'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      left.children
+        .find((child) => child.id.endsWith('-back'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(left.children.find((child) => child.id.endsWith('-back'))?.scale).toEqual({
+      x: -1,
+      y: 1,
+      z: 1,
+    });
+    const leftBackTriangle = left.children
+      .find((child) => child.id.endsWith('-back'))
+      ?.components.find((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH) as {
+      fields?: { Vertex2?: { members?: { Position?: { value?: { x?: number } } } } };
+    };
+    expect(leftBackTriangle.fields?.Vertex2?.members?.Position?.value?.x).toBe(1);
+
+    const right = convertTerrain(
+      baseTerrain,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-terrain-slope-right',
+      { altitude: 0, isSlope: true, slopeDirection: 4 }
+    );
+    const rightTop = right.children.find((child) => child.id.endsWith('-top'));
+    const rightTopMesh = rightTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(rightTopMesh?.rotation.y).toBeCloseTo(-45, 4);
+    expect(right.children.some((child) => child.id.endsWith('-right'))).toBe(false);
+    expect(
+      right.children
+        .find((child) => child.id.endsWith('-front'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(
+      right.children
+        .find((child) => child.id.endsWith('-back'))
+        ?.components.some((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH)
+    ).toBe(true);
+    expect(right.children.find((child) => child.id.endsWith('-back'))?.scale).toEqual({
+      x: -1,
+      y: 1,
+      z: 1,
+    });
+    const rightBackTriangle = right.children
+      .find((child) => child.id.endsWith('-back'))
+      ?.components.find((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH) as {
+      fields?: { Vertex2?: { members?: { Position?: { value?: { x?: number } } } } };
+    };
+    expect(rightBackTriangle.fields?.Vertex2?.members?.Position?.value?.x).toBe(-1);
+    expect(bottom.children.find((child) => child.id.endsWith('-left'))?.scale).toEqual({
+      x: -1,
+      y: 1,
+      z: 1,
+    });
+    const bottomLeftTriangle = bottom.children
+      .find((child) => child.id.endsWith('-left'))
+      ?.components.find((component) => component.type === COMPONENT_TYPES.TRIANGLE_MESH) as {
+      fields?: { Vertex2?: { members?: { Position?: { value?: { x?: number } } } } };
+    };
+    expect(bottomLeftTriangle.fields?.Vertex2?.members?.Position?.value?.x).toBe(1);
   });
 });
