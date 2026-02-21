@@ -433,9 +433,11 @@ describe('convertTerrain', () => {
     );
 
     const topFace = result.children.find((child) => child.id.endsWith('-top'));
-    expect(topFace?.rotation.x).toBeCloseTo(135, 4);
+    const topMesh = topFace?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(topFace?.rotation).toEqual({ x: 90, y: 0, z: 0 });
+    expect(topMesh?.rotation.x).toBeCloseTo(45, 4);
     expect(topFace?.position.y).toBe(0);
-    expect(topFace?.components[0].fields).toEqual({
+    expect(topMesh?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 2, y: 2.8284 } },
     });
     expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
@@ -468,7 +470,8 @@ describe('convertTerrain', () => {
       { altitude: 0, isSlope: true, slopeDirection: 2 }
     );
     const bottomTop = bottom.children.find((child) => child.id.endsWith('-top'));
-    expect(bottomTop?.rotation.x).toBeCloseTo(45, 4);
+    const bottomTopMesh = bottomTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(bottomTopMesh?.rotation.x).toBeCloseTo(-45, 4);
     expect(bottom.children.some((child) => child.id.endsWith('-front'))).toBe(false);
 
     const left = convertTerrain(
@@ -480,8 +483,9 @@ describe('convertTerrain', () => {
       { altitude: 0, isSlope: true, slopeDirection: 3 }
     );
     const leftTop = left.children.find((child) => child.id.endsWith('-top'));
-    expect(leftTop?.rotation.z).toBeCloseTo(45, 4);
-    expect(leftTop?.components[0].fields).toEqual({
+    const leftTopMesh = leftTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(leftTopMesh?.rotation.y).toBeCloseTo(-45, 4);
+    expect(leftTopMesh?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 2.8284, y: 2 } },
     });
     expect(left.children.some((child) => child.id.endsWith('-left'))).toBe(false);
@@ -495,7 +499,8 @@ describe('convertTerrain', () => {
       { altitude: 0, isSlope: true, slopeDirection: 4 }
     );
     const rightTop = right.children.find((child) => child.id.endsWith('-top'));
-    expect(rightTop?.rotation.z).toBeCloseTo(-45, 4);
+    const rightTopMesh = rightTop?.children.find((child) => child.id.endsWith('-top-mesh'));
+    expect(rightTopMesh?.rotation.y).toBeCloseTo(45, 4);
     expect(right.children.some((child) => child.id.endsWith('-right'))).toBe(false);
   });
 });

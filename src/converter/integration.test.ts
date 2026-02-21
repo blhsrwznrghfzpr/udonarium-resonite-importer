@@ -220,12 +220,14 @@ describe.skipIf(SKIP_EXTERNAL_URL_DOWNLOAD_IN_CI)(
           if (obj.sourceType !== 'terrain') return false;
           const top = obj.children.find((c) => c.id.endsWith('-top'));
           if (!top) return false;
+          const topMesh = top.children.find((c) => c.id.endsWith('-top-mesh'));
+          if (!topMesh) return false;
           const wallCount = ['-front', '-back', '-left', '-right'].filter((suffix) =>
             obj.children.some((c) => c.id.endsWith(suffix))
           ).length;
           return (
             wallCount === 3 &&
-            (top.rotation.x !== 90 || top.rotation.y !== 0 || top.rotation.z !== 0)
+            (topMesh.rotation.x !== 0 || topMesh.rotation.y !== 0 || topMesh.rotation.z !== 0)
           );
         });
 
