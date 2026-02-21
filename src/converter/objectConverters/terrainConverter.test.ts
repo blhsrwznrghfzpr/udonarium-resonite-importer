@@ -58,7 +58,7 @@ describe('convertTerrain', () => {
     expect(result.position.y).toBe(1);
     expect(result.position.z).toBe(-2);
 
-    expect(result.children).toHaveLength(3);
+    expect(result.children).toHaveLength(6);
     const topFace = result.children.find((child) => child.id === 'slot-terrain-1-top');
     const bottomFace = result.children.find((child) => child.id === 'slot-terrain-1-bottom');
     expect(topFace).toBeDefined();
@@ -78,11 +78,15 @@ describe('convertTerrain', () => {
       COMPONENT_TYPES.MESH_RENDERER,
     ]);
 
-    const wallsSlot = result.children.find((child) => child.id === 'slot-terrain-1-walls');
-    expect(wallsSlot).toBeDefined();
-    expect(wallsSlot?.isActive).toBe(true);
-    expect(wallsSlot?.children).toHaveLength(4);
-    for (const wallFace of wallsSlot?.children ?? []) {
+    const wallFaces = [
+      result.children.find((child) => child.id === 'slot-terrain-1-front'),
+      result.children.find((child) => child.id === 'slot-terrain-1-back'),
+      result.children.find((child) => child.id === 'slot-terrain-1-left'),
+      result.children.find((child) => child.id === 'slot-terrain-1-right'),
+    ];
+    const definedWallFaces = wallFaces.filter((face): face is NonNullable<typeof face> => !!face);
+    expect(definedWallFaces).toHaveLength(4);
+    for (const wallFace of definedWallFaces) {
       expect(wallFace.components.map((c) => c.type)).toEqual([
         COMPONENT_TYPES.QUAD_MESH,
         COMPONENT_TYPES.STATIC_TEXTURE_2D,
@@ -98,20 +102,22 @@ describe('convertTerrain', () => {
       Size: { $type: 'float2', value: { x: 10, y: 4 } },
     });
     expect(bottomFace?.position).toEqual({ x: 0, y: -1, z: 0 });
+    expect(bottomFace?.scale).toEqual({ x: 1, y: -1, z: 1 });
     expect(bottomFace?.rotation).toEqual({ x: -90, y: 0, z: 0 });
     expect(bottomFace?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 10, y: 4 } },
     });
 
-    const frontFace = wallsSlot?.children.find(
-      (child) => child.id === 'slot-terrain-1-walls-front'
-    );
+    const frontFace = result.children.find((child) => child.id === 'slot-terrain-1-front');
     expect(frontFace?.position).toEqual({ x: 0, y: 0, z: -2 });
     expect(frontFace?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 10, y: 2 } },
     });
 
-    const leftFace = wallsSlot?.children.find((child) => child.id === 'slot-terrain-1-walls-left');
+    const backFace = result.children.find((child) => child.id === 'slot-terrain-1-back');
+    expect(backFace?.scale).toEqual({ x: -1, y: 1, z: 1 });
+    const leftFace = result.children.find((child) => child.id === 'slot-terrain-1-left');
+    expect(leftFace?.scale).toEqual({ x: -1, y: 1, z: 1 });
     expect(leftFace?.position).toEqual({ x: -5, y: 0, z: 0 });
     expect(leftFace?.components[0].fields).toEqual({
       Size: { $type: 'float2', value: { x: 4, y: 2 } },
@@ -303,5 +309,71 @@ describe('convertTerrain', () => {
 
     expect(result.position).toEqual({ x: 1, y: 1, z: -1 });
     expect(result.rotation).toEqual({ x: 0, y: 30, z: 0 });
+  });
+
+  it('does not create top/bottom mesh slots when width or depth is zero', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-zero-top-bottom',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      name: 'Zero Top Bottom',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 0,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-zero-top-bottom'
+    );
+
+    expect(result.children.some((child) => child.id.endsWith('-top'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-bottom'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-left'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-right'))).toBe(true);
+  });
+
+  it('does not create wall mesh slots that require zero height', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-zero-height',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      name: 'Zero Height',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 4,
+      height: 0,
+      depth: 4,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-zero-height'
+    );
+
+    expect(result.children.some((child) => child.id.endsWith('-top'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-bottom'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-left'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-right'))).toBe(false);
   });
 });

@@ -3,6 +3,10 @@ import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 import { ImageAssetContext } from '../imageAssetContext';
 
+function hasPositiveSize(size: { x: number; y: number }): boolean {
+  return size.x > 0 && size.y > 0;
+}
+
 function buildWallSlot(
   id: string,
   name: string,
@@ -10,11 +14,16 @@ function buildWallSlot(
   rotation: Vector3,
   size: { x: number; y: number },
   textureIdentifier: string | undefined,
-  imageAssetContext: ImageAssetContext
+  imageAssetContext: ImageAssetContext,
+  scale?: Vector3
 ): ResoniteObject {
-  return ResoniteObjectBuilder.create({ id, name })
+  const builder = ResoniteObjectBuilder.create({ id, name })
     .setPosition(position)
-    .setRotation(rotation)
+    .setRotation(rotation);
+  if (scale) {
+    builder.setScale(scale);
+  }
+  return builder
     .addQuadMesh({
       textureIdentifier,
       dualSided: false,
@@ -50,11 +59,10 @@ export function convertTerrain(
   const topId = `${mainBuilder.getId()}-top`;
   const bottomId = `${mainBuilder.getId()}-bottom`;
   const topBackId = `${mainBuilder.getId()}-top-back`;
-  const wallsId = `${mainBuilder.getId()}-walls`;
-  const frontId = `${wallsId}-front`;
-  const backId = `${wallsId}-back`;
-  const leftId = `${wallsId}-left`;
-  const rightId = `${wallsId}-right`;
+  const frontId = `${mainBuilder.getId()}-front`;
+  const backId = `${mainBuilder.getId()}-back`;
+  const leftId = `${mainBuilder.getId()}-left`;
+  const rightId = `${mainBuilder.getId()}-right`;
   const hideWalls = udonObj.mode === 1;
   mainBuilder.setPosition({
     x: basePosition.x + udonObj.width / 2,
@@ -75,71 +83,20 @@ export function convertTerrain(
       imageAssetContext,
     })
     .build();
+  const topBottomSize = { x: udonObj.width, y: udonObj.depth };
   const bottomLikeSurface = ResoniteObjectBuilder.create({
     id: hideWalls ? topBackId : bottomId,
     name: hideWalls ? `${udonObj.name}-top-back` : `${udonObj.name}-bottom`,
   })
     .setPosition({ x: 0, y: hideWalls ? 0 : -udonObj.height / 2, z: 0 })
     .setRotation({ x: -90, y: 0, z: 0 })
+    .setScale(hideWalls ? undefined : { x: 1, y: -1, z: 1 })
     .addQuadMesh({
       textureIdentifier: topTextureIdentifier,
       dualSided: false,
-      size: { x: udonObj.width, y: udonObj.depth },
+      size: topBottomSize,
       imageAssetContext,
     })
-    .build();
-
-  const wallsContainer = ResoniteObjectBuilder.create({
-    id: wallsId,
-    name: `${udonObj.name}-walls`,
-  })
-    .setPosition({ x: 0, y: 0, z: 0 })
-    .setRotation({ x: 0, y: 0, z: 0 })
-    .setActive(!hideWalls)
-    .addChild(
-      buildWallSlot(
-        frontId,
-        `${udonObj.name}-front`,
-        { x: 0, y: 0, z: -udonObj.depth / 2 },
-        { x: 0, y: 0, z: 0 },
-        { x: udonObj.width, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext
-      )
-    )
-    .addChild(
-      buildWallSlot(
-        backId,
-        `${udonObj.name}-back`,
-        { x: 0, y: 0, z: udonObj.depth / 2 },
-        { x: 0, y: 180, z: 0 },
-        { x: udonObj.width, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext
-      )
-    )
-    .addChild(
-      buildWallSlot(
-        leftId,
-        `${udonObj.name}-left`,
-        { x: -udonObj.width / 2, y: 0, z: 0 },
-        { x: 0, y: 90, z: 0 },
-        { x: udonObj.depth, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext
-      )
-    )
-    .addChild(
-      buildWallSlot(
-        rightId,
-        `${udonObj.name}-right`,
-        { x: udonObj.width / 2, y: 0, z: 0 },
-        { x: 0, y: -90, z: 0 },
-        { x: udonObj.depth, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext
-      )
-    )
     .build();
 
   mainBuilder.addBoxCollider(
@@ -154,10 +111,65 @@ export function convertTerrain(
     mainBuilder.addGrabbable();
   }
 
-  mainBuilder.addChild(topSurface);
-  mainBuilder.addChild(bottomLikeSurface);
+  if (hasPositiveSize(topBottomSize)) {
+    mainBuilder.addChild(topSurface);
+    mainBuilder.addChild(bottomLikeSurface);
+  }
   if (!hideWalls) {
-    mainBuilder.addChild(wallsContainer);
+    const frontBackSize = { x: udonObj.width, y: udonObj.height };
+    const leftRightSize = { x: udonObj.depth, y: udonObj.height };
+
+    if (hasPositiveSize(frontBackSize)) {
+      mainBuilder.addChild(
+        buildWallSlot(
+          frontId,
+          `${udonObj.name}-front`,
+          { x: 0, y: 0, z: -udonObj.depth / 2 },
+          { x: 0, y: 0, z: 0 },
+          frontBackSize,
+          sideTextureIdentifier,
+          imageAssetContext
+        )
+      );
+      mainBuilder.addChild(
+        buildWallSlot(
+          backId,
+          `${udonObj.name}-back`,
+          { x: 0, y: 0, z: udonObj.depth / 2 },
+          { x: 0, y: 180, z: 0 },
+          frontBackSize,
+          sideTextureIdentifier,
+          imageAssetContext,
+          { x: -1, y: 1, z: 1 }
+        )
+      );
+    }
+
+    if (hasPositiveSize(leftRightSize)) {
+      mainBuilder.addChild(
+        buildWallSlot(
+          leftId,
+          `${udonObj.name}-left`,
+          { x: -udonObj.width / 2, y: 0, z: 0 },
+          { x: 0, y: 90, z: 0 },
+          leftRightSize,
+          sideTextureIdentifier,
+          imageAssetContext,
+          { x: -1, y: 1, z: 1 }
+        )
+      );
+      mainBuilder.addChild(
+        buildWallSlot(
+          rightId,
+          `${udonObj.name}-right`,
+          { x: udonObj.width / 2, y: 0, z: 0 },
+          { x: 0, y: -90, z: 0 },
+          leftRightSize,
+          sideTextureIdentifier,
+          imageAssetContext
+        )
+      );
+    }
   }
 
   return mainBuilder.build();
