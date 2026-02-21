@@ -47,6 +47,9 @@ const portInput = document.getElementById('port') as HTMLInputElement;
 const rootScaleInput = document.getElementById('root-scale') as HTMLInputElement;
 const rootScaleDirectInput = document.getElementById('root-scale-direct') as HTMLInputElement;
 const rootGrabbableInput = document.getElementById('root-grabbable') as HTMLInputElement;
+const simpleAvatarProtectionInput = document.getElementById(
+  'simple-avatar-protection'
+) as HTMLInputElement;
 const lockedTerrainCharacterColliderInput = document.getElementById(
   'locked-terrain-character-collider'
 ) as HTMLInputElement;
@@ -313,6 +316,7 @@ importBtn.addEventListener('click', () => {
       host: getHostOrDefault(),
       port: parsePortOrNull(portInput.value) ?? DEFAULT_PORT,
       enableRootGrabbable: rootGrabbableInput.checked,
+      enableSimpleAvatarProtection: simpleAvatarProtectionInput.checked,
       rootScale: getRootScaleFromDirectInput(),
       enableCharacterColliderOnLockedTerrain: lockedTerrainCharacterColliderInput.checked,
       semiTransparentImageBlendMode:

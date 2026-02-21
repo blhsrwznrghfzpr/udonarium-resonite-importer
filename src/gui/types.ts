@@ -17,6 +17,7 @@ export interface ImportOptions {
   host: string;
   port: number;
   enableRootGrabbable: boolean;
+  enableSimpleAvatarProtection: boolean;
   rootScale: number;
   enableCharacterColliderOnLockedTerrain: boolean;
   semiTransparentImageBlendMode: 'Cutout' | 'Alpha';
