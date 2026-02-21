@@ -12,16 +12,16 @@
 
 ## 対応オブジェクト
 
-| Udonarium | Resonite表現 |
-|-----------|-------------|
-| キャラクター (GameCharacter) | Quad + テクスチャ |
-| ダイス (DiceSymbol) | Quad（面切り替え） |
-| カード (Card) | 両面Quad |
-| カードの山札 (CardStack) | グループ化されたカード |
-| 地形 (Terrain) | 上面+側面のQuadMesh（壁は1スロット配下で制御） |
-| マップマスク (TableMask) | Quad（半透明対応） |
-| テーブル (GameTable) | Quad |
-| 共有メモ (TextNote) | UIX Text |
+| Udonarium                    | Resonite表現                                   |
+| ---------------------------- | ---------------------------------------------- |
+| キャラクター (GameCharacter) | Quad + テクスチャ                              |
+| ダイス (DiceSymbol)          | Quad（面切り替え）                             |
+| カード (Card)                | 両面Quad                                       |
+| カードの山札 (CardStack)     | グループ化されたカード                         |
+| 地形 (Terrain)               | 上面+側面のQuadMesh（壁は1スロット配下で制御） |
+| マップマスク (TableMask)     | Quad（半透明対応）                             |
+| テーブル (GameTable)         | Quad                                           |
+| 共有メモ (TextNote)          | UIX Text                                       |
 
 ## 必要環境
 
@@ -69,15 +69,15 @@ npm run start -- -i ./save.zip --verbose
 
 ### CLIオプション
 
-| オプション | 短縮形 | 説明 | デフォルト |
-|------------|--------|------|------------|
-| `--input` | `-i` | 入力ZIPファイルパス | (必須) |
-| `--port` | `-p` | ResoniteLinkポート | 7869 |
-| `--host` | `-H` | ResoniteLinkホスト | localhost |
-| `--scale` | `-s` | スケール係数 | 0.02 |
-| `--dry-run` | `-d` | 解析のみ（接続しない） | false |
-| `--verbose` | `-v` | 詳細ログ出力 | false |
-| `--lang` | `-l` | 言語（en, ja） | 自動検出 |
+| オプション  | 短縮形 | 説明                   | デフォルト |
+| ----------- | ------ | ---------------------- | ---------- |
+| `--input`   | `-i`   | 入力ZIPファイルパス    | (必須)     |
+| `--port`    | `-p`   | ResoniteLinkポート     | 7869       |
+| `--host`    | `-H`   | ResoniteLinkホスト     | localhost  |
+| `--scale`   | `-s`   | スケール係数           | 0.02       |
+| `--dry-run` | `-d`   | 解析のみ（接続しない） | false      |
+| `--verbose` | `-v`   | 詳細ログ出力           | false      |
+| `--lang`    | `-l`   | 言語（en, ja）         | 自動検出   |
 
 ## 開発
 
@@ -91,4 +91,3 @@ MIT
 
 - [Udonarium](https://github.com/TK11235/udonarium) - Webベースのバーチャルテーブルトップ
 - [ResoniteLink](https://github.com/Yellow-Dog-Man/ResoniteLink) - Resonite連携ツール
-- [Resonite Wiki - Connecting to Other Applications](https://wiki.resonite.com/Connecting_Resonite_to_Other_Applications)
