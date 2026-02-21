@@ -245,6 +245,7 @@ export class SlotBuilder {
   ): Promise<string> {
     const groupId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
     const position: Vector3 = transform?.position ?? { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 };
+    const rotation = transform?.rotation ?? { x: 0, y: 1, z: 0, w: 0 };
     const fallbackScale: Vector3 = defaultScale ?? {
       x: IMPORT_GROUP_SCALE,
       y: IMPORT_GROUP_SCALE,
@@ -257,7 +258,7 @@ export class SlotBuilder {
       parentId: this.rootSlotId,
       name,
       position,
-      ...(transform?.rotation ? { rotation: transform.rotation } : {}),
+      rotation,
       scale,
       tag: IMPORT_ROOT_TAG,
     });

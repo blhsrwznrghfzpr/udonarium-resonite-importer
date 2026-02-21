@@ -994,6 +994,7 @@ describe('SlotBuilder', () => {
           parentId: 'Root',
           name: 'My Import',
           position: { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 },
+          rotation: { x: 0, y: 1, z: 0, w: 0 },
           scale: { x: IMPORT_GROUP_SCALE, y: IMPORT_GROUP_SCALE, z: IMPORT_GROUP_SCALE },
           tag: IMPORT_ROOT_TAG,
         })
