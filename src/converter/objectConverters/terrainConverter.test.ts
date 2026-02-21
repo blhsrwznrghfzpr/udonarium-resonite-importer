@@ -310,4 +310,70 @@ describe('convertTerrain', () => {
     expect(result.position).toEqual({ x: 1, y: 1, z: -1 });
     expect(result.rotation).toEqual({ x: 0, y: 30, z: 0 });
   });
+
+  it('does not create top/bottom mesh slots when width or depth is zero', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-zero-top-bottom',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      name: 'Zero Top Bottom',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 0,
+      height: 2,
+      depth: 2,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-zero-top-bottom'
+    );
+
+    expect(result.children.some((child) => child.id.endsWith('-top'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-bottom'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-left'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-right'))).toBe(true);
+  });
+
+  it('does not create wall mesh slots that require zero height', () => {
+    const udonObj: Terrain = {
+      id: 'terrain-zero-height',
+      type: 'terrain',
+      isLocked: false,
+      mode: 3,
+      rotate: 0,
+      name: 'Zero Height',
+      position: { x: 0, y: 0, z: 0 },
+      images: [],
+      width: 4,
+      height: 0,
+      depth: 4,
+      wallImage: null,
+      floorImage: null,
+    };
+
+    const result = convertTerrain(
+      udonObj,
+      { x: 0, y: 0, z: 0 },
+      buildImageAssetContext(),
+      undefined,
+      'slot-zero-height'
+    );
+
+    expect(result.children.some((child) => child.id.endsWith('-top'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-bottom'))).toBe(true);
+    expect(result.children.some((child) => child.id.endsWith('-front'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-back'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-left'))).toBe(false);
+    expect(result.children.some((child) => child.id.endsWith('-right'))).toBe(false);
+  });
 });

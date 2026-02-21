@@ -3,6 +3,10 @@ import { ResoniteObject, Vector3 } from '../../domain/ResoniteObject';
 import { ResoniteObjectBuilder } from '../ResoniteObjectBuilder';
 import { ImageAssetContext } from '../imageAssetContext';
 
+function hasPositiveSize(size: { x: number; y: number }): boolean {
+  return size.x > 0 && size.y > 0;
+}
+
 function buildWallSlot(
   id: string,
   name: string,
@@ -79,6 +83,7 @@ export function convertTerrain(
       imageAssetContext,
     })
     .build();
+  const topBottomSize = { x: udonObj.width, y: udonObj.depth };
   const bottomLikeSurface = ResoniteObjectBuilder.create({
     id: hideWalls ? topBackId : bottomId,
     name: hideWalls ? `${udonObj.name}-top-back` : `${udonObj.name}-bottom`,
@@ -89,7 +94,7 @@ export function convertTerrain(
     .addQuadMesh({
       textureIdentifier: topTextureIdentifier,
       dualSided: false,
-      size: { x: udonObj.width, y: udonObj.depth },
+      size: topBottomSize,
       imageAssetContext,
     })
     .build();
@@ -106,55 +111,65 @@ export function convertTerrain(
     mainBuilder.addGrabbable();
   }
 
-  mainBuilder.addChild(topSurface);
-  mainBuilder.addChild(bottomLikeSurface);
+  if (hasPositiveSize(topBottomSize)) {
+    mainBuilder.addChild(topSurface);
+    mainBuilder.addChild(bottomLikeSurface);
+  }
   if (!hideWalls) {
-    mainBuilder.addChild(
-      buildWallSlot(
-        frontId,
-        `${udonObj.name}-front`,
-        { x: 0, y: 0, z: -udonObj.depth / 2 },
-        { x: 0, y: 0, z: 0 },
-        { x: udonObj.width, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext
-      )
-    );
-    mainBuilder.addChild(
-      buildWallSlot(
-        backId,
-        `${udonObj.name}-back`,
-        { x: 0, y: 0, z: udonObj.depth / 2 },
-        { x: 0, y: 180, z: 0 },
-        { x: udonObj.width, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext,
-        { x: -1, y: 1, z: 1 }
-      )
-    );
-    mainBuilder.addChild(
-      buildWallSlot(
-        leftId,
-        `${udonObj.name}-left`,
-        { x: -udonObj.width / 2, y: 0, z: 0 },
-        { x: 0, y: 90, z: 0 },
-        { x: udonObj.depth, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext,
-        { x: -1, y: 1, z: 1 }
-      )
-    );
-    mainBuilder.addChild(
-      buildWallSlot(
-        rightId,
-        `${udonObj.name}-right`,
-        { x: udonObj.width / 2, y: 0, z: 0 },
-        { x: 0, y: -90, z: 0 },
-        { x: udonObj.depth, y: udonObj.height },
-        sideTextureIdentifier,
-        imageAssetContext
-      )
-    );
+    const frontBackSize = { x: udonObj.width, y: udonObj.height };
+    const leftRightSize = { x: udonObj.depth, y: udonObj.height };
+
+    if (hasPositiveSize(frontBackSize)) {
+      mainBuilder.addChild(
+        buildWallSlot(
+          frontId,
+          `${udonObj.name}-front`,
+          { x: 0, y: 0, z: -udonObj.depth / 2 },
+          { x: 0, y: 0, z: 0 },
+          frontBackSize,
+          sideTextureIdentifier,
+          imageAssetContext
+        )
+      );
+      mainBuilder.addChild(
+        buildWallSlot(
+          backId,
+          `${udonObj.name}-back`,
+          { x: 0, y: 0, z: udonObj.depth / 2 },
+          { x: 0, y: 180, z: 0 },
+          frontBackSize,
+          sideTextureIdentifier,
+          imageAssetContext,
+          { x: -1, y: 1, z: 1 }
+        )
+      );
+    }
+
+    if (hasPositiveSize(leftRightSize)) {
+      mainBuilder.addChild(
+        buildWallSlot(
+          leftId,
+          `${udonObj.name}-left`,
+          { x: -udonObj.width / 2, y: 0, z: 0 },
+          { x: 0, y: 90, z: 0 },
+          leftRightSize,
+          sideTextureIdentifier,
+          imageAssetContext,
+          { x: -1, y: 1, z: 1 }
+        )
+      );
+      mainBuilder.addChild(
+        buildWallSlot(
+          rightId,
+          `${udonObj.name}-right`,
+          { x: udonObj.width / 2, y: 0, z: 0 },
+          { x: 0, y: -90, z: 0 },
+          leftRightSize,
+          sideTextureIdentifier,
+          imageAssetContext
+        )
+      );
+    }
   }
 
   return mainBuilder.build();
