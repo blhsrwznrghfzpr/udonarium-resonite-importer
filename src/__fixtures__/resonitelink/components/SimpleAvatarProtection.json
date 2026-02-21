@@ -2,8 +2,8 @@
   "componentType": "[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_CommonAvatar_SimpleAvatarProtection_1771505610870",
-    "sourceMessageId": "tsrl_98l5vohy4ib_25",
+    "entityId": "test_[FrooxEngine]FrooxEngine_CommonAvatar_SimpleAvatarProtection_1771679309848",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2h",
     "success": true,
     "errorInfo": null
   },
@@ -15,45 +15,45 @@
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F4E"
+          "id": "Reso_B5DA"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 0,
-          "id": "Reso_17F4F"
+          "id": "Reso_B5DB"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F50"
+          "id": "Reso_B5DC"
         },
         "User": {
           "$type": "syncObject",
           "members": {
             "User": {
               "$type": "reference",
-              "targetId": "Reso_3683",
+              "targetId": "Reso_B5DD",
               "targetType": "[FrooxEngine]FrooxEngine.User",
-              "id": "Reso_17F51"
+              "id": "Reso_B5DE"
             },
             "_userId": {
               "$type": "string",
               "value": "U-yoshi1123-",
-              "id": "Reso_17F52"
+              "id": "Reso_B5DF"
             }
           },
-          "id": "Reso_17F53"
+          "id": "Reso_B5E0"
         },
         "ReassignUserOnPackageImport": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_17F54"
+          "id": "Reso_B5E1"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_CommonAvatar_SimpleAvatarProtection_1771505610870",
+      "id": "test_[FrooxEngine]FrooxEngine_CommonAvatar_SimpleAvatarProtection_1771679309848",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_98l5vohy4ib_26",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2i",
     "success": true,
     "errorInfo": null
   }

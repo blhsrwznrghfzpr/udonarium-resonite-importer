@@ -1,31 +1,31 @@
 {
-  "componentType": "[FrooxEngine]FrooxEngine.BoxCollider",
+  "componentType": "[FrooxEngine]FrooxEngine.TriangleCollider",
   "addResponse": {
     "$type": "newEntityId",
-    "entityId": "test_[FrooxEngine]FrooxEngine_BoxCollider_1771679309833",
-    "sourceMessageId": "tsrl_f67zmo0qq15_27",
+    "entityId": "test_[FrooxEngine]FrooxEngine_TriangleCollider_1771679309840",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2c",
     "success": true,
     "errorInfo": null
   },
   "getResponse": {
     "$type": "componentData",
     "data": {
-      "componentType": "[FrooxEngine]FrooxEngine.BoxCollider",
+      "componentType": "[FrooxEngine]FrooxEngine.TriangleCollider",
       "members": {
         "persistent": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_B5C6"
+          "id": "Reso_B5CF"
         },
         "UpdateOrder": {
           "$type": "int",
           "value": 1000000,
-          "id": "Reso_B5C7"
+          "id": "Reso_B5D0"
         },
         "Enabled": {
           "$type": "bool",
           "value": true,
-          "id": "Reso_B5C8"
+          "id": "Reso_B5D1"
         },
         "Offset": {
           "$type": "float3",
@@ -34,43 +34,61 @@
             "y": 0,
             "z": 0
           },
-          "id": "Reso_B5C9"
+          "id": "Reso_B5D2"
         },
         "Type": {
           "$type": "enum",
           "value": "Static",
           "enumType": "ColliderType",
-          "id": "Reso_B5CA"
+          "id": "Reso_B5D3"
         },
         "Mass": {
           "$type": "float",
           "value": 1,
-          "id": "Reso_B5CB"
+          "id": "Reso_B5D4"
         },
         "CharacterCollider": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_B5CC"
+          "id": "Reso_B5D5"
         },
         "IgnoreRaycasts": {
           "$type": "bool",
           "value": false,
-          "id": "Reso_B5CD"
+          "id": "Reso_B5D6"
         },
-        "Size": {
+        "A": {
+          "$type": "float3",
+          "value": {
+            "x": -1,
+            "y": -1,
+            "z": 0
+          },
+          "id": "Reso_B5D7"
+        },
+        "B": {
+          "$type": "float3",
+          "value": {
+            "x": 0,
+            "y": 1,
+            "z": 0
+          },
+          "id": "Reso_B5D8"
+        },
+        "C": {
           "$type": "float3",
           "value": {
             "x": 1,
-            "y": 1,
-            "z": 1
+            "y": -1,
+            "z": 0
           },
-          "id": "Reso_B5CE"
+          "id": "Reso_B5D9"
         }
       },
-      "id": "test_[FrooxEngine]FrooxEngine_BoxCollider_1771679309833",
+      "id": "test_[FrooxEngine]FrooxEngine_TriangleCollider_1771679309840",
       "isReferenceOnly": false
     },
-    "sourceMessageId": "tsrl_f67zmo0qq15_28",
+    "sourceMessageId": "tsrl_f67zmo0qq15_2d",
     "success": true,
     "errorInfo": null
   }

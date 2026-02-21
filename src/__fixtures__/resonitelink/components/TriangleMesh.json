@@ -1,0 +1,316 @@
+{
+  "componentType": "[FrooxEngine]FrooxEngine.TriangleMesh",
+  "addResponse": {
+    "$type": "newEntityId",
+    "entityId": "test_[FrooxEngine]FrooxEngine_TriangleMesh_1771679309770",
+    "sourceMessageId": "tsrl_f67zmo0qq15_13",
+    "success": true,
+    "errorInfo": null
+  },
+  "getResponse": {
+    "$type": "componentData",
+    "data": {
+      "componentType": "[FrooxEngine]FrooxEngine.TriangleMesh",
+      "members": {
+        "persistent": {
+          "$type": "bool",
+          "value": true,
+          "id": "Reso_B4D5"
+        },
+        "UpdateOrder": {
+          "$type": "int",
+          "value": 0,
+          "id": "Reso_B4D6"
+        },
+        "Enabled": {
+          "$type": "bool",
+          "value": true,
+          "id": "Reso_B4D7"
+        },
+        "HighPriorityIntegration": {
+          "$type": "bool",
+          "value": false,
+          "id": "Reso_B4D8"
+        },
+        "OverrideBoundingBox": {
+          "$type": "bool",
+          "value": false,
+          "id": "Reso_B4D9"
+        },
+        "OverridenBoundingBox": {
+          "$type": "BoundingBox",
+          "value": {
+            "min": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "max": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "id": "Reso_B4DA"
+        },
+        "Profile": {
+          "$type": "enum",
+          "value": "Linear",
+          "enumType": "ColorProfile",
+          "id": "Reso_B4DB"
+        },
+        "Vertex0": {
+          "$type": "syncObject",
+          "members": {
+            "Position": {
+              "$type": "float3",
+              "value": {
+                "x": -1,
+                "y": -1,
+                "z": 0
+              },
+              "id": "Reso_B4DC"
+            },
+            "UV0": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4DD"
+            },
+            "UV1": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4DE"
+            },
+            "UV2": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4DF"
+            },
+            "UV3": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4E0"
+            },
+            "Color": {
+              "$type": "colorX",
+              "value": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1,
+                "profile": "sRGB"
+              },
+              "id": "Reso_B4E1"
+            },
+            "Normal": {
+              "$type": "float3",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "id": "Reso_B4E2"
+            },
+            "Tangent": {
+              "$type": "float4",
+              "value": {
+                "x": 1,
+                "y": 0,
+                "z": 0,
+                "w": 0
+              },
+              "id": "Reso_B4E3"
+            }
+          },
+          "id": "Reso_B4E4"
+        },
+        "Vertex1": {
+          "$type": "syncObject",
+          "members": {
+            "Position": {
+              "$type": "float3",
+              "value": {
+                "x": 0,
+                "y": 1,
+                "z": 0
+              },
+              "id": "Reso_B4E5"
+            },
+            "UV0": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4E6"
+            },
+            "UV1": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4E7"
+            },
+            "UV2": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4E8"
+            },
+            "UV3": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4E9"
+            },
+            "Color": {
+              "$type": "colorX",
+              "value": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1,
+                "profile": "sRGB"
+              },
+              "id": "Reso_B4EA"
+            },
+            "Normal": {
+              "$type": "float3",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "id": "Reso_B4EB"
+            },
+            "Tangent": {
+              "$type": "float4",
+              "value": {
+                "x": 1,
+                "y": 0,
+                "z": 0,
+                "w": 0
+              },
+              "id": "Reso_B4EC"
+            }
+          },
+          "id": "Reso_B4ED"
+        },
+        "Vertex2": {
+          "$type": "syncObject",
+          "members": {
+            "Position": {
+              "$type": "float3",
+              "value": {
+                "x": 1,
+                "y": -1,
+                "z": 0
+              },
+              "id": "Reso_B4EE"
+            },
+            "UV0": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4EF"
+            },
+            "UV1": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4F0"
+            },
+            "UV2": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4F1"
+            },
+            "UV3": {
+              "$type": "float2",
+              "value": {
+                "x": 0,
+                "y": 0
+              },
+              "id": "Reso_B4F2"
+            },
+            "Color": {
+              "$type": "colorX",
+              "value": {
+                "r": 1,
+                "g": 1,
+                "b": 1,
+                "a": 1,
+                "profile": "sRGB"
+              },
+              "id": "Reso_B4F3"
+            },
+            "Normal": {
+              "$type": "float3",
+              "value": {
+                "x": 0,
+                "y": 0,
+                "z": 1
+              },
+              "id": "Reso_B4F4"
+            },
+            "Tangent": {
+              "$type": "float4",
+              "value": {
+                "x": 1,
+                "y": 0,
+                "z": 0,
+                "w": 0
+              },
+              "id": "Reso_B4F5"
+            }
+          },
+          "id": "Reso_B4F6"
+        },
+        "AutoNormals": {
+          "$type": "bool",
+          "value": true,
+          "id": "Reso_B4F7"
+        },
+        "AutoTangents": {
+          "$type": "bool",
+          "value": false,
+          "id": "Reso_B4F8"
+        },
+        "DualSided": {
+          "$type": "bool",
+          "value": false,
+          "id": "Reso_B4F9"
+        }
+      },
+      "id": "test_[FrooxEngine]FrooxEngine_TriangleMesh_1771679309770",
+      "isReferenceOnly": false
+    },
+    "sourceMessageId": "tsrl_f67zmo0qq15_14",
+    "success": true,
+    "errorInfo": null
+  }
+}

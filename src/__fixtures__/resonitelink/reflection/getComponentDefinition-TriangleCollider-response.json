@@ -2,13 +2,13 @@
   "$type": "componentDefinitionData",
   "definition": {
     "baseTypeIsComponent": true,
-    "categoryPath": "UIX/Layout",
+    "categoryPath": "Physics/Colliders",
     "type": {
       "baseType": null,
-      "fullTypeName": "[FrooxEngine]FrooxEngine.UIX.VerticalLayout",
+      "fullTypeName": "[FrooxEngine]FrooxEngine.TriangleCollider",
       "assemblyName": "FrooxEngine",
-      "namespace": "FrooxEngine.UIX",
-      "name": "VerticalLayout",
+      "namespace": "FrooxEngine",
+      "name": "TriangleCollider",
       "isAbstract": false,
       "isInterface": false,
       "isGenericType": false,
@@ -54,7 +54,25 @@
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
       },
-      "PaddingTop": {
+      "Offset": {
+        "$type": "field",
+        "valueType": {
+          "type": "float3",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<float3>"
+      },
+      "Type": {
+        "$type": "field",
+        "valueType": {
+          "type": "[FrooxEngine]FrooxEngine.ColliderType",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<[FrooxEngine]FrooxEngine.ColliderType>"
+      },
+      "Mass": {
         "$type": "field",
         "valueType": {
           "type": "float",
@@ -63,61 +81,7 @@
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<float>"
       },
-      "PaddingRight": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "PaddingBottom": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "PaddingLeft": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "Spacing": {
-        "$type": "field",
-        "valueType": {
-          "type": "float",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<float>"
-      },
-      "HorizontalAlign": {
-        "$type": "field",
-        "valueType": {
-          "type": "[FrooxEngine]FrooxEngine.UIX.LayoutHorizontalAlignment",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<[FrooxEngine]FrooxEngine.UIX.LayoutHorizontalAlignment>"
-      },
-      "VerticalAlign": {
-        "$type": "field",
-        "valueType": {
-          "type": "[FrooxEngine]FrooxEngine.UIX.LayoutVerticalAlignment",
-          "isGenericParameter": false,
-          "genericArguments": null
-        },
-        "type": "[FrooxEngine]FrooxEngine.Sync<[FrooxEngine]FrooxEngine.UIX.LayoutVerticalAlignment>"
-      },
-      "ForceExpandWidth": {
+      "CharacterCollider": {
         "$type": "field",
         "valueType": {
           "type": "bool",
@@ -126,7 +90,7 @@
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
       },
-      "ForceExpandHeight": {
+      "IgnoreRaycasts": {
         "$type": "field",
         "valueType": {
           "type": "bool",
@@ -134,10 +98,37 @@
           "genericArguments": null
         },
         "type": "[FrooxEngine]FrooxEngine.Sync<bool>"
+      },
+      "A": {
+        "$type": "field",
+        "valueType": {
+          "type": "float3",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<float3>"
+      },
+      "B": {
+        "$type": "field",
+        "valueType": {
+          "type": "float3",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<float3>"
+      },
+      "C": {
+        "$type": "field",
+        "valueType": {
+          "type": "float3",
+          "isGenericParameter": false,
+          "genericArguments": null
+        },
+        "type": "[FrooxEngine]FrooxEngine.Sync<float3>"
       }
     }
   },
-  "sourceMessageId": "tsrl_f67zmo0qq15_l",
+  "sourceMessageId": "tsrl_f67zmo0qq15_h",
   "success": true,
   "errorInfo": null
 }

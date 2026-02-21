@@ -32,12 +32,14 @@ The `components/` directory contains fixture data for each component type requir
 | `_summary.json`        | Test summary with success/failure status      |
 | `QuadMesh.json`        | `[FrooxEngine]FrooxEngine.QuadMesh`           |
 | `BoxMesh.json`         | `[FrooxEngine]FrooxEngine.BoxMesh`            |
+| `TriangleMesh.json`    | `[FrooxEngine]FrooxEngine.TriangleMesh`       |
 | `MeshRenderer.json`    | `[FrooxEngine]FrooxEngine.MeshRenderer`       |
 | `PBS_Metallic.json`    | `[FrooxEngine]FrooxEngine.PBS_Metallic`       |
 | `UnlitMaterial.json`   | `[FrooxEngine]FrooxEngine.UnlitMaterial`      |
 | `StaticTexture2D.json` | `[FrooxEngine]FrooxEngine.StaticTexture2D`    |
 | `Grabbable.json`       | `[FrooxEngine]FrooxEngine.Grabbable`          |
 | `BoxCollider.json`     | `[FrooxEngine]FrooxEngine.BoxCollider`        |
+| `TriangleCollider.json`| `[FrooxEngine]FrooxEngine.TriangleCollider`   |
 | `Canvas.json`          | `[FrooxEngine]FrooxEngine.UIX.Canvas`         |
 | `Text.json`            | `[FrooxEngine]FrooxEngine.UIX.Text`           |
 | `VerticalLayout.json`  | `[FrooxEngine]FrooxEngine.UIX.VerticalLayout` |
