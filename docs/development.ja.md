@@ -14,6 +14,15 @@
 
 ## ビルドコマンド
 
+### ソースコードからのセットアップ
+
+```bash
+git clone https://github.com/TriVR-TRPG/udonarium-resonite-importer.git
+cd udonarium-resonite-importer
+npm install
+npm run build
+```
+
 ```bash
 # CLI版とGUI版を並列ビルド
 npm run build

@@ -32,26 +32,24 @@ A tool to import [Udonarium](https://github.com/TK11235/udonarium) save data int
 
 ## Installation
 
-```bash
-git clone https://github.com/blhsrwznrghfzpr/udonarium-resonite-importer.git
-cd udonarium-resonite-importer
-npm install
-npm run build
-```
+Download the latest package from GitHub Releases:
+
+- https://github.com/TriVR-TRPG/udonarium-resonite-importer/releases/latest
+
+Then choose one package:
+
+- GUI (Windows/macOS): download and extract the GUI ZIP package
+- CLI (Windows/macOS/Linux): download the standalone executable for your platform
 
 ## Usage
 
 ### GUI Version (Recommended)
 
-```bash
-npm run build:gui
-npm run start:gui
-```
-
-1. Click "Browse..." to select a Udonarium ZIP file
-2. Review the analysis results
-3. Configure ResoniteLink settings (default values usually work)
-4. Click "Import to Resonite"
+1. Download and extract the GUI package from Releases
+2. Launch `Udonarium Resonite Importer` (`.exe` on Windows / `.app` on macOS)
+3. Click "Browse..." to select a Udonarium ZIP file
+4. In Resonite, enable ResoniteLink and set the port
+5. Click "Import to Resonite"
 
 ### CLI Version
 
@@ -76,7 +74,7 @@ npm run start -- -i ./save.zip --verbose
 | `--input`   | `-i`  | Input ZIP file path           | (required)  |
 | `--port`    | `-p`  | ResoniteLink port             | 7869        |
 | `--host`    | `-H`  | ResoniteLink host             | localhost   |
-| `--scale`   | `-s`  | Scale factor                  | 0.02        |
+| `--scale`   | `-s`  | Scale factor                  | 1 (m)       |
 | `--dry-run` | `-d`  | Analysis only (no connection) | false       |
 | `--verbose` | `-v`  | Verbose output                | false       |
 | `--lang`    | `-l`  | Language (en, ja)             | Auto-detect |
@@ -93,3 +91,4 @@ MIT
 
 - [Udonarium](https://github.com/TK11235/udonarium) - Web-based virtual tabletop
 - [ResoniteLink](https://github.com/Yellow-Dog-Man/ResoniteLink) - Resonite integration tool
+

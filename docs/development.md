@@ -14,6 +14,15 @@ Using `dynamic import()` avoids CJS/ESM interop issues from static `require`-sty
 
 ## Build Commands
 
+### Setup from Source
+
+```bash
+git clone https://github.com/TriVR-TRPG/udonarium-resonite-importer.git
+cd udonarium-resonite-importer
+npm install
+npm run build
+```
+
 ```bash
 # Build CLI and GUI (parallel)
 npm run build

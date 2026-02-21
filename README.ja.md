@@ -30,26 +30,24 @@
 
 ## インストール
 
-```bash
-git clone https://github.com/blhsrwznrghfzpr/udonarium-resonite-importer.git
-cd udonarium-resonite-importer
-npm install
-npm run build
-```
+GitHub Releases から最新パッケージをダウンロードしてください。
+
+- https://github.com/TriVR-TRPG/udonarium-resonite-importer/releases/latest
+
+用途に応じて次を選択します。
+
+- GUI版（Windows/macOS）: GUI ZIP をダウンロードして展開
+- CLI版（Windows/macOS/Linux）: 各OS向けスタンドアロン実行ファイルをダウンロード
 
 ## 使用方法
 
 ### GUI版（推奨）
 
-```bash
-npm run build:gui
-npm run start:gui
-```
-
-1. 「参照...」ボタンでUdonariumのZIPファイルを選択
-2. 解析結果を確認
-3. ResoniteLinkの設定（通常はデフォルトでOK）
-4. 「Resoniteにインポート」ボタンをクリック
+1. Releases から GUI パッケージをダウンロードして展開
+2. `Udonarium Resonite Importer` を起動（Windows は `.exe`、macOS は `.app`）
+3. 「参照...」ボタンでUdonariumのZIPファイルを選択
+4. ResoniteでResoniteLinkを有効化して、ポートを設定
+5. 「Resoniteにインポート」ボタンをクリック
 
 ### CLI版
 
@@ -74,7 +72,7 @@ npm run start -- -i ./save.zip --verbose
 | `--input`   | `-i`   | 入力ZIPファイルパス    | (必須)     |
 | `--port`    | `-p`   | ResoniteLinkポート     | 7869       |
 | `--host`    | `-H`   | ResoniteLinkホスト     | localhost  |
-| `--scale`   | `-s`   | スケール係数           | 0.02       |
+| `--scale`   | `-s`   | スケール係数           | 1 (m)      |
 | `--dry-run` | `-d`   | 解析のみ（接続しない） | false      |
 | `--verbose` | `-v`   | 詳細ログ出力           | false      |
 | `--lang`    | `-l`   | 言語（en, ja）         | 自動検出   |
