@@ -154,6 +154,7 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     host,
     port,
     enableRootGrabbable,
+    enableSimpleAvatarProtection = true,
     rootScale,
     enableCharacterColliderOnLockedTerrain,
     semiTransparentImageBlendMode,
@@ -213,7 +214,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       groupName,
       previousImport.transform ?? undefined,
       defaultScale,
-      enableRootGrabbable
+      enableRootGrabbable,
+      enableSimpleAvatarProtection
     );
 
     // Import images
@@ -239,7 +241,8 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
       importedImageAssetInfoMap,
       (identifier, componentId) => {
         assetImporter.applyTextureReference(identifier, componentId);
-      }
+      },
+      enableSimpleAvatarProtection
     );
 
     const imageAssetContext = buildImageAssetContext({
@@ -260,14 +263,18 @@ async function handleImportToResonite(options: ImportOptions): Promise<ImportRes
     resolveSharedMaterialReferences(resoniteObjects, materialReferenceMap);
 
     // Build slots
-    const slotResults = await slotBuilder.buildSlots(resoniteObjects, (current, total) => {
-      currentStep = totalImages + current;
-      sendProgress(
-        'import',
-        Math.floor((currentStep / totalSteps) * 100),
-        `オブジェクトを作成中... ${current}/${total}`
-      );
-    });
+    const slotResults = await slotBuilder.buildSlots(
+      resoniteObjects,
+      (current, total) => {
+        currentStep = totalImages + current;
+        sendProgress(
+          'import',
+          Math.floor((currentStep / totalSteps) * 100),
+          `オブジェクトを作成中... ${current}/${total}`
+        );
+      },
+      { enableSimpleAvatarProtection }
+    );
 
     client.disconnect();
     sendProgress('import', 100, '完了');

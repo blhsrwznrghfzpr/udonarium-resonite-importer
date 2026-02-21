@@ -3,6 +3,7 @@
  */
 
 import { randomUUID } from 'crypto';
+import { ObjectType } from '../domain/UdonariumObject';
 import { CharacterResoniteObject, ResoniteObject, Vector3 } from '../domain/ResoniteObject';
 import { SharedMeshDefinition } from '../converter/sharedMesh';
 import { SharedMaterialDefinition } from '../converter/sharedMaterial';
@@ -51,6 +52,21 @@ function isCharacterObject(obj: ResoniteObject): obj is CharacterResoniteObject 
   return obj.sourceType === 'character';
 }
 
+const UDONARIUM_OBJECT_TYPES = new Set<ObjectType>([
+  'character',
+  'dice-symbol',
+  'card',
+  'card-stack',
+  'terrain',
+  'table',
+  'table-mask',
+  'text-note',
+]);
+
+function isUdonariumObjectRoot(obj: ResoniteObject): boolean {
+  return typeof obj.sourceType === 'string' && UDONARIUM_OBJECT_TYPES.has(obj.sourceType);
+}
+
 export interface SlotBuildResult {
   slotId: string;
   success: boolean;
@@ -92,7 +108,14 @@ export class SlotBuilder {
   /**
    * Build a slot from a Resonite object
    */
-  async buildSlot(obj: ResoniteObject, parentId?: string): Promise<SlotBuildResult> {
+  async buildSlot(
+    obj: ResoniteObject,
+    parentId?: string,
+    options?: {
+      enableSimpleAvatarProtection?: boolean;
+    }
+  ): Promise<SlotBuildResult> {
+    const enableSimpleAvatarProtection = options?.enableSimpleAvatarProtection ?? true;
     try {
       const slotId = await this.client.addSlot({
         id: obj.id,
@@ -114,7 +137,14 @@ export class SlotBuilder {
       // SyncList fields (e.g. Materials) require a 2-step update protocol:
       //  1. addComponent with non-list fields only
       //  2. updateListFields: add elements, fetch element IDs, set references
+      let hasMeshRenderer = false;
+      const hasSimpleAvatarProtection = obj.components.some(
+        (component) => component.type === COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+      );
       for (const component of obj.components) {
+        if (component.type === COMPONENT_TYPES.MESH_RENDERER) {
+          hasMeshRenderer = true;
+        }
         const { creationFields, listFields } = splitListFields(component.fields);
 
         const componentId = await this.client.addComponent({
@@ -129,9 +159,18 @@ export class SlotBuilder {
         }
       }
 
+      const shouldAddSimpleAvatarProtection = hasMeshRenderer || isUdonariumObjectRoot(obj);
+      if (
+        enableSimpleAvatarProtection &&
+        shouldAddSimpleAvatarProtection &&
+        !hasSimpleAvatarProtection
+      ) {
+        await this.addSimpleAvatarProtectionComponent(slotId, `${obj.id}-simple-avatar-protection`);
+      }
+
       // Build children recursively
       for (const child of obj.children) {
-        await this.buildSlot(child, slotId);
+        await this.buildSlot(child, slotId, options);
       }
 
       return { slotId, success: true };
@@ -149,7 +188,10 @@ export class SlotBuilder {
    */
   async buildSlots(
     objects: ResoniteObject[],
-    onProgress?: (current: number, total: number) => void
+    onProgress?: (current: number, total: number) => void,
+    options?: {
+      enableSimpleAvatarProtection?: boolean;
+    }
   ): Promise<SlotBuildResult[]> {
     if (objects.length === 0) {
       return [];
@@ -171,7 +213,7 @@ export class SlotBuilder {
           : isInventoryObject
             ? await this.ensureInventoryLocationSlot(object.locationName, inventorySlotId)
             : objectsSlotId;
-        result = await this.buildSlot(object, parentId);
+        result = await this.buildSlot(object, parentId, options);
       } catch (error) {
         result = {
           slotId: object.id,
@@ -196,7 +238,8 @@ export class SlotBuilder {
     name: string,
     transform?: SlotTransform,
     defaultScale?: Vector3,
-    enableRootGrabbable = false
+    enableRootGrabbable = false,
+    enableSimpleAvatarProtection = true
   ): Promise<string> {
     const groupId = `${SLOT_ID_PREFIX}-${randomUUID()}`;
     const position: Vector3 = transform?.position ?? { x: 0, y: IMPORT_GROUP_Y_OFFSET, z: 0 };
@@ -222,6 +265,9 @@ export class SlotBuilder {
       componentType: COMPONENT_TYPES.OBJECT_ROOT,
       fields: {},
     });
+    if (enableSimpleAvatarProtection) {
+      await this.addSimpleAvatarProtectionComponent(groupId, `${groupId}-simple-avatar-protection`);
+    }
     if (enableRootGrabbable) {
       await this.client.addComponent({
         id: `${groupId}-grabbable`,
@@ -247,7 +293,8 @@ export class SlotBuilder {
 
   async createTextureAssetsWithUpdater(
     imageAssetInfoMap: Map<string, ImageAssetInfo>,
-    updateTextureReference: TextureReferenceUpdater
+    updateTextureReference: TextureReferenceUpdater,
+    enableSimpleAvatarProtection = true
   ): Promise<void> {
     const importableTextures = Array.from(imageAssetInfoMap.values()).filter(
       (info) => !!info.textureValue && !info.textureValue.startsWith('texture-ref://')
@@ -283,6 +330,12 @@ export class SlotBuilder {
         componentType: COMPONENT_TYPES.MAIN_TEXTURE_PROPERTY_BLOCK,
         fields: buildMainTexturePropertyBlockFields(textureComponentId),
       });
+      if (enableSimpleAvatarProtection) {
+        await this.addSimpleAvatarProtectionComponent(
+          textureSlotId,
+          `${textureSlotId}-simple-avatar-protection`
+        );
+      }
 
       await updateTextureReference(identifier, textureComponentId);
     }
@@ -477,5 +530,14 @@ export class SlotBuilder {
       position: { x: 0, y: 0, z: 0 },
     });
     return this.materialsSlotId;
+  }
+
+  private async addSimpleAvatarProtectionComponent(slotId: string, id: string): Promise<void> {
+    await this.client.addComponent({
+      id,
+      slotId,
+      componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+      fields: {},
+    });
   }
 }

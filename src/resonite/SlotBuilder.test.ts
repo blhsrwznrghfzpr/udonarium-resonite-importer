@@ -245,6 +245,160 @@ describe('SlotBuilder', () => {
       expect(mockClient.addSlot).toHaveBeenCalledTimes(3);
     });
 
+    it('adds SimpleAvatarProtection when slot has MeshRenderer', async () => {
+      const obj = createResoniteObject({
+        components: [
+          {
+            id: 'mesh-renderer-1',
+            type: COMPONENT_TYPES.MESH_RENDERER,
+            fields: {},
+          },
+        ],
+      });
+
+      await slotBuilder.buildSlot(obj);
+
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(1, {
+        id: 'mesh-renderer-1',
+        slotId: 'created-slot-id',
+        componentType: COMPONENT_TYPES.MESH_RENDERER,
+        fields: {},
+      });
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(2, {
+        id: `${obj.id}-simple-avatar-protection`,
+        slotId: 'created-slot-id',
+        componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+        fields: {},
+      });
+    });
+
+    it('does not add duplicate SimpleAvatarProtection when already present', async () => {
+      const obj = createResoniteObject({
+        components: [
+          {
+            id: 'mesh-renderer-1',
+            type: COMPONENT_TYPES.MESH_RENDERER,
+            fields: {},
+          },
+          {
+            id: 'sap-1',
+            type: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+            fields: {},
+          },
+        ],
+      });
+
+      await slotBuilder.buildSlot(obj);
+
+      expect(mockClient.addComponent).toHaveBeenCalledTimes(2);
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(1, {
+        id: 'mesh-renderer-1',
+        slotId: 'created-slot-id',
+        componentType: COMPONENT_TYPES.MESH_RENDERER,
+        fields: {},
+      });
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(2, {
+        id: 'sap-1',
+        slotId: 'created-slot-id',
+        componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+        fields: {},
+      });
+    });
+
+    it('does not add SimpleAvatarProtection when disabled', async () => {
+      const obj = createResoniteObject({
+        components: [
+          {
+            id: 'mesh-renderer-1',
+            type: COMPONENT_TYPES.MESH_RENDERER,
+            fields: {},
+          },
+        ],
+      });
+
+      await slotBuilder.buildSlot(obj, undefined, { enableSimpleAvatarProtection: false });
+
+      expect(mockClient.addComponent).toHaveBeenCalledTimes(1);
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(1, {
+        id: 'mesh-renderer-1',
+        slotId: 'created-slot-id',
+        componentType: COMPONENT_TYPES.MESH_RENDERER,
+        fields: {},
+      });
+    });
+
+    it('adds SimpleAvatarProtection to Udonarium object root even without MeshRenderer', async () => {
+      const obj = createResoniteObject({ components: [], sourceType: 'text-note' });
+
+      await slotBuilder.buildSlot(obj);
+
+      expect(mockClient.addComponent).toHaveBeenCalledTimes(1);
+      expect(mockClient.addComponent).toHaveBeenCalledWith({
+        id: `${obj.id}-simple-avatar-protection`,
+        slotId: 'created-slot-id',
+        componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+        fields: {},
+      });
+    });
+
+    it('does not add object-root SimpleAvatarProtection to child slots without MeshRenderer', async () => {
+      const parentObj = createResoniteObject({
+        id: 'parent-001',
+        children: [createResoniteObject({ id: 'child-001', components: [] })],
+        components: [],
+        sourceType: 'card',
+      });
+
+      await slotBuilder.buildSlot(parentObj);
+
+      const sapCalls = mockClient.addComponent.mock.calls.filter(
+        (call) =>
+          (call[0] as { componentType: string }).componentType ===
+          COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+      );
+      expect(sapCalls).toHaveLength(1);
+      expect(sapCalls[0]?.[0]).toMatchObject({
+        id: 'parent-001-simple-avatar-protection',
+      });
+    });
+
+    it('adds object-root SimpleAvatarProtection to child slots when child has Udonarium sourceType', async () => {
+      const parentObj = createResoniteObject({
+        id: 'table-001',
+        components: [],
+        sourceType: 'table',
+        children: [
+          createResoniteObject({ id: 'terrain-001', components: [], sourceType: 'terrain' }),
+        ],
+      });
+
+      await slotBuilder.buildSlot(parentObj);
+
+      const sapIds = mockClient.addComponent.mock.calls
+        .filter(
+          (call) =>
+            (call[0] as { componentType: string }).componentType ===
+            COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+        )
+        .map((call) => (call[0] as { id: string }).id);
+
+      expect(sapIds).toContain('table-001-simple-avatar-protection');
+      expect(sapIds).toContain('terrain-001-simple-avatar-protection');
+    });
+
+    it('does not add object-root SimpleAvatarProtection when sourceType is missing', async () => {
+      const obj = createResoniteObject({ components: [] });
+
+      await slotBuilder.buildSlot(obj);
+
+      const hasProtection = mockClient.addComponent.mock.calls.some(
+        (call) =>
+          (call[0] as { componentType: string }).componentType ===
+          COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+      );
+      expect(hasProtection).toBe(false);
+    });
+
     it('should return error result when addSlot fails', async () => {
       mockClient.addSlot.mockRejectedValue(new Error('Connection failed'));
       const obj = createResoniteObject({ id: 'fail-id' });
@@ -517,6 +671,28 @@ describe('SlotBuilder', () => {
         expect.objectContaining({ name: 'table', isActive: true })
       );
     });
+
+    it('adds SimpleAvatarProtection to each top-level object root slot', async () => {
+      const objects = [
+        createResoniteObject({ id: 'obj-1', name: 'Object 1', sourceType: 'card' }),
+        createResoniteObject({ id: 'obj-2', name: 'Object 2', sourceType: 'terrain' }),
+      ];
+
+      await slotBuilder.buildSlots(objects);
+
+      expect(mockClient.addComponent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'obj-1-simple-avatar-protection',
+          componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+        })
+      );
+      expect(mockClient.addComponent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'obj-2-simple-avatar-protection',
+          componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+        })
+      );
+    });
   });
 
   describe('createTextureAssets', () => {
@@ -629,6 +805,32 @@ describe('SlotBuilder', () => {
         fields: Record<string, unknown>;
       };
       expect(addComponentCall.fields).toHaveProperty('FilterMode');
+    });
+
+    it('adds SimpleAvatarProtection to StaticTexture2D slots by default', async () => {
+      const imageAssetInfoMap = makeImageAssetInfoMap([['card-front.png', 'resdb:///card-front']]);
+
+      await createTextureAssetsViaUpdater(imageAssetInfoMap);
+
+      const protectionCall = mockClient.addComponent.mock.calls.find(
+        (call) =>
+          (call[0] as { componentType: string }).componentType ===
+          COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+      );
+      expect(protectionCall).toBeDefined();
+    });
+
+    it('does not add SimpleAvatarProtection to StaticTexture2D slots when disabled', async () => {
+      const imageAssetInfoMap = makeImageAssetInfoMap([['card-front.png', 'resdb:///card-front']]);
+
+      await slotBuilder.createTextureAssetsWithUpdater(imageAssetInfoMap, () => undefined, false);
+
+      const hasProtection = mockClient.addComponent.mock.calls.some(
+        (call) =>
+          (call[0] as { componentType: string }).componentType ===
+          COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+      );
+      expect(hasProtection).toBe(false);
     });
   });
 
@@ -758,6 +960,12 @@ describe('SlotBuilder', () => {
         componentType: COMPONENT_TYPES.OBJECT_ROOT,
         fields: {},
       });
+      expect(mockClient.addComponent).toHaveBeenCalledWith({
+        id: `${callArgs.id}-simple-avatar-protection`,
+        slotId: callArgs.id,
+        componentType: COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION,
+        fields: {},
+      });
     });
 
     it('should return the group slot ID', async () => {
@@ -807,7 +1015,7 @@ describe('SlotBuilder', () => {
       await slotBuilder.createImportGroup('My Import', undefined, undefined, true);
 
       const callArgs = mockClient.addSlot.mock.calls[0][0] as { id: string };
-      expect(mockClient.addComponent).toHaveBeenNthCalledWith(2, {
+      expect(mockClient.addComponent).toHaveBeenNthCalledWith(3, {
         id: `${callArgs.id}-grabbable`,
         slotId: callArgs.id,
         componentType: COMPONENT_TYPES.GRABBABLE,
@@ -815,6 +1023,17 @@ describe('SlotBuilder', () => {
           Scalable: { $type: 'bool', value: true },
         },
       });
+    });
+
+    it('should not add SimpleAvatarProtection to import root when disabled', async () => {
+      await slotBuilder.createImportGroup('My Import', undefined, undefined, false, false);
+
+      const hasProtection = mockClient.addComponent.mock.calls.some(
+        (call) =>
+          (call[0] as { componentType: string }).componentType ===
+          COMPONENT_TYPES.SIMPLE_AVATAR_PROTECTION
+      );
+      expect(hasProtection).toBe(false);
     });
   });
 });

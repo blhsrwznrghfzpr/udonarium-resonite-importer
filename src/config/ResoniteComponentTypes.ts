@@ -5,6 +5,7 @@ export const COMPONENT_TYPES = {
   QUAD_MESH: '[FrooxEngine]FrooxEngine.QuadMesh',
   BOX_MESH: '[FrooxEngine]FrooxEngine.BoxMesh',
   STATIC_TEXTURE_2D: '[FrooxEngine]FrooxEngine.StaticTexture2D',
+  SIMPLE_AVATAR_PROTECTION: '[FrooxEngine]FrooxEngine.CommonAvatar.SimpleAvatarProtection',
   XIEXE_TOON_MATERIAL: '[FrooxEngine]FrooxEngine.XiexeToonMaterial',
   MAIN_TEXTURE_PROPERTY_BLOCK: '[FrooxEngine]FrooxEngine.MainTexturePropertyBlock',
   MESH_RENDERER: '[FrooxEngine]FrooxEngine.MeshRenderer',
