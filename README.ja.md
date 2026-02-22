@@ -51,17 +51,14 @@ GitHub Releases から最新パッケージをダウンロードしてくださ�
 ### CLI版
 
 ```bash
-# ダウンロードしたスタンドアロン実行ファイルを実行
-./udonarium-resonite-importer -i ./save.zip
+# Windows
+.\udonarium-resonite-importer.exe -i .\save.zip -p 7869
 
-# ポートを指定
-./udonarium-resonite-importer -i ./save.zip -p 7869
+# macOS
+./udonarium-resonite-importer-macos -i ./save.zip -p 7869
 
-# ドライランモード（接続せずに解析のみ）
-./udonarium-resonite-importer -i ./save.zip --dry-run
-
-# 詳細ログ
-./udonarium-resonite-importer -i ./save.zip --verbose
+# Linux
+./udonarium-resonite-importer-linux -i ./save.zip -p 7869
 ```
 
 ### CLIオプション
@@ -69,12 +66,15 @@ GitHub Releases から最新パッケージをダウンロードしてくださ�
 | オプション  | 短縮形 | 説明                   | デフォルト |
 | ----------- | ------ | ---------------------- | ---------- |
 | `--input`   | `-i`   | 入力ZIPファイルパス    | (必須)     |
-| `--port`    | `-p`   | ResoniteLinkポート     | 7869       |
+| `--port`    | `-p`   | ResoniteLinkポート     | (必須、`--dry-run`時は不要) |
 | `--host`    | `-H`   | ResoniteLinkホスト     | localhost  |
 | `--scale`   | `-s`   | スケール係数           | 1 (m)      |
+| `--enable-character-collider-on-locked-terrain` | - | ロックされた地形にCharacterColliderを有効化 | false |
 | `--dry-run` | `-d`   | 解析のみ（接続しない） | false      |
 | `--verbose` | `-v`   | 詳細ログ出力           | false      |
 | `--lang`    | `-l`   | 言語（en, ja）         | 自動検出   |
+| `--help`    | `-h`   | ヘルプを表示           | -          |
+| `--version` | `-V`   | バージョンを表示       | -          |
 
 ## ライセンス
 

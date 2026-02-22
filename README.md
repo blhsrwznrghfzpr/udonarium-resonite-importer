@@ -53,17 +53,14 @@ Then choose one package:
 ### CLI Version
 
 ```bash
-# Run downloaded standalone executable
-./udonarium-resonite-importer -i ./save.zip
+# Windows
+.\udonarium-resonite-importer.exe -i .\save.zip -p 7869
 
-# Specify port
-./udonarium-resonite-importer -i ./save.zip -p 7869
+# macOS
+./udonarium-resonite-importer-macos -i ./save.zip -p 7869
 
-# Dry-run mode (analysis only)
-./udonarium-resonite-importer -i ./save.zip --dry-run
-
-# Verbose output
-./udonarium-resonite-importer -i ./save.zip --verbose
+# Linux
+./udonarium-resonite-importer-linux -i ./save.zip -p 7869
 ```
 
 ### CLI Options
@@ -71,12 +68,15 @@ Then choose one package:
 | Option      | Short | Description                   | Default     |
 | ----------- | ----- | ----------------------------- | ----------- |
 | `--input`   | `-i`  | Input ZIP file path           | (required)  |
-| `--port`    | `-p`  | ResoniteLink port             | 7869        |
+| `--port`    | `-p`  | ResoniteLink port             | (required, not needed in `--dry-run`) |
 | `--host`    | `-H`  | ResoniteLink host             | localhost   |
 | `--scale`   | `-s`  | Scale factor                  | 1 (m)       |
+| `--enable-character-collider-on-locked-terrain` | - | Enable CharacterCollider on locked Terrain | false |
 | `--dry-run` | `-d`  | Analysis only (no connection) | false       |
 | `--verbose` | `-v`  | Verbose output                | false       |
 | `--lang`    | `-l`  | Language (en, ja)             | Auto-detect |
+| `--help`    | `-h`  | Display help                  | -           |
+| `--version` | `-V`  | Display version               | -           |
 
 ## License
 
