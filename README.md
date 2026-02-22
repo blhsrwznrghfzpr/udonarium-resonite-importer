@@ -6,11 +6,9 @@ A tool to import [Udonarium](https://github.com/TK11235/udonarium) save data int
 
 ## Features
 
-- Import with just a ZIP file
+- Import by specifying a ZIP file and the ResoniteLink port
 - Supports major objects: characters, cards, terrain, tables, etc.
 - Automatic image asset import
-- Dry-run mode for preview before import
-- **GUI version** (Electron) for easy use by beginners
 
 ## Supported Objects
 
@@ -23,7 +21,6 @@ A tool to import [Udonarium](https://github.com/TK11235/udonarium) save data int
 | Terrain                   | Top + side Quad meshes (walls grouped under one slot) |
 | Map Mask (TableMask)      | Quad (semi-transparent support)                       |
 | Table (GameTable)         | Quad                                                  |
-| Shared Note (TextNote)    | UIX Text                                              |
 
 ## Requirements
 
@@ -45,6 +42,8 @@ Download the latest package from [GitHub Releases](https://github.com/TriVR-TRPG
 3. Click "Browse..." to select a Udonarium ZIP file
 4. In Resonite, enable ResoniteLink and set the port
 5. Click "Import to Resonite"
+
+![GUI usage image](docs/images/gui.en.png)
 
 ### CLI Version
 

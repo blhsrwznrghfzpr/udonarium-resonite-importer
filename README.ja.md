@@ -4,11 +4,9 @@
 
 ## 特徴
 
-- ZIPファイルを指定するだけでインポート可能
+- ZIPファイルとResoniteLinkのポートを指定してインポート可能
 - キャラクター、カード、地形、テーブルなど主要オブジェクトに対応
 - 画像アセットの自動インポート
-- ドライランモードで事前確認が可能
-- **GUI版**（Electron）で初心者でも簡単に使用可能
 
 ## 対応オブジェクト
 
@@ -21,7 +19,6 @@
 | 地形 (Terrain)               | 上面+側面のQuadMesh（壁は1スロット配下で制御） |
 | マップマスク (TableMask)     | Quad（半透明対応）                             |
 | テーブル (GameTable)         | Quad                                           |
-| 共有メモ (TextNote)          | UIX Text                                       |
 
 ## 必要環境
 
@@ -43,6 +40,8 @@
 3. 「参照...」ボタンでUdonariumのZIPファイルを選択
 4. ResoniteでResoniteLinkを有効化して、ポートを設定
 5. 「Resoniteにインポート」ボタンをクリック
+
+![GUI版の使用イメージ](docs/images/gui.ja.png)
 
 ### CLI版
 
