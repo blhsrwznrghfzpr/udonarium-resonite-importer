@@ -12,6 +12,11 @@ Reason:
 
 Using `dynamic import()` avoids CJS/ESM interop issues from static `require`-style loading and keeps runtime compatibility stable.
 
+## Requirements
+
+- Node.js 18.17.0 or higher (20.18.2 recommended)
+- npm 9 or higher
+
 ## Build Commands
 
 ### Setup from Source

@@ -27,7 +27,6 @@ A tool to import [Udonarium](https://github.com/TK11235/udonarium) save data int
 
 ## Requirements
 
-- Node.js 18 or higher (20.18.2 recommended, managed by [mise](https://mise.jdx.dev/))
 - Resonite with ResoniteLink enabled
 
 ## Installation
@@ -67,17 +66,6 @@ Then choose one package:
 ./udonarium-resonite-importer -i ./save.zip --verbose
 ```
 
-To build a standalone CLI bundle from source (current OS only):
-
-```bash
-npm run package:cli
-```
-
-Output:
-
-- executable: `dist/udonarium-resonite-importer*`
-- bundle zip: `dist/udonarium-resonite-importer-*-bundle.zip` or `dist/udonarium-resonite-importer-win.zip`
-
 ### CLI Options
 
 | Option      | Short | Description                   | Default     |
@@ -90,10 +78,6 @@ Output:
 | `--verbose` | `-v`  | Verbose output                | false       |
 | `--lang`    | `-l`  | Language (en, ja)             | Auto-detect |
 
-## Development
-
-See [docs/development.md](docs/development.md) for build commands, testing, packaging, and project structure.
-
 ## License
 
 MIT
@@ -102,4 +86,5 @@ MIT
 
 - [Udonarium](https://github.com/TK11235/udonarium) - Web-based virtual tabletop
 - [ResoniteLink](https://github.com/Yellow-Dog-Man/ResoniteLink) - Resonite integration tool
+- [tsrl](https://www.npmjs.com/package/@eth0fox/tsrl) - TypeScript library used for ResoniteLink connectivity
 
