@@ -35,6 +35,8 @@ npm run dev -- -i ./save.zip --dry-run
 npm run dev:gui
 ```
 
+`npm run dev`（`ts-node src/index.ts`）でCLIを実行した場合、デバッグ用にパース済みの `UdonariumObject` 一覧が `parsed/` ディレクトリへ JSON として出力されます（例: `parsed/<zipファイル名>.parsed.json`）。
+
 ## 検証・自動修正
 
 ```bash

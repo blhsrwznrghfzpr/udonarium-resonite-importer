@@ -35,6 +35,8 @@ npm run dev -- -i ./save.zip --dry-run
 npm run dev:gui
 ```
 
+When you run the CLI via `npm run dev` (`ts-node src/index.ts`), parsed `UdonariumObject` data is written to `parsed/` as JSON for debugging (for example, `parsed/<zip-file-name>.parsed.json`).
+
 ## Validation & Auto-fix
 
 ```bash
