@@ -2,16 +2,6 @@
 
 [English](development.md)
 
-## 補足: tsrl で `dynamic import()` を使っている理由
-
-`src/resonite/ResoniteLinkClient.ts` では、接続時に `await import('@eth0fox/tsrl')` で tsrl を読み込みます。
-
-理由:
-- 本プロジェクトの CLI は現在 **CommonJS** でコンパイルされる（`tsconfig.cli.json` の `"module": "commonjs"`）
-- `@eth0fox/tsrl` は **ESM パッケージ** として公開されている（`type: "module"`）
-
-`dynamic import()` を使うことで、静的読み込み時の CJS/ESM 相互運用問題を回避し、実行時互換性を安定させています。
-
 ## 必要環境
 
 - Node.js 18.17.0 以上（20.18.2 推奨）
@@ -129,8 +119,16 @@ npm run measure:known-image-ratios
 npm run package:cli:win      # Windows
 npm run package:cli:mac      # macOS
 npm run package:cli:linux    # Linux
-npm run package:cli          # 全プラットフォーム
+npm run package:cli          # 現在のプラットフォームのみ
 ```
+
+出力先:
+
+- Windows: `dist/udonarium-resonite-importer-win/` と `dist/udonarium-resonite-importer-win.zip`
+- macOS: `dist/udonarium-resonite-importer-mac-bundle/` と `dist/udonarium-resonite-importer-mac-bundle.zip`
+- Linux: `dist/udonarium-resonite-importer-linux-bundle/` と `dist/udonarium-resonite-importer-linux-bundle.zip`
+
+`npm run package:cli` は、実行環境に応じて `package:cli:win` / `package:cli:mac` / `package:cli:linux` のいずれか1つだけを実行します。
 
 ### GUIパッケージング
 
@@ -138,8 +136,12 @@ npm run package:cli          # 全プラットフォーム
 npm run package:gui:win      # Windows
 npm run package:gui:mac      # macOS
 npm run package:gui:linux    # Linux
-npm run package:gui          # 全プラットフォーム
+npm run package:gui          # 現在のプラットフォームのみ
 ```
+
+出力先:
+
+- `release/`（electron-builder により現在プラットフォーム向け成果物を出力）
 
 ## プロジェクト構成
 
@@ -189,3 +191,13 @@ Udonariumではオブジェクトの端が座標位置ですが、Resoniteでは
 - terrain: `x += width/2`, `y += height/2`, `z -= depth/2`
 - character: `x += size/2`, `y += size/2`, `z -= size/2`
 - card/card-stack/text-note: `x += width/2`, `z -= height/2`
+
+## 補足: tsrl で `dynamic import()` を使っている理由
+
+`src/resonite/ResoniteLinkClient.ts` では、接続時に `await import('@eth0fox/tsrl')` で tsrl を読み込みます。
+
+理由:
+- 本プロジェクトの CLI は現在 **CommonJS** でコンパイルされる（`tsconfig.cli.json` の `"module": "commonjs"`）
+- `@eth0fox/tsrl` は **ESM パッケージ** として公開されている（`type: "module"`）
+
+`dynamic import()` を使うことで、静的読み込み時の CJS/ESM 相互運用問題を回避し、実行時互換性を安定させています。
